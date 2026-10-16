@@ -267,8 +267,9 @@ function chatPackCRC32(bytes, signal) {
   return (crc ^ 0xffffffff) >>> 0;
 }
 
-export async function buildStoredZip(entries, { signal } = {}) {
+export async function buildStoredZip(entries, { signal, maxBytes = CHAT_PACK_MAX_BYTES } = {}) {
   chatPackCheckSignal(signal);
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 22 || maxBytes > 25 * 1024 ** 2) throw chatPackError('invalid_zip', '자료 크기 설정을 확인해 주세요.');
   if (!Array.isArray(entries) || entries.length < 1 || entries.length > 32) throw chatPackError('invalid_zip', '자료 파일 목록을 확인하지 못했습니다.');
   const encoder = new TextEncoder();
   const names = new Set();
@@ -282,7 +283,7 @@ export async function buildStoredZip(entries, { signal } = {}) {
     return { name, data, size: data instanceof Blob ? data.size : data.byteLength };
   });
   const predictedSize = 22 + prepared.reduce((total, entry) => total + entry.size + 76 + entry.name.byteLength * 2, 0);
-  if (!Number.isSafeInteger(predictedSize) || predictedSize > CHAT_PACK_MAX_BYTES) throw chatPackError('pack_too_large', '채팅용 자료는 ZIP 전체가 8MiB 이하여야 합니다.');
+  if (!Number.isSafeInteger(predictedSize) || predictedSize > maxBytes) throw chatPackError('pack_too_large', `채팅용 자료는 ZIP 전체가 ${Math.floor(maxBytes / 1024 ** 2)}MiB 이하여야 합니다.`);
   const chunks = [];
   const directory = [];
   let offset = 0;
@@ -330,7 +331,7 @@ export async function buildStoredZip(entries, { signal } = {}) {
   record.setUint32(12, directorySize, true);
   record.setUint32(16, offset, true);
   const zip = new Blob([...chunks, ...directory, ending], { type: 'application/zip' });
-  if (zip.size !== predictedSize || zip.size > CHAT_PACK_MAX_BYTES) throw chatPackError('pack_too_large', '채팅용 자료를 8MiB 이하 ZIP으로 만들지 못했습니다.');
+  if (zip.size !== predictedSize || zip.size > maxBytes) throw chatPackError('pack_too_large', `채팅용 자료를 ${Math.floor(maxBytes / 1024 ** 2)}MiB 이하 ZIP으로 만들지 못했습니다.`);
   return zip;
 }
 

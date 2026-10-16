@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#193e32">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; media-src blob:; connect-src 'none'; base-uri 'none'; form-action 'none'; object-src 'none'">
+  <meta name="description" content="채팅에서 함께 검토한 경기 피드백을 이 기기에 보관하고 다음 연습으로 이어가세요.">
+  <title>나의 경기 피드백 · NEXT XI</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/feedback.css">
+  <script type="module" src="/feedback-ui.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header"><a class="brand" href="/" aria-label="NEXT XI 홈"><span class="brand-mark" aria-hidden="true">↗</span><span>NEXT XI<small>YOUR NEXT CHAPTER</small></span></a><span class="private-label"><span aria-hidden="true">◈</span> 이 기기만의 노트</span></header>
+  <main id="main" class="page">
+    <section class="hero" aria-labelledby="page-title"><div><p class="eyebrow">FROM YOUR GAME TO YOUR NEXT STEP</p><h1 id="page-title">경기의 순간을,<br><span>다음 연습으로.</span></h1><p class="hero-description">채팅에서 함께 살펴본 피드백을 가져와<br>확인한 장면과 연습할 내용을 한눈에 보세요.</p></div><div class="hero-art" aria-hidden="true"><span class="art-line"></span><span class="art-circle"></span><span class="art-player">11</span><span class="art-arrow">↗</span><span class="art-caption">ONE SMALL STEP FORWARD</span></div></section>
+    <p class="scope-line">이 기기에 저장 · 채팅 검토 결과 · 자동 분석과 구분</p>
+    <div class="privacy-note"><span aria-hidden="true">◈</span><p><strong>선택한 결과는 이 브라우저에만 보관해요.</strong>공용 기기에서는 다른 사람이 볼 수 있으니 사용 후 지워 주세요. 같은 사이트의 페이지에서도 접근할 수 있으며, 브라우저 데이터 삭제 시 사라집니다.</p></div>
+    <section class="card import-card" aria-labelledby="import-title"><div><p class="eyebrow">BRING YOUR FEEDBACK</p><h2 id="import-title">채팅에서 받은 결과 가져오기</h2><p class="muted">채팅에서 받은 분석 결과 JSON 파일을 골라 주세요. 파일 내용은 서버에 전송하지 않아요.</p></div><label class="button primary file-label" for="feedback-file"><span aria-hidden="true">＋</span> 분석 결과 JSON 파일 선택<input id="feedback-file" type="file" accept=".json,application/json" aria-describedby="import-help"></label><p id="import-help" class="help">결과 1개당 1MiB 이하 · 이 기기에 최대 50개 · 로그인·유료 API 없이</p><details class="paste-details"><summary>파일 대신 JSON 텍스트 붙여넣기</summary><label class="paste-label" for="feedback-text">채팅에서 받은 JSON 전체</label><textarea id="feedback-text" rows="7" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="여기에 분석 결과 JSON을 붙여 넣으세요."></textarea><button id="import-text" class="button secondary" type="button">붙여넣은 결과 가져오기</button></details></section>
+    <p id="feedback-status" class="status" role="status" aria-live="polite" hidden></p>
+    <p id="feedback-error" class="error" role="alert" hidden></p>
+    <div class="feedback-layout"><aside class="card library" aria-labelledby="library-title"><div class="section-heading"><h2 id="library-title">내 피드백</h2><span id="report-count" class="count">0 / 50</span></div><div id="report-list" class="report-list"></div><p id="library-empty" class="help">가져온 피드백이 여기에 모여요.</p></aside><section id="feedback-empty" class="card empty-state" aria-labelledby="empty-title"><div class="empty-icon" aria-hidden="true">↗</div><p class="eyebrow">A NOTE FOR YOUR NEXT GAME</p><h2 id="empty-title">아직 가져온 피드백이 없어요.</h2><p>이 채팅에서 받은 JSON 파일을 선택하면<br>관찰한 장면과 다음 훈련을 여기서 볼 수 있어요.</p><a class="text-link" href="/video-clips.html">채팅에 보낼 경기 자료 만들기 ↗</a></section><article id="feedback-report" class="report" hidden></article></div>
+    <footer class="page-footer"><strong>NEXT XI</strong><span>한 경기의 결과보다, 다음 경기의 작은 변화.</span><small>이 기기에 저장 · 직접 가져온 피드백</small></footer>
+  </main>
+  <dialog id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-description"><h2 id="delete-title">이 피드백을 지울까요?</h2><p id="delete-description"></p><p class="help">이 브라우저에서만 삭제해요. 다시 보려면 JSON 파일을 다시 가져와야 합니다.</p><div class="dialog-actions"><button id="cancel-delete" class="button secondary" type="button">취소</button><button id="confirm-delete" class="button danger" type="button">피드백 지우기</button></div></dialog>
+  <noscript><p class="noscript-message">피드백을 가져오려면 브라우저에서 JavaScript를 허용해 주세요. 파일은 이 기기에서만 읽습니다.</p></noscript>
+</body>
+</html>

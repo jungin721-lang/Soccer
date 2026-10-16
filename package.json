@@ -1,6 +1,6 @@
 {
   "name": "next-xi",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "description": "Evidence-first youth football development workspace",
   "type": "module",
@@ -14,7 +14,9 @@
     "check": "node scripts/check-syntax.js",
     "export": "node scripts/export-standalone.js",
     "test:browser": "python tests/growth-browser.py",
-    "test:chat-pack": "python tests/chat-pack-browser.py"
+    "test:chat-pack": "python tests/chat-pack-browser.py",
+    "test:video-clips": "python tests/video-clips-browser.py",
+    "test:feedback": "python tests/feedback-browser.py"
   },
   "dependencies": {
     "@netlify/blobs": "^11.1.4",

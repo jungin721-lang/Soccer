@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#173b2c">
+  <meta name="next-xi-version" content="2.3.0-video-clips">
+  <meta name="description" content="긴 경기 영상을 이 기기에서 순서대로 작은 연속 영상으로 만드세요. 원본 전송, 유료 API, 자동 선수 분석 없이 직접 저장하고 공유합니다.">
+  <title>작은 경기 영상 만들기 · NEXT XI</title>
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/video-clips.css">
+  <script type="module" src="/video-clips-ui.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+  <header class="site-header">
+    <a class="brand exit-link" href="/" aria-label="NEXT XI 홈"><span class="brand-mark" aria-hidden="true">↗</span><span>NEXT XI<small>YOUR NEXT CHAPTER</small></span></a>
+    <a class="back-link exit-link" href="/chat-pack.html"><span aria-hidden="true">←</span> 이미지 자료 만들기</a>
+  </header>
+
+  <main id="main" class="page">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">KEEP THE GAME MOVING</p>
+        <h1 id="page-title">경기 흐름을,<br>작은 영상으로.</h1>
+        <p>긴 원본을 약 1분씩, 순서대로 준비해요.<br>하나씩 저장하고 이 채팅에 첨부해 주세요.</p>
+        <div class="hero-tags"><span>원본 전송 없이</span><span>유료 API 없이</span><span>자동 분석 없이</span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true"><div class="art-film"><div class="art-top">MATCH CONTINUES <span>01 / 02</span></div><div class="art-pitch"><div class="pitch-circle"></div><span class="shirt">11</span><i class="ball"></i></div><div class="art-timeline"><i></i><i></i><i></i><i></i><i></i></div><div class="art-bottom">ONE SMALL CLIP. THE NEXT MOMENT.</div></div><span class="art-note">앞 5초를 함께<br>흐름이 이어지도록</span></div>
+    </section>
+
+    <p class="intro-note"><span aria-hidden="true">↗</span><span><strong>장면이나 시작 시간을 직접 고를 필요 없어요.</strong> 처음부터 끝까지 이어지는 구간을 만들어요. 선수 식별이나 플레이 분석은 실행하지 않습니다.</span></p>
+
+    <section id="unsupported-browser" class="error-card" role="alert" hidden><h2>이 브라우저에서는 영상을 만들 수 없어요</h2><p id="unsupported-reason"></p><p>최신 Safari 또는 Chrome에서 다시 열거나, 아래 이미지 자료 방식을 이용해 주세요.</p><a class="button secondary" href="/chat-pack.html">이미지 자료 만들기로 이동</a></section>
+
+    <div class="workspace">
+      <section class="card setup-card" aria-labelledby="setup-title">
+        <div class="section-heading"><div><p class="eyebrow">ONE CLIP AT A TIME</p><h2 id="setup-title">한 번에 하나씩 준비해요</h2></div><span class="tiny-pill">이 기기에서 처리</span></div>
+        <form id="video-clips-form">
+          <fieldset class="step">
+            <legend><span class="step-number">01</span>원본 영상 선택</legend>
+            <label class="file-picker" for="clip-video-file"><span class="picker-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="m10 9 5 3-5 3z"/></svg></span><strong id="clip-file-label">사진·파일에서 원본 선택</strong><span>스마트폰 사진 보관함이나 파일 앱에서</span><small>MP4 · MOV · WebM 등 · 최대 8GiB (약 8.6GB)</small><input id="clip-video-file" name="video" type="file" accept="video/*,.mp4,.mov,.m4v,.webm,.3gp" aria-describedby="clip-file-help"></label>
+            <div id="clip-selected-file" class="selected-file" hidden><span class="file-tick" aria-hidden="true">✓</span><div><strong id="clip-file-name"></strong><span id="clip-file-size"></span></div><button id="replace-clip-file" type="button" class="text-button">변경</button></div>
+            <p id="clip-file-help" class="help">원본을 서버나 AI 서비스로 보내지 않아요. 영상 생성에 네트워크나 유료 API를 사용하지 않습니다.</p>
+            <dl id="clip-metadata" class="metadata" hidden><div><dt>원본 길이</dt><dd id="clip-source-duration"></dd></div><div><dt>원본 해상도</dt><dd id="clip-source-dimensions"></dd></div><div><dt>예상 출력 형식</dt><dd id="clip-output-format"></dd></div></dl>
+          </fieldset>
+
+          <fieldset class="step">
+            <legend><span class="step-number">02</span>함께 보낼 선수 정보</legend>
+            <div class="target-fields"><label class="field kit-field" for="clip-target-kit">유니폼 색<select id="clip-target-kit" name="kit" required><option value="navy">남색</option><option value="blue">파랑</option><option value="sky">하늘색</option><option value="teal">청록</option><option value="turquoise">밝은 청록</option><option value="green">초록</option><option value="lime">연두</option><option value="yellow">노랑</option><option value="gold">금색</option><option value="orange">주황</option><option value="red">빨강</option><option value="burgundy">자주</option><option value="pink">분홍</option><option value="purple">보라</option><option value="lavender">연보라</option><option value="white">흰색</option><option value="black">검정</option><option value="gray">회색</option><option value="brown">갈색</option><option value="beige">베이지</option></select></label><label class="field" for="clip-target-number">등번호<input id="clip-target-number" name="number" type="number" min="1" max="99" inputmode="numeric" value="11" required></label><label class="field" for="clip-target-age">나이 (세)<input id="clip-target-age" name="age" type="number" min="5" max="18" inputmode="numeric" value="11" required></label></div>
+            <p class="help">이 정보는 설명과 JSON 기록에만 담겨요. 남색 11번을 자동으로 찾거나 추적하지 않습니다.</p>
+          </fieldset>
+
+          <fieldset class="step">
+            <legend><span class="step-number">03</span>영상 길이와 공유 확인</legend>
+            <label class="field" for="clip-length">한 영상의 길이<select id="clip-length" name="clipLength"><option value="60">약 1분 · 기본</option><option value="30">약 30초 · 느린 스마트폰 / 용량 초과 시</option></select></label>
+            <p class="help">두 번째 영상부터 앞 구간의 마지막 5초를 겹쳐요. 작은 영상도 하나씩 만들며, 보통 영상 길이만큼 시간이 걸립니다.</p>
+            <label class="consent-row" for="clip-rights-consent"><input id="clip-rights-consent" name="rightsConsent" type="checkbox" required><span>필요한 촬영·보호자 동의를 확보한 영상이며, <strong>선수들의 얼굴이 포함될 수 있는 자료를 직접 공유</strong>하는 데 동의합니다.</span></label>
+            <p class="help">만들기 버튼은 영상만 준비해요. 저장한 자료를 직접 첨부하거나 공유하기 전까지 외부로 보내지 않습니다.</p>
+          </fieldset>
+
+          <section id="clip-plan" class="plan-card" aria-labelledby="clip-plan-title" hidden><div class="plan-heading"><h3 id="clip-plan-title">원본 순서대로 이어지는 계획</h3><span id="clip-plan-count"></span></div><p id="clip-plan-summary"></p><ol id="clip-plan-list" class="plan-list"></ol><p id="clip-plan-more" class="help" hidden></p><p class="help">표시한 시간은 원본의 절대시각입니다. 전체 계획이 완료된 것은 각 구간을 모두 만든 뒤예요.</p></section>
+          <button id="create-first-clip" class="button primary full" type="submit" disabled><span>첫 번째 영상 만들기</span><span aria-hidden="true">↗</span></button>
+          <p id="clip-form-note" class="help submit-note">원본과 선수 정보를 확인하고 공유 동의에 체크해 주세요.</p>
+        </form>
+
+        <section id="clip-progress" class="progress-card" aria-labelledby="clip-progress-title" hidden><div class="progress-heading"><span class="spinner" aria-hidden="true"></span><div><h3 id="clip-progress-title">원본 영상을 확인하고 있어요</h3><p id="clip-progress-message" role="status" aria-live="polite">잠시 기다려 주세요.</p></div></div><div id="clip-progress-bar" class="progress-track" role="progressbar" aria-label="현재 단계 진행" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div><p id="clip-progress-count" class="help"></p><p class="screen-note"><strong>화면을 켜 두고 이 페이지를 유지해 주세요.</strong><span id="clip-wake-note">화면 잠금을 늦추도록 요청해요. 다른 앱으로 이동하거나 화면이 잠기면 현재 구간을 중단합니다.</span></p><button id="cancel-clip" class="button secondary full" type="button">만들기 취소</button></section>
+        <div id="clip-notice" class="notice" role="status" aria-live="polite" hidden></div>
+        <button id="resume-clip" class="button secondary full resume-button" type="button" hidden>현재 구간 다시 만들기</button>
+        <section id="clip-error" class="error-card" role="alert" hidden><h3>영상을 준비하지 못했어요</h3><p id="clip-error-message"></p><p class="help">이 기기에서 원본이 재생되는지 확인해 주세요. 형식 문제는 호환되는 MP4로 변환해야 하며, 확장자만 바꿔도 해결되지 않아요. 용량이 크거나 생성이 느리면 30초 모드를 선택해 주세요.</p><div class="action-row"><button id="retry-clip" class="button secondary" type="button">현재 구간 다시 시도</button><button id="choose-another-clip" class="button quiet" type="button">다른 영상 선택</button><a class="button quiet" href="/chat-pack.html">이미지 자료 만들기</a></div></section>
+      </section>
+
+      <aside class="guide-column" aria-label="영상 생성과 공유 안내">
+        <section class="card scope-card"><span class="tile-icon" aria-hidden="true">▷</span><p class="eyebrow">THE MOMENTS IN BETWEEN</p><h2>정지화면 사이의<br>움직임도 이어지도록.</h2><p>장면을 골라 뽑는 대신, 원본의 시간을 순서대로 나눠요. <strong>영상 하나를 저장한 다음, 다음 영상</strong>을 만드세요.</p><div class="scope-divider"></div><p>한 영상은 최대 <strong>24MiB (약 25.2MB)</strong>입니다. 원본보다 화질이 낮아질 수 있고, 작은 등번호는 읽히지 않을 수 있어요.</p><p class="scope-footnote">영상이 만들어져도 선수 확인이나 분석이 끝난 것은 아니에요. 모든 플레이나 등번호 식별을 보장하지 않습니다.</p></section>
+        <section class="card sharing-guide"><p class="eyebrow">SAVE. ATTACH. CONTINUE.</p><h2>이 채팅에 보내는 순서</h2><ol class="share-steps"><li><span>1</span><div><strong>완성된 영상과 JSON 저장</strong><p>기록에는 원본 시각과 대상 선수 정보가 담겨요.</p></div></li><li><span>2</span><div><strong>이 채팅에 직접 첨부</strong><p>영상·기록·설명을 함께 보내 주세요. 첨부 허용 크기와 형식은 채팅마다 달라요.</p></div></li><li><span>3</span><div><strong>돌아와 다음 영상 만들기</strong><p>현재 파일의 저장을 확인한 뒤 진행해요. 이 페이지에는 한 구간의 결과만 유지합니다.</p></div></li></ol><p class="help">아이폰은 ‘파일’ 앱, 안드로이드는 ‘다운로드’ 폴더에서 확인해 주세요. 공유 창이 열리는 것만으로 채팅에 전송된 것은 아닙니다.</p></section>
+      </aside>
+    </div>
+
+    <section id="clip-result" class="card result-card" aria-labelledby="clip-result-title" hidden>
+      <div class="result-heading"><span class="ready-icon" aria-hidden="true">✓</span><div><p class="eyebrow">ONE CLIP IS READY</p><h2 id="clip-result-title" tabindex="-1">첫 번째 영상이 준비됐어요</h2><p id="clip-result-summary" class="muted"></p></div><span id="clip-result-format" class="tiny-pill"></span></div>
+      <p class="result-description">아래 영상은 <strong>자동 분석 결과가 아닌 원본의 연속 구간</strong>입니다. 미리 보고 원치 않는 노출이 없는지 확인해 주세요. 원본의 소리는 결과에 포함하지 않습니다.</p>
+      <video id="clip-preview" class="clip-preview" controls playsinline muted preload="metadata" aria-label="완성된 경기 영상 미리보기"></video>
+      <div class="download-actions"><a id="download-clip" class="button primary" download>영상 다운로드</a><button id="download-clip-zip" class="button secondary" type="button">채팅용 ZIP 만들기</button><a id="download-clip-bundle" class="button secondary" download hidden>채팅용 ZIP 다운로드</a><button id="share-clip" class="button secondary" type="button">영상 + 기록 공유</button><a id="download-manifest" class="button quiet" download>JSON 기록 다운로드</a></div>
+      <p id="clip-bundle-status" class="help" role="status" aria-live="polite">영상 첨부가 안 되면 채팅용 ZIP을 만드세요. 영상과 JSON 기록만 묶으며, ZIP도 채팅에서 허용해야 첨부할 수 있어요.</p>
+      <p id="clip-save-status" class="help" role="status" aria-live="polite">아직 저장·공유를 요청하지 않았어요. 다운로드 버튼은 저장 요청이며 실제 기기 저장 완료를 확인할 수는 없습니다.</p>
+      <p id="clip-share-status" class="help" role="status" aria-live="polite"></p>
+      <section class="copy-card" aria-labelledby="clip-prompt-title"><h3 id="clip-prompt-title">원본 시각과 선수 정보를 함께 보내요</h3><p class="help">보이는 행동만 살펴보도록 요청하는 설명입니다.</p><textarea id="clip-prompt" rows="6" readonly aria-label="영상과 함께 보낼 설명"></textarea><button id="copy-clip-prompt" class="button secondary" type="button">설명 복사</button><p id="clip-copy-status" class="help" role="status" aria-live="polite"></p></section>
+      <div class="next-section"><div><h3 id="clip-next-title">저장을 확인하고 다음 구간으로</h3><p id="clip-next-help" class="help">다음 영상을 만들면 지금 영상의 미리보기와 임시 파일이 해제됩니다.</p></div><button id="next-clip" class="button primary" type="button">다음 영상 만들기 <span aria-hidden="true">→</span></button><button id="reset-clips" class="button quiet" type="button">원본·선수 정보 바꾸기</button></div>
+      <section id="discard-confirm" class="discard-confirm" aria-labelledby="discard-confirm-title" hidden><h3 id="discard-confirm-title">현재 영상을 먼저 확인해 주세요</h3><p id="discard-confirm-message">현재 영상의 임시 파일을 해제하면 이 페이지에서 다시 저장할 수 없어요. 다운로드를 눌렀더라도 파일 앱에서 저장 여부를 확인해 주세요.</p><label class="consent-row" for="clip-save-confirm"><input id="clip-save-confirm" type="checkbox"><span>현재 영상과 기록을 저장·공유했거나, 이 자료를 해제하고 진행해도 됩니다.</span></label><div class="action-row"><button id="confirm-next" class="button primary" type="button" disabled>확인하고 다음 영상 만들기</button><button id="keep-current-clip" class="button quiet" type="button">현재 영상 유지</button></div></section>
+    </section>
+
+    <section class="card"><h2>받은 피드백을 앱에서 보세요</h2><p>채팅에서 검토한 피드백 파일을 가져오면 근거 시간과 다음 연습을 한곳에서 볼 수 있어요. 이 기기에만 저장하며 자동 분석 결과와 구분합니다.</p><a class="button secondary exit-link" href="/feedback.html?v=2.3.0">내 피드백 열기 ↗</a></section>
+
+    <footer class="page-footer"><strong>NEXT XI</strong><span>한 경기의 결과보다, 다음 경기의 작은 변화.</span><small>기기에서 준비 · 직접 선택해서 공유</small></footer>
+  </main>
+  <noscript><p class="noscript-message">영상을 만들려면 JavaScript가 필요해요. 원본은 이 기기에서 처리됩니다. <a href="/chat-pack.html">이미지 자료 만들기</a></p></noscript>
+</body>
+</html>
