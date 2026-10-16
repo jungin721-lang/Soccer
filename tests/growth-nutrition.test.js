@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildWeekMeals, getDailyMeals, nutritionSources } from '../public/growth-nutrition.js';
+import { buildWeekMeals, getDailyMeals, nutritionSources, nutritionContentVersion, nutritionReviewStatus } from '../public/growth-nutrition.js';
 
 const profile = {age: 11, allergies: [], dietaryRestrictions: [], likedFoods: [], schoolLunch: false};
 
@@ -94,16 +94,42 @@ test('plan contains general timing and hydration without calorie or supplement p
   assert.ok(!/\d+\s*(?:kcal|칼로리|ml|mL)/.test(JSON.stringify(plan)));
 });
 
-test('source registry never presents blocked attempts as verified research or professional review', () => {
+test('source registry separates fetched official claims from blocked references and clinical review', () => {
   assert.ok(nutritionSources.some(source => source.organization.includes('CDC')));
   assert.ok(nutritionSources.some(source => source.organization.includes('AAP')));
   assert.ok(nutritionSources.some(source => source.organization.includes('MyPlate')));
   assert.ok(nutritionSources.some(source => source.organization.includes('NIH')));
-  for (const source of nutritionSources) {
+  const blocked = nutritionSources.filter(source => source.status === 'unverified');
+  assert.deepEqual(blocked.map(source => source.id).sort(), ['myplate-kids', 'nih-calcium']);
+  for (const source of blocked) {
     assert.equal(source.verifiedDate, null);
     assert.equal(source.status, 'unverified');
     assert.equal(source.checkedDate, '2026-10-16');
     assert.match(source.verificationNote, /403/);
     assert.match(source.url, /^https:\/\//);
   }
+  const checked = nutritionSources.filter(source => source.status === 'verified');
+  assert.equal(checked.length, 6);
+  for (const source of checked) {
+    assert.equal(source.verifiedDate, '2026-10-16');
+    assert.equal(source.checkedDate, '2026-10-16');
+    assert.equal(source.httpStatus, 200);
+    assert.match(source.bodySha256, /^[a-f\d]{64}$/);
+    assert.ok(source.claims.length > 0 && source.claims.every(claim => claim.id && claim.quote && claim.text));
+    assert.ok(source.updatedDate || source.pageDate);
+    assert.match(source.verificationNote, /전문가 검수를 뜻하지/);
+  }
+  assert.equal(nutritionSources.find(source => source.id === 'aap-sleep').updatedDate, '2026-08-07');
+  assert.match(nutritionSources.find(source => source.id === 'aap-sleep').claims[0].quote, /60 minutes/);
+  assert.match(nutritionSources.find(source => source.id === 'cdc-sleep').claims[0].quote, /6–12.*9–12/);
+  assert.match(nutritionSources.find(source => source.id === 'fda-allergy').url, /nutrition-food-labeling-and-critical-foods\/food-allergies$/);
+  assert.match(nutritionSources.find(source => source.id === 'aap-appetite').limitation, /2009년인 오래된/);
+  assert.equal(nutritionContentVersion, '2026-10-16.2');
+  assert.equal(nutritionReviewStatus.individualClinicalReview, 'not_reviewed');
+  assert.equal(nutritionReviewStatus.reviewer, null);
+  const plan = buildWeekMeals(profile, { startDate: '2026-10-16' });
+  assert.equal(plan.contentVersion, nutritionContentVersion);
+  assert.equal(plan.reviewStatus.reviewedDate, null);
+  plan.sources.find(source => source.id === 'cdc-sleep').claims[0].quote = 'changed outside the registry';
+  assert.match(nutritionSources.find(source => source.id === 'cdc-sleep').claims[0].quote, /School age/);
 });

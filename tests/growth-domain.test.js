@@ -166,6 +166,43 @@ test('job metadata excludes private identities, credentials and results stored s
   assert.equal(job.progress.sampledCount, 4);
 });
 
+test('quota-paused jobs preserve their blocked status and scheduled retry without private probe leases', () => {
+  for (const retryAt of ['2026-10-16T09:30:00.000Z', '2026-10-16T18:30:00+09:00', null]) {
+    const state = workspaceWithVideo();
+    state.jobs.push({ id: 'quota-job', videoId: FIRST_VIDEO, status: 'blocked', stage: 'quota', createdAt: '2026-10-16T08:01:00.000Z', updatedAt: '2026-10-16T08:02:00.000Z', progress: { sampledCount: 4, sampleCount: 10, message: '분석 이용 가능 여부를 기다리고 있습니다.' }, error: { code: 'insufficient_quota', message: '잠시 후 자동으로 확인합니다.' }, target: video().target, context: video().context, attempt: 1, retryAt, quotaProbeToken: 'private', quotaProbeLeaseUntil: '2026-10-16T09:00:00Z', probeLease: { owner: 'private' } });
+    const clean = validateGrowthWorkspace(state);
+    assert.equal(clean.jobs[0].status, 'blocked');
+    assert.equal(clean.jobs[0].stage, 'quota');
+    assert.equal(clean.jobs[0].retryAt, retryAt);
+    assert.deepEqual(validateGrowthWorkspace(JSON.parse(JSON.stringify(clean))), clean);
+    for (const key of ['quotaProbeToken', 'quotaProbeLeaseUntil', 'probeLease']) assert.equal(Object.hasOwn(clean.jobs[0], key), false);
+  }
+});
+
+test('retry schedules accept only nullable ISO timestamps while older jobs can omit them', () => {
+  const state = workspaceWithVideo();
+  const job = { id: 'quota-job', videoId: FIRST_VIDEO, status: 'blocked', stage: 'quota', createdAt: '2026-10-16T08:01:00.000Z', updatedAt: '2026-10-16T08:02:00.000Z', progress: {}, error: null, target: video().target, context: video().context, attempt: 1 };
+  state.jobs.push(job);
+  assert.equal(Object.hasOwn(validateGrowthWorkspace(state).jobs[0], 'retryAt'), false);
+  for (const retryAt of ['', 'tomorrow', '2026-10-16', '2026-02-30T09:00:00Z', '2026-10-16T25:00:00Z', 1792137000000, false, { retryAt: '2026-10-16T09:00:00Z' }]) {
+    job.retryAt = retryAt;
+    assert.throws(() => validateGrowthWorkspace(state), /분석 작업 정보/, JSON.stringify(retryAt));
+  }
+});
+
+test('model training consent stays separate from analysis, wellbeing and physical training records', () => {
+  const state = workspaceWithVideo();
+  state.consents = { guardian: true, analysis: true, training: false };
+  state.profile.sensitiveConsent = true;
+  state.practices.push({ id: 'practice-done', date: '2026-10-16', taskId: 'touch-1', completed: true, note: '' });
+  state.analyses.push(analysis());
+  assert.equal(validateGrowthWorkspace(state).consents.training, false);
+  delete state.consents.training;
+  assert.equal(validateGrowthWorkspace(state).consents.training, false);
+  state.consents.training = 'true';
+  assert.throws(() => validateGrowthWorkspace(state), /AI 모델 학습 동의/);
+});
+
 function comparisonWorkspace() {
   const state = createGrowthWorkspace();
   state.videos = [video(), video({ id: SECOND_VIDEO, addedAt: '2026-10-23T08:00:00.000Z', context: { ...video().context, matchDate: '2026-10-23' } })];

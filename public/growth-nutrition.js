@@ -1,11 +1,198 @@
-// General food routines, not a clinical meal prescription or a calorie target.
+// General guidance: source-body checks do not constitute clinical menu review.
+export const nutritionContentVersion = "2026-10-16.2";
+export const nutritionReviewStatus = Object.freeze({"contentVersion": "2026-10-16.2", "sourceVerification": "partial", "scope": "11세 전후 유소년의 일반 식사·수분·수면 안내", "individualClinicalReview": "not_reviewed", "reviewer": null, "reviewedDate": null});
 export const nutritionSources = [
-  { id: 'myplate-kids', organization: 'USDA MyPlate', title: 'Healthy Eating for Kids', url: 'https://www.myplate.gov/life-stages/kids', supports: '다양한 식품군을 포함한 규칙적인 식사', verifiedDate: null, checkedDate: '2026-10-16', status: 'unverified' },
-  { id: 'cdc-sleep', organization: 'CDC', title: 'About Sleep', url: 'https://www.cdc.gov/sleep/about/index.html', supports: '연령에 맞는 충분한 수면과 일정한 수면 시간', verifiedDate: null, checkedDate: '2026-10-16', status: 'unverified' },
-  { id: 'aap-water', organization: 'AAP · HealthyChildren', title: 'Choose Water for Healthy Hydration', url: 'https://www.healthychildren.org/English/healthy-living/nutrition/Pages/Choose-Water-for-Healthy-Hydration.aspx', supports: '일상과 운동 중 규칙적인 수분 섭취', verifiedDate: null, checkedDate: '2026-10-16', status: 'unverified' },
-  { id: 'nih-calcium', organization: 'NIH · Office of Dietary Supplements', title: 'Calcium — Consumer', url: 'https://ods.od.nih.gov/factsheets/Calcium-Consumer/', supports: '성장기 칼슘 공급원에 대한 일반 정보', verifiedDate: null, checkedDate: '2026-10-16', status: 'unverified' },
-  { id: 'fda-allergy', organization: 'FDA', title: 'Food Allergies: What You Need to Know', url: 'https://www.fda.gov/food/food-labeling-nutrition/food-allergies-what-you-need-know', supports: '알레르기 표시와 교차 접촉 확인', verifiedDate: null, checkedDate: '2026-10-16', status: 'unverified' },
-].map(source => ({ ...source, verificationNote: '2026-10-16 직접 접속을 시도했으나 네트워크 프록시가 403으로 차단해 공식 본문과 최신 개정일은 확인하지 못했습니다.' }));
+  {
+    "id": "myplate-kids",
+    "organization": "USDA MyPlate",
+    "title": "Healthy Eating for Kids",
+    "url": "https://www.myplate.gov/life-stages/kids",
+    "supports": "다양한 식품군 안내의 추가 참고 후보",
+    "publishedDate": null,
+    "updatedDate": null,
+    "checkedDate": "2026-10-16",
+    "verifiedDate": null,
+    "status": "unverified",
+    "error": "proxy_tunnel_403",
+    "verificationNote": "2026-10-16 재요청에서도 네트워크 프록시가 403으로 연결을 거부해 공식 본문을 확인하지 못했습니다. 확인된 식품군 안내는 아래 AAP 자료를 사용합니다."
+  },
+  {
+    "id": "cdc-sleep",
+    "organization": "CDC",
+    "title": "About Sleep",
+    "url": "https://www.cdc.gov/sleep/about/index.html",
+    "supports": "6~12세의 하루 9~12시간 수면과 일정한 취침·기상",
+    "publishedDate": null,
+    "updatedDate": null,
+    "checkedDate": "2026-10-16",
+    "verifiedDate": "2026-10-16",
+    "status": "verified",
+    "httpStatus": 200,
+    "retrievedAt": "2026-10-16T15:30:13.871508+09:00",
+    "bodySha256": "fc86bbe162acc8b4619cd9643aad742a21559dd42ba0abda6923ce8625df98a1",
+    "claims": [
+      {
+        "id": "sleep-school-age",
+        "text": "6~12세 수면 권고는 하루 9~12시간입니다.",
+        "quote": "School age 6–12 years 9–12 hours"
+      },
+      {
+        "id": "sleep-consistency",
+        "text": "취침·기상 시간을 일정하게 유지합니다.",
+        "quote": "Going to bed and getting up at the same time every day."
+      }
+    ],
+    "verificationNote": "공식 본문을 직접 읽고 아래 제한된 주장과 일치하는 내용을 확인했습니다. 이 앱의 메뉴 전체나 개인별 처방에 대한 전문가 검수를 뜻하지 않습니다.",
+    "pageDate": "2024-05-15",
+    "pageDateLabel": "페이지 표시일"
+  },
+  {
+    "id": "aap-sleep",
+    "organization": "AAP · HealthyChildren",
+    "title": "Healthy Sleep Habits: How Many Hours Does Your Child Need?",
+    "url": "https://www.healthychildren.org/English/healthy-living/sleep/Pages/healthy-sleep-habits-how-many-hours-does-your-child-need.aspx",
+    "supports": "취침 최소 60분 전 화면 끄기",
+    "publishedDate": null,
+    "updatedDate": "2026-08-07",
+    "checkedDate": "2026-10-16",
+    "verifiedDate": "2026-10-16",
+    "status": "verified",
+    "httpStatus": 200,
+    "retrievedAt": "2026-10-16T15:31:16.495793+09:00",
+    "bodySha256": "4027064ef453743b44f5b18d4fdcc20e0cf4d302ed55c61deffb792d978ca734",
+    "claims": [
+      {
+        "id": "screen-winddown",
+        "text": "취침 최소 60분 전에 화면을 끕니다.",
+        "quote": "turn off all screens at least 60 minutes/1 hour before bedtime."
+      }
+    ],
+    "verificationNote": "공식 본문을 직접 읽고 아래 제한된 주장과 일치하는 내용을 확인했습니다. 이 앱의 메뉴 전체나 개인별 처방에 대한 전문가 검수를 뜻하지 않습니다."
+  },
+  {
+    "id": "aap-water",
+    "organization": "AAP · HealthyChildren",
+    "title": "Choose Water for Healthy Hydration",
+    "url": "https://www.healthychildren.org/English/healthy-living/nutrition/Pages/Choose-Water-for-Healthy-Hydration.aspx",
+    "supports": "식사와 간식에 물, 활동 전·중·후 수분 섭취 기회",
+    "publishedDate": null,
+    "updatedDate": "2024-07-26",
+    "checkedDate": "2026-10-16",
+    "verifiedDate": "2026-10-16",
+    "status": "verified",
+    "httpStatus": 200,
+    "retrievedAt": "2026-10-16T15:30:13.871508+09:00",
+    "bodySha256": "448534d2c8a5b44119ea52fc926f60f500df324ebefe4fc7e632cd90686f9dd8",
+    "claims": [
+      {
+        "id": "water-meals",
+        "text": "식사·간식 때 물을 제공하고 외출 때 물병을 준비합니다.",
+        "quote": "Serve water with meals and snacks, and take those extra few minutes to pack the water bottles"
+      },
+      {
+        "id": "water-activity",
+        "text": "운동 전·중·후 물을 마실 기회를 마련합니다.",
+        "quote": "drinks water before, during and after practices or games."
+      }
+    ],
+    "verificationNote": "공식 본문을 직접 읽고 아래 제한된 주장과 일치하는 내용을 확인했습니다. 이 앱의 메뉴 전체나 개인별 처방에 대한 전문가 검수를 뜻하지 않습니다.",
+    "limitation": "본문의 수분량 수치를 개인별 정량 처방으로 가져오지 않습니다."
+  },
+  {
+    "id": "aap-food-choices",
+    "organization": "AAP · HealthyChildren",
+    "title": "Healthy Food Choices for Your Family",
+    "url": "https://www.healthychildren.org/English/ages-stages/gradeschool/nutrition/Pages/Making-Healthy-Food-Choices.aspx",
+    "supports": "주식·단백질 식품·채소·과일·유제품 등 다양한 식품군",
+    "publishedDate": null,
+    "updatedDate": "2021-03-04",
+    "checkedDate": "2026-10-16",
+    "verifiedDate": "2026-10-16",
+    "status": "verified",
+    "httpStatus": 200,
+    "retrievedAt": "2026-10-16T15:32:04.410708+09:00",
+    "bodySha256": "19fc2b4f8355f06b32aa2e30441a93902d142dd97287488c4ea2251f857ff6c7",
+    "claims": [
+      {
+        "id": "food-variety",
+        "text": "여러 식품군의 음식을 다양하게 선택합니다.",
+        "quote": "Your child should consume a variety of foods from the five major food groups."
+      }
+    ],
+    "verificationNote": "공식 본문을 직접 읽고 아래 제한된 주장과 일치하는 내용을 확인했습니다. 이 앱의 메뉴 전체나 개인별 처방에 대한 전문가 검수를 뜻하지 않습니다.",
+    "limitation": "2021년 표시 문서입니다. 본문의 정량 제공 횟수·칼로리는 앱에 적용하지 않았으며 최신 영양 표준 전체를 검증한 뜻이 아닙니다."
+  },
+  {
+    "id": "aap-appetite",
+    "organization": "AAP · HealthyChildren",
+    "title": "Monitoring What Your Child Eats",
+    "url": "https://www.healthychildren.org/English/ages-stages/gradeschool/nutrition/Pages/Monitoring-What-Your-Child-Eats.aspx",
+    "supports": "보호자가 음식 선택을 돕고 아이의 먹는 양·식욕 차이를 존중하는 일반 원칙",
+    "publishedDate": null,
+    "updatedDate": "2009-11-03",
+    "checkedDate": "2026-10-16",
+    "verifiedDate": "2026-10-16",
+    "status": "verified",
+    "httpStatus": 200,
+    "retrievedAt": "2026-10-16T15:32:04.410708+09:00",
+    "bodySha256": "6f1fe588b8edc936f774ec85858a41ef3949d675ef12f39da95b2a44d83097f2",
+    "claims": [
+      {
+        "id": "appetite-respect",
+        "text": "아이마다 먹는 양이 달라 성인 분량을 일률적으로 요구하지 않습니다.",
+        "quote": "the child is in the best position to decide how much to eat."
+      }
+    ],
+    "verificationNote": "공식 본문을 직접 읽고 아래 제한된 주장과 일치하는 내용을 확인했습니다. 이 앱의 메뉴 전체나 개인별 처방에 대한 전문가 검수를 뜻하지 않습니다.",
+    "limitation": "개정 표시가 2009년인 오래된 자료입니다. 식욕 존중 원칙에만 참고하며 질환·성장 문제나 최신 개인 영양 처방의 근거로 사용하지 않습니다."
+  },
+  {
+    "id": "nih-calcium",
+    "organization": "NIH · Office of Dietary Supplements",
+    "title": "Calcium — Consumer",
+    "url": "https://ods.od.nih.gov/factsheets/Calcium-Consumer/",
+    "supports": "칼슘 공급원에 대한 추가 참고 후보",
+    "publishedDate": null,
+    "updatedDate": null,
+    "checkedDate": "2026-10-16",
+    "verifiedDate": null,
+    "status": "unverified",
+    "httpStatus": 403,
+    "error": "http_403",
+    "verificationNote": "2026-10-16 Consumer·Health Professional 공식 경로가 HTTP 403을 반환해 본문을 확인하지 못했습니다. 보충제·용량·개별 칼슘 처방의 근거로 사용하지 않습니다."
+  },
+  {
+    "id": "fda-allergy",
+    "organization": "FDA",
+    "title": "Food Allergies",
+    "url": "https://www.fda.gov/food/nutrition-food-labeling-and-critical-foods/food-allergies",
+    "supports": "성분 표시 확인과 제조 중 알레르겐 교차 접촉의 개념",
+    "publishedDate": null,
+    "updatedDate": null,
+    "checkedDate": "2026-10-16",
+    "verifiedDate": "2026-10-16",
+    "status": "verified",
+    "httpStatus": 200,
+    "retrievedAt": "2026-10-16T15:32:04.410708+09:00",
+    "bodySha256": "0d551641ab3999ad6afb7b349fa3a0ca308a301bc240bf819d6f4d07fd99bf6f",
+    "claims": [
+      {
+        "id": "allergen-labels",
+        "text": "포장 식품의 원재료·알레르기 표시를 확인합니다.",
+        "quote": "requiring companies to list ingredients on packaged foods and beverages."
+      },
+      {
+        "id": "allergen-cross-contact",
+        "text": "재료 제외만으로 알레르겐 교차 접촉을 배제할 수 없습니다.",
+        "quote": "allergen cross-contact (the inadvertent introduction of a major food allergen into a product)"
+      }
+    ],
+    "verificationNote": "공식 본문을 직접 읽고 아래 제한된 주장과 일치하는 내용을 확인했습니다. 이 앱의 메뉴 전체나 개인별 처방에 대한 전문가 검수를 뜻하지 않습니다.",
+    "pageDate": "2026-03-11",
+    "pageDateLabel": "Content current as of",
+    "limitation": "미국 FDA 안내입니다. 대한민국 표시법 준수나 개별 제품·조리 환경의 안전 인증을 뜻하지 않습니다."
+  }
+];
 
 const allergyRules = [
   ['milk', '우유', ['milk', 'dairy', '우유', '유제품']],
@@ -130,7 +317,7 @@ export function buildWeekMeals(profile = {}, { startDate } = {}) {
     '성장기 일반 식사 예시예요. 칼로리 제한·체중 감량·보충제·에너지 음료를 제안하지 않아요. 식사량은 배고픔·포만감과 기존 지침에 맞춰 조절해요.',
     '개별 의료·영양 처방이나 전문가가 검토한 맞춤 식단이 아니에요. 지속적인 피로, 성장·식사 문제, 만성질환이나 중증 알레르기는 적절한 전문가와 상의해요.',
     '포장 제품·양념·육수·학교 급식은 숨은 성분과 교차 접촉을 확인해요. 같은 제조시설·조리도구 정보까지 보호자가 확인하며, 앱이 알레르기 안전을 보장하지 않아요.',
-    '공식 자료의 최신 본문 확인은 완료되지 않았어요. 아래에서 출처별 확인 상태를 볼 수 있어요.',
+    '수면·수분·다양한 식품군·성분 표시 안내는 확인한 공식 본문에 연결했어요. 문서별 표시일과 확인 범위가 다르고, 미확인 자료도 있으니 아래 출처 상태를 함께 봐 주세요.',
   ];
   if (excludedLabels.length) notices.unshift(`입력한 ${excludedLabels.join('·')} 성분이 들어가는 기본 재료를 제외했어요. 대체 식품의 원재료·교차 접촉도 확인해야 해요.`);
   if (!dairy.length && !pref.requiresProfessional) notices.push('우유·유제품을 제외한 경우 칼슘 공급을 따로 살펴봐야 해요. 식물성 음료는 제품마다 영양 구성이 달라 같은 식품으로 간주하지 않으며, 안전한 공급원은 보호자·영양 전문가와 정해요.');
@@ -144,7 +331,7 @@ export function buildWeekMeals(profile = {}, { startDate } = {}) {
     hydration: {title: '물은 하루 동안, 훈련 중에도 규칙적으로', items: ['등교·식사·훈련 전후에 물을 마실 기회를 만들고 물병을 준비해요.', '더운 날과 활동량이 많은 날에는 자주 쉬며 수분 상태를 확인해요. 개인에게 정확한 mL를 일률적으로 처방하지 않아요.', '어지럼·심한 두통·구역감·비정상적인 무기력 등이 있으면 활동을 멈추고 보호자·의료진의 도움을 받아요.', '갈증을 참거나 한꺼번에 과하게 마시도록 강요하지 않아요.']},
     schoolLunchComplements: ['급식 메뉴는 앱이 자동으로 알 수 없어요. 학교가 제공하는 당일 식단과 알레르기 정보를 먼저 확인해요.', '단백질 식품·채소·과일 중 덜 먹은 식품군을 저녁이나 간식에서 편하게 보완해요.', '알레르기나 치료식이 있으면 학교 영양교사와 대체식·조리도구 분리 방식을 미리 정해요.'],
     convenienceEating: ['외식·편의점에서는 원재료·양념·육수·알레르기 표시와 교차 접촉을 확인할 수 있는 메뉴만 선택해요.', '확인이 어려운 조리식품은 안전하다고 추정하지 말고 집에서 준비한 확인된 음식과 물을 활용해요.', '가능한 한 주식과 단백질 식품을 함께 고르고, 과일·채소는 가능한 식사에서 이어가요. 브랜드나 특정 제품의 안전을 보장하지 않아요.'],
-    assumptions, notices, sources: nutritionSources.map(source => ({...source})), requiresProfessional: pref.requiresProfessional,
+    assumptions, notices, sources: nutritionSources.map(source => structuredClone(source)), contentVersion: nutritionContentVersion, reviewStatus: { ...nutritionReviewStatus }, requiresProfessional: pref.requiresProfessional,
     allergyLabels: excludedLabels, profileSummary: {age: Number.isInteger(age) ? age : null, schoolLunch: pref.schoolLunch, vegetarian: pref.vegetarian, vegan: pref.vegan},
   };
 }

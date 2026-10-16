@@ -4,11 +4,12 @@ Run with: python tests/growth-browser.py
 Requires installed Chromium, Playwright and FFmpeg. All data is temporary.
 Only one upload response is interrupted to exercise the UI's resumable retry.
 """
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
+import base64
 import json
 import os
 import socket
@@ -62,6 +63,193 @@ def register(page, email):
     form.locator('[name=guardianConsent]').check()
     form.locator('button[type=submit]').click()
     expect(page.locator('#profile-form')).to_be_visible()
+
+
+def install_legacy_fixture(page, movie):
+    """Create genuine v1 localStorage + IndexedDB data, including a missing blob."""
+    return page.evaluate('''async ({bytes, size}) => {
+      const {seedState, validateState} = await import('/domain.js');
+      const {saveOriginalVideo} = await import('/media-store.js');
+      const state = seedState();
+      state.player.name = '이전 브라우저 11번';
+      const localId = 'local-' + crypto.randomUUID(), missingId = 'local-' + crypto.randomUUID();
+      const addedAt = '2026-10-14T01:00:00.000Z';
+      const original = {id:localId,kind:'file',title:'이전 기록 · 실제 원본',fileName:'이전의 경기.mp4',size,mime:'video/mp4',duration:4,lastModified:1791939600000,start:0,source:'원본 파일',addedAt};
+      state.videos = [original,{...original,id:missingId,title:'이전 기록 · 원본 없음',fileName:'다른 경기.mp4'},state.videos[0]];
+      state.observations = [{id:'legacy-first-touch',videoId:localId,skill:'touch',time:1,rating:4,note:'이전 브라우저의 수동 관찰 · 아직 검증하지 않은 첫 터치',type:'strength',createdAt:addedAt},
+                            {id:'legacy-missing-pass',videoId:missingId,skill:'pass',time:2,rating:2,note:'원본이 없어도 보존할 이전 수동 메모',type:'focus',createdAt:addedAt}];
+      state.completed = ['week1-0-touch','habit-0'];
+      state.snapshots = [{id:'legacy-snapshot',createdAt:addedAt,observationCount:2,scores:[4,2,null,null,null,null,null,null]}];
+      validateState(state);
+      const decoded = Uint8Array.from(atob(bytes),c=>c.charCodeAt(0));
+      await saveOriginalVideo(localId,new File([decoded],original.fileName,{type:'video/mp4',lastModified:original.lastModified}));
+      localStorage.setItem('next-xi-standalone-v1',JSON.stringify(state));
+      return {localId,missingId,serialized:JSON.stringify(state)};
+    }''', {'bytes': base64.b64encode(movie.read_bytes()).decode(), 'size': movie.stat().st_size})
+
+
+def blocked_quota_ui(page, base):
+    """A clearly labeled read-only blocked-job fixture; no provider call is made."""
+    video = workspace(page)['videos'][-1]
+    now = datetime.now(timezone.utc)
+    stamp = now.isoformat().replace('+00:00', 'Z')
+    job = {'id': str(uuid4()), 'videoId': video['id'], 'status': 'blocked', 'stage': 'quota',
+           'createdAt': stamp, 'updatedAt': stamp, 'target': video['target'], 'context': video['context'],
+           'progress': {'message': '테스트 자료 · 결제 한도 확인 대기'}, 'attempt': 1,
+           'retryAt': (now + timedelta(minutes=30)).isoformat().replace('+00:00', 'Z'),
+           'error': {'code': 'analysis_quota_exceeded', 'message': '테스트 요청은 보관되며 다음 확인 시각 이후 자동으로 이어집니다.'}}
+
+    def blocked_jobs(route):
+        if route.request.method == 'GET':
+            route.fulfill(status=200, content_type='application/json', body=json.dumps({'jobs': [job]}))
+        else:
+            route.continue_()
+
+    page.route('**/api/v2/jobs', blocked_jobs)
+    page.goto(base + '/#videos')
+    page.reload(wait_until='networkidle')
+    card = page.locator('.video-card').filter(has_text=video['title'])
+    expect(card).to_contain_text('서비스 복구 대기')
+    expect(card).to_contain_text('서비스가 복구되면 자동으로')
+    expect(card.locator('[data-action=job-status]')).to_be_enabled()
+    expect(card.locator('[data-action=analyze]')).to_have_count(0)
+    card.locator('[data-action=job-status]').click()
+    expect(page.locator('[role=dialog] [data-action=cancel-job]')).to_be_enabled()
+    expect(page.locator('[role=dialog] input')).to_have_count(0)
+    expect(page.get_by_role('dialog')).to_contain_text('자동')
+    expect(page.get_by_role('dialog')).to_contain_text('다음 연결 확인')
+    no_overflow(page, 'blocked analysis status')
+    page.screenshot(path=str(ARTIFACTS / 'growth-quota-fixture-mobile.png'))
+    page.get_by_role('button', name='닫기', exact=True).click()
+    page.unroute('**/api/v2/jobs', blocked_jobs)
+    page.reload(wait_until='networkidle')
+
+
+def migrate_legacy_ui(page, movie, base):
+    legacy = install_legacy_fixture(page, movie)
+    initial = workspace(page)
+    chooser_events, chunk_requests = [], []
+    on_chooser = lambda chooser: chooser_events.append(chooser)
+    on_request = lambda request: chunk_requests.append(request.url) if request.method == 'PUT' and '/api/v2/uploads/' in request.url else None
+    page.on('filechooser', on_chooser)
+    page.on('request', on_request)
+    mapping_failure = {'injected': False}
+
+    def interrupt_first_mapping(route):
+        if route.request.method == 'POST':
+            payload = route.request.post_data_json
+            mappings = payload.get('videoMap', [])
+            if mappings and not mapping_failure['injected']:
+                mapping_failure['injected'] = True
+                route.fulfill(status=503, content_type='application/json', body=json.dumps({'error': '테스트: 원본 저장 뒤 기록 연결 일시 중단'}))
+                return
+        route.continue_()
+
+    page.route('**/api/v2/imports', interrupt_first_mapping)
+    page.goto(base + '/#videos')
+    page.reload(wait_until='networkidle')
+    expect(page.locator('.legacy-banner')).to_contain_text('이 기기의 이전 기록을 찾았어요')
+    page.locator('[data-action=legacy-open]').click()
+    form = page.locator('#legacy-import-form')
+    expect(form.locator('[name=legacyVideo]')).to_have_count(2)
+    form.locator('[name=importConsent]').check()
+    form.locator('[name=rightsConsent]').check()
+    expect(form.locator('[name=analysisConsent]')).not_to_be_checked()
+    form.locator('button[type=submit]').click()
+    expect(page.locator('#modal-title')).to_have_text('이전 기록을 보관했어요', timeout=20000)
+    expect(page.get_by_role('dialog')).to_contain_text('원본 저장 뒤 기록 연결 일시 중단')
+    assert mapping_failure['injected'], 'the test must fail a mapping request after successful original completion'
+    assert len(workspace(page)['videos']) == len(initial['videos']) + 1
+    first_records = page.request.get('/api/v2/imports').json()['imports']
+    assert len(first_records) == 1 and first_records[0]['mappedVideos'] == 0
+    chunks_after_completion = len(chunk_requests)
+    assert chunks_after_completion >= 1
+    page.get_by_role('button', name='닫기', exact=True).click()
+
+    # Completion succeeded but its archive mapping failed. After a reload the
+    # original must be reused rather than uploaded or added to the account again.
+    page.reload(wait_until='networkidle')
+    page.locator('[data-action=legacy-open]').click()
+    form = page.locator('#legacy-import-form')
+    form.locator('[name=importConsent]').check()
+    form.locator('[name=rightsConsent]').check()
+    form.locator('button[type=submit]').click()
+    expect(page.locator('#modal-title')).to_have_text('이전 기록을 보관했어요', timeout=20000)
+    assert len(chunk_requests) == chunks_after_completion, 'mapping recovery must not retransmit a completed original'
+    assert len(workspace(page)['videos']) == len(initial['videos']) + 1, 'mapping recovery must not create a duplicate video'
+    expect(page.get_by_role('dialog')).to_contain_text('원본 1개 추가')
+    expect(page.get_by_role('dialog')).to_contain_text('분석 신청 0개')
+    expect(page.get_by_role('dialog')).to_contain_text('이전 기록 · 원본 없음')
+    expect(page.get_by_role('dialog')).to_contain_text('이 기기에 이전 원본이 없습니다')
+    assert not chooser_events, 'legacy file must transfer directly from IndexedDB without a file picker'
+    records = page.request.get('/api/v2/imports').json()['imports']
+    assert len(records) == 1
+    record = records[0]
+    assert record['source'] == 'legacy_browser_unverified'
+    assert record['mappedVideos'] == 1
+    assert record['counts']['videos'] == 3 and record['counts']['observations'] == 2
+    assert record['counts']['completed'] == 2 and record['counts']['snapshots'] == 1
+    detail = page.request.get('/api/v2/imports/' + record['id']).json()['import']
+    assert detail['idMap'][0]['oldId'] == legacy['localId']
+    assert detail['archive']['observations'][0]['rating'] == 4
+    assert any(item['id'] == legacy['missingId'] for item in detail['archive']['videos'])
+    mapped_id = detail['idMap'][0]['newId']
+    current = workspace(page)
+    assert len(current['videos']) == len(initial['videos']) + 1
+    migrated_video = next(item for item in current['videos'] if item['id'] == mapped_id)
+    assert migrated_video['target'] == {'kit': 'navy', 'number': 11, 'age': 11}, 'old target must not become the current teal 17 player'
+    assert current['profile']['kit'] == 'teal' and current['profile']['number'] == 17
+    assert current['observations'] == initial['observations'] and current['analyses'] == initial['analyses'], 'archived scores must not become validated active scores or AI'
+    assert page.request.get('/api/v2/media/' + mapped_id).body() == movie.read_bytes()
+    assert page.evaluate('localStorage.getItem("next-xi-standalone-v1")') == legacy['serialized']
+    assert page.evaluate('''async id => {const {getOriginalVideo}=await import('/media-store.js');return (await getOriginalVideo(id))?.size}''', legacy['localId']) == movie.stat().st_size
+
+    page.locator('[data-action=legacy-view]').click()
+    expect(page.get_by_role('dialog')).to_contain_text('이전 기기에서 가져온 기록입니다')
+    expect(page.get_by_role('dialog')).not_to_contain_text('legacy_browser_unverified')
+    expect(page.get_by_role('dialog')).to_contain_text('서버 검증 안 됨')
+    expect(page.get_by_role('dialog')).to_contain_text('원본을 아직 가져오지 않았어요')
+    expect(page.get_by_role('dialog')).to_contain_text('원본이 없어도 보존할 이전 수동 메모')
+    expect(page.get_by_role('dialog')).to_contain_text('과거 입력 점수 4/5')
+    page.locator('[role=dialog] [data-action=evidence]').first.click()
+    player = page.locator('#evidence-video')
+    wait_video(player, '(v) => v.readyState >= 2')
+    assert mapped_id in player.get_attribute('src')
+    player.evaluate('(v) => v.pause()')
+    page.get_by_role('button', name='닫기', exact=True).click()
+    expect(page.locator('#modal-title')).to_have_text('이전 성장 기록')
+    no_overflow(page, 'legacy archive mobile')
+    page.screenshot(path=str(ARTIFACTS / 'growth-migration-mobile.png'))
+    page.get_by_role('button', name='닫기', exact=True).click()
+
+    # A second explicit import must skip the transferred file and deduplicate its archive.
+    page.reload(wait_until='networkidle')
+    previous_chunks = len(chunk_requests)
+    page.locator('[data-action=legacy-open]').click()
+    form = page.locator('#legacy-import-form')
+    form.locator('[name=importConsent]').check()
+    form.locator('[name=rightsConsent]').check()
+    form.locator('button[type=submit]').click()
+    expect(page.locator('#modal-title')).to_have_text('이전 기록을 보관했어요', timeout=20000)
+    expect(page.get_by_role('dialog')).to_contain_text('원본 0개 추가')
+    assert len(chunk_requests) == previous_chunks
+    assert len(page.request.get('/api/v2/imports').json()['imports']) == 1
+    assert len(workspace(page)['videos']) == len(current['videos'])
+    page.get_by_role('button', name='닫기', exact=True).click()
+
+    # Corruption is surfaced without clearing local originals or the server archive.
+    broken = '{broken legacy JSON'
+    page.evaluate('(raw) => localStorage.setItem("next-xi-standalone-v1",raw)', broken)
+    page.reload(wait_until='networkidle')
+    page.get_by_text('이전 기기 기록 읽기 안내', exact=True).click()
+    expect(page.locator('#main')).to_contain_text('이전 기록이 손상됐거나')
+    assert page.evaluate('localStorage.getItem("next-xi-standalone-v1")') == broken
+    assert len(page.request.get('/api/v2/imports').json()['imports']) == 1
+    page.evaluate('(raw) => localStorage.setItem("next-xi-standalone-v1",raw)', legacy['serialized'])
+    page.remove_listener('filechooser', on_chooser)
+    page.remove_listener('request', on_request)
+    page.unroute('**/api/v2/imports', interrupt_first_mapping)
+    return {'archiveId': record['id'], 'mappedId': mapped_id, **legacy}
 
 
 def populated_report(page, movie, base):
@@ -260,6 +448,10 @@ with TemporaryDirectory(prefix='next-xi-growth-browser-') as temporary:
                 assert meals.count() == 28
                 menu_names = meals.locator('h3').all_text_contents()
                 assert not any(any(allergen in title for allergen in ['우유', '달걀', '요거트', '땅콩']) for title in menu_names)
+                page.get_by_text('참고 자료와 검토 상태', exact=True).click()
+                expect(page.locator('[role=dialog] small').filter(has_text='본문 확인 2026-10-16')).to_have_count(6)
+                expect(page.locator('[role=dialog] small').filter(has_text='최신 본문 미확인')).to_have_count(2)
+                expect(page.get_by_role('dialog')).to_contain_text('개별 검토를 받지 않았습니다')
                 no_overflow(page, '7-day food guide')
                 page.get_by_role('button', name='닫기', exact=True).click()
 
@@ -383,6 +575,8 @@ with TemporaryDirectory(prefix='next-xi-growth-browser-') as temporary:
                 page.screenshot(path=str(ARTIFACTS / 'growth-mobile.png'))
 
                 populated_report(page, movie, base)
+                blocked_quota_ui(page, base)
+                legacy = migrate_legacy_ui(page, movie, base)
 
                 other = browser.new_context(base_url=base, viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True)
                 other_page = other.new_page()
@@ -392,11 +586,21 @@ with TemporaryDirectory(prefix='next-xi-growth-browser-') as temporary:
                 other_page.get_by_role('button', name='닫기', exact=True).click()
                 assert workspace(other_page)['videos'] == []
                 assert other_page.request.get('/api/v2/media/' + video['id']).status == 404
+                assert other_page.request.get('/api/v2/imports').json()['imports'] == []
+                assert other_page.request.get('/api/v2/imports/' + legacy['archiveId']).status == 404
                 other.close()
+                navigate(page, 'videos')
+                page.reload(wait_until='networkidle')
+                page.locator('[data-action=delete-video][data-id="' + legacy['mappedId'] + '"]').click()
+                page.locator('[data-action=confirm-delete-video]').click()
+                expect(page.get_by_role('dialog')).to_have_count(0)
+                assert page.request.get('/api/v2/media/' + legacy['mappedId']).status == 404
+                assert page.request.get('/api/v2/imports').json()['imports'] == []
+                assert page.evaluate('localStorage.getItem("next-xi-standalone-v1")') == legacy['serialized']
                 assert not errors, errors
                 context.close()
                 browser.close()
-                print('PASS: real guardian accounts, edited profile, 320/390 mobile routes, food exclusions, real MP4 upload with transient retry, byte-identical private storage/playback, credential-unavailable honesty, reconnect/reload, calendar/practice/pain recovery, routine, export, logout/login and account isolation; labeled mock-analysis report comparison/history/transfer, both real private-media seeks and nested modal state restoration; no browser errors. AI accuracy was not tested.')
+                print('PASS: real guardian accounts, 320/390 mobile routes, food exclusions with 6 verified/2 unverified source labels, real MP4 upload/retry/private bytes/playback, missing-credential honesty, reconnect/calendar/practice/pain/routine/export/login/account isolation; labeled mock-analysis comparison/history/transfer and nested modal restoration; blocked quota waiting/cancel UI; actual IndexedDB migration without picker, old player identity, missing blob archive, manual-score separation, deduplication, corruption preservation, archive privacy and linked deletion cleanup. No browser errors. AI accuracy was not tested.')
         finally:
             server.terminate()
             try:

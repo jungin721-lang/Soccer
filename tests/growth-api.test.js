@@ -6,6 +6,8 @@ import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { createLocalStore, createNetlifyStore } from '../lib/growth/store.js';
 import { createGrowthAPI } from '../lib/growth/api.js';
+import { seedState } from '../public/domain.js';
+import { blockProviderQuota } from '../lib/growth/provider.js';
 
 const hash = value => createHash('sha256').update(value).digest('hex');
 const PASSWORD = 'long-private-password-123';
@@ -294,4 +296,204 @@ test('original upload requires explicit rights consent and keeps its timestamp/v
   const completed = await api(req(`/uploads/${upload.id}/complete`, { method: 'POST', cookie: account.cookie })); assert.equal(completed.status, 200); const publicData = await completed.json();
   assert.equal(Object.hasOwn(publicData.video, 'rightsConsentAt'), false); assert.equal(Object.hasOwn(publicData.video, 'rightsConsentVersion'), false); assert.equal(JSON.stringify(publicData.workspace).includes('rightsConsent'), false);
   const privateVideo = await store.get(`videos/${upload.videoId}`); assert.equal(privateVideo.rightsConsentAt, saved.rightsConsentAt); assert.equal(privateVideo.rightsConsentVersion, saved.rightsConsentVersion);
+});
+
+function legacyArchive() {
+  const archive = seedState(); const id = `local-${randomUUID()}`; const stamp = '2026-10-16T00:00:00.000Z';
+  archive.player.name = '이전 선수';
+  archive.videos.push({ id, kind: 'file', title: '이전 경기 원본', fileName: 'old.mp4', size: 17, mime: 'video/mp4', duration: 20, lastModified: 0, start: 0, source: '원본 파일', addedAt: stamp });
+  archive.observations.push({ id: 'legacy-observation', videoId: id, skill: 'touch', time: 4, rating: 3, note: '이전 브라우저의 직접 관찰 기록', type: 'note', createdAt: stamp });
+  archive.completed = ['habit-0'];
+  archive.snapshots = [{ id: 'legacy-snapshot', createdAt: stamp, observationCount: 1, scores: [3, null, null, null, null, null, null, null] }];
+  archive.analyses.push({ id: 'legacy-analysis', videoId: id, createdAt: stamp, start: 0, end: 12, model: 'previous-model', result: { identified: true, summary: '이전 브라우저의 AI 관찰', observations: [{ skill: 'move', time: 5, note: '패스 지원 위치에서 보인 장면', type: 'note', confidence: 'medium' }], limitations: ['이전 기록이며 서버에서 검증하지 않았습니다.'], nextAction: '다음 경기의 실제 장면을 다시 확인합니다.' } });
+  return archive;
+}
+
+test('legacy import requires consent and valid old data without changing the trusted growth workspace', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const archive = legacyArchive();
+  assert.equal((await api(req('/imports'))).status, 401);
+  for (const importConsent of [undefined, false, 'true']) { const response = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, importConsent } })); assert.equal(response.status, 400); assert.equal((await response.json()).code, 'import_consent_required'); }
+  const invalid = structuredClone(archive); invalid.player.number = 7;
+  const rejected = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive: invalid, importConsent: true } })); assert.equal(rejected.status, 400); assert.equal((await rejected.json()).code, 'invalid_legacy_archive');
+  assert.deepEqual(await store.list('imports/'), []);
+  const current = await (await api(req('/workspace', { cookie: account.cookie }))).json(); assert.deepEqual(current.analyses, []); assert.deepEqual(current.observations, []); assert.equal(current.profile.name, '');
+});
+
+test('legacy archive strips unknown secret fields, preserves separate records and marks every response unverified', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const archive = legacyArchive();
+  archive.apiKey = 'TOP_SECRET_DO_NOT_STORE'; archive.accessCode = 'TOP_SECRET_DO_NOT_STORE'; archive.player.apiKey = 'TOP_SECRET_DO_NOT_STORE'; archive.player.password = 'TOP_SECRET_DO_NOT_STORE'; archive.videos[1].blob = 'TOP_SECRET_DO_NOT_STORE'; archive.observations[0].rawFrames = 'TOP_SECRET_DO_NOT_STORE';
+  const response = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, importConsent: true, source: 'server_verified', title: '이전 기록 보관' } })); assert.equal(response.status, 201); const metadata = (await response.json()).import;
+  assert.equal(metadata.source, 'legacy_browser_unverified'); assert.match(metadata.label, /서버 검증 안 됨/); assert.equal(metadata.counts.observations, 1); assert.equal(metadata.counts.analyses, 1); assert.equal(metadata.counts.snapshots, 1); assert.equal(metadata.counts.completed, 1); assert.equal(metadata.mappedVideos, 0); assert.equal(Object.hasOwn(metadata, 'archive'), false); assert.equal(Object.hasOwn(metadata, 'contentHash'), false);
+  const detail = (await (await api(req(`/imports/${metadata.id}`, { cookie: account.cookie }))).json()).import;
+  assert.equal(detail.archive.observations[0].rating, 3); assert.equal(detail.archive.analyses[0].model, 'previous-model'); assert.equal(detail.source, 'legacy_browser_unverified'); assert.equal(JSON.stringify(detail).includes('TOP_SECRET_DO_NOT_STORE'), false);
+  const privateRecord = await store.get(`imports/${metadata.id}`); assert.ok(Number.isFinite(Date.parse(privateRecord.importConsentAt))); assert.equal(privateRecord.importConsentVersion, '2026-10-growth-v2-legacy-archive'); assert.equal(JSON.stringify(privateRecord).includes('TOP_SECRET_DO_NOT_STORE'), false);
+  const workspace = await (await api(req('/workspace', { cookie: account.cookie }))).json(); assert.deepEqual(workspace.videos, []); assert.deepEqual(workspace.observations, []); assert.deepEqual(workspace.analyses, []);
+});
+
+test('legacy archives remain owner-private and mapping requires registered old and owned completed new video IDs', async t => {
+  const { api } = await fixture(t); const first = await register(api); const other = await register(api, 'archive-other@example.com'); const mine = await upload(api, first.cookie); const theirs = await upload(api, other.cookie); const archive = legacyArchive(); const oldId = archive.videos[1].id;
+  for (const map of [[{ oldId, newId: theirs.video.id }], [{ oldId, newId: randomUUID() }], [{ oldId: 'unknown-old-video', newId: mine.video.id }], [{ oldId, newId: mine.video.id }, { oldId, newId: mine.video.id }]]) { const response = await api(req('/imports', { method: 'POST', cookie: first.cookie, body: { archive, videoMap: map, importConsent: true } })); assert.ok([400, 404].includes(response.status)); }
+  const response = await api(req('/imports', { method: 'POST', cookie: first.cookie, body: { archive, videoMap: [{ oldId, newId: mine.video.id }], importConsent: true } })); assert.equal(response.status, 201); const saved = (await response.json()).import; assert.equal(saved.mappedVideos, 1);
+  const detail = (await (await api(req(`/imports/${saved.id}`, { cookie: first.cookie }))).json()).import; assert.deepEqual(detail.idMap, [{ oldId, newId: mine.video.id }]);
+  assert.deepEqual((await (await api(req('/imports', { cookie: other.cookie }))).json()).imports, []); assert.equal((await api(req(`/imports/${saved.id}`, { cookie: other.cookie }))).status, 404); assert.equal((await api(req(`/imports/${saved.id}`, { method: 'DELETE', cookie: other.cookie }))).status, 404);
+});
+
+test('legacy import is idempotent under concurrent duplicate requests and sanitizes before hashing', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const archive = legacyArchive();
+  const results = await Promise.all(Array.from({ length: 4 }, () => api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, idMap: [], importConsent: true } }))));
+  assert.equal(results.filter(response => response.status === 201).length, 1); assert.equal(results.filter(response => response.status === 200).length, 3);
+  const ids = await Promise.all(results.map(async response => (await response.json()).import.id)); assert.equal(new Set(ids).size, 1); assert.equal((await store.list('imports/')).length, 1);
+  const extra = structuredClone(archive); extra.apiKey = 'stripped'; extra.player.sessionToken = 'stripped';
+  const repeated = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive: extra, importConsent: true, title: '다른 제목은 중복을 만들지 않음' } })); assert.equal(repeated.status, 200); assert.equal((await repeated.json()).import.id, ids[0]);
+});
+
+test('legacy import archive limit is atomic, duplicates remain readable and deleting releases its slot', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const archives = Array.from({ length: 12 }, (_, index) => { const archive = legacyArchive(); archive.player.name = `이전 선수 ${index}`; return archive; });
+  const results = await Promise.all(archives.map(archive => api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, importConsent: true } })))); assert.equal(results.filter(response => response.status === 201).length, 10); assert.equal(results.filter(response => response.status === 409).length, 2); assert.equal((await store.list('imports/')).length, 10);
+  const firstIndex = results.findIndex(response => response.status === 201); const first = (await results[firstIndex].json()).import;
+  const duplicate = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive: archives[firstIndex], importConsent: true } })); assert.equal(duplicate.status, 200);
+  assert.equal((await api(req(`/imports/${first.id}`, { method: 'DELETE', cookie: account.cookie }))).status, 200); assert.equal((await api(req(`/imports/${first.id}`, { cookie: account.cookie }))).status, 404);
+  const replacement = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive: archives[11], importConsent: true } })); assert.equal(replacement.status, 201); assert.equal((await store.list('imports/')).length, 10);
+});
+
+test('deleting a mapped original deletes its entire linked legacy archive and account deletion erases unmapped archives', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const video = (await upload(api, account.cookie)).video; const archive = legacyArchive();
+  const linked = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, videoMap: [{ oldId: archive.videos[1].id, newId: video.id }], importConsent: true } })); const linkedId = (await linked.json()).import.id;
+  const separate = legacyArchive(); separate.player.name = '연결하지 않은 기록'; const unlinked = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive: separate, importConsent: true } })); const unlinkedId = (await unlinked.json()).import.id;
+  assert.equal((await api(req(`/videos/${video.id}`, { method: 'DELETE', cookie: account.cookie }))).status, 200); assert.equal(await store.get(`imports/${linkedId}`), null); assert.ok(await store.get(`imports/${unlinkedId}`));
+  assert.equal((await api(req('/auth/account', { method: 'DELETE', cookie: account.cookie, body: { password: PASSWORD } }))).status, 200); assert.deepEqual(await store.list('imports/'), []); assert.equal(await store.get(`import-quotas/${account.user.id}`), null);
+});
+
+test('oversized legacy import bodies are rejected before storage even if their extra fields would be stripped', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const archive = legacyArchive(); archive.unknown = 'x'.repeat(2_000_001);
+  const response = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, importConsent: true } })); assert.equal(response.status, 413); assert.deepEqual(await store.list('imports/'), []);
+});
+
+test('backup-first legacy migration progressively merges video mappings into one immutable archive and rejects duplicate final targets', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const archive = legacyArchive();
+  archive.videos.push({ ...archive.videos[1], id: `local-${randomUUID()}`, title: '두 번째 이전 원본' });
+  const oldFirst = archive.videos[1].id; const oldSecond = archive.videos[2].id;
+  const first = (await upload(api, account.cookie)).video; const second = (await upload(api, account.cookie)).video; const replacement = (await upload(api, account.cookie)).video;
+  const post = videoMap => api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, videoMap, importConsent: true } }));
+  const backup = await post([]); assert.equal(backup.status, 201); const initial = (await backup.json()).import; assert.equal(initial.mappedVideos, 0);
+  const one = await post([{ oldId: oldFirst, newId: first.id }]); assert.equal(one.status, 200); const firstMapping = (await one.json()).import; assert.equal(firstMapping.id, initial.id); assert.equal(firstMapping.mappedVideos, 1);
+  const two = await post([{ oldId: oldSecond, newId: second.id }]); assert.equal(two.status, 200); const secondMapping = (await two.json()).import; assert.equal(secondMapping.id, initial.id); assert.equal(secondMapping.mappedVideos, 2);
+  const privateBefore = await store.get(`imports/${initial.id}`);
+  const remapped = await post([{ oldId: oldFirst, newId: replacement.id }]); assert.equal(remapped.status, 200); assert.equal((await remapped.json()).import.id, initial.id);
+  const privateAfter = await store.get(`imports/${initial.id}`); assert.equal(privateAfter.idMap.find(mapping => mapping.oldId === oldFirst).newId, replacement.id); assert.deepEqual(privateAfter.archive, privateBefore.archive); assert.equal(privateAfter.importConsentAt, privateBefore.importConsentAt); assert.equal(privateAfter.source, 'legacy_browser_unverified');
+  const duplicateTarget = await post([{ oldId: oldSecond, newId: replacement.id }]); assert.equal(duplicateTarget.status, 400); assert.equal((await duplicateTarget.json()).code, 'invalid_import_mapping');
+  const detail = (await (await api(req(`/imports/${initial.id}`, { cookie: account.cookie }))).json()).import; assert.equal(detail.idMap.length, 2); assert.equal(detail.idMap.find(mapping => mapping.oldId === oldSecond).newId, second.id); assert.equal((await store.list('imports/')).length, 1);
+});
+
+test('concurrent partial legacy mapping checkpoints merge without dropping a previously saved mapping', async t => {
+  const { api } = await fixture(t); const account = await register(api); const archive = legacyArchive(); archive.videos.push({ ...archive.videos[1], id: `local-${randomUUID()}` });
+  const first = (await upload(api, account.cookie)).video; const second = (await upload(api, account.cookie)).video;
+  const initial = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, importConsent: true } })); const id = (await initial.json()).import.id;
+  const responses = await Promise.all([[archive.videos[1].id, first.id], [archive.videos[2].id, second.id]].map(([oldId, newId]) => api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, idMap: [{ oldId, newId }], importConsent: true } }))));
+  assert.deepEqual(responses.map(response => response.status), [200, 200]);
+  const stored = (await (await api(req(`/imports/${id}`, { cookie: account.cookie }))).json()).import; assert.equal(stored.idMap.length, 2); assert.equal(new Set(stored.idMap.map(mapping => mapping.newId)).size, 2);
+});
+
+test('provider quota readiness stays distinct from configuration and never exposes private probe credentials', async t => {
+  const { api, store } = await fixture(t);
+  const unknown = await (await api(req('/status'))).json(); assert.equal(unknown.available, true); assert.equal(unknown.configured, true); assert.equal(unknown.liveVerified, false);
+  const blocked = await blockProviderQuota(store);
+  await store.update('providers/openai', current => ({ ...current, probeLease: { owner: 'private-probe-job', token: 'PRIVATE_PROBE_TOKEN', until: new Date(Date.now() + 120000).toISOString() } }));
+  const response = await api(req('/status')); assert.equal(response.status, 200); const status = await response.json(); assert.equal(status.available, false); assert.equal(status.reason, 'provider_quota'); assert.equal(status.configured, true); assert.equal(status.liveVerified, false); assert.equal(status.retryAt, blocked.retryAt); assert.equal(status.checkedAt, blocked.checkedAt);
+  const text = JSON.stringify(status); assert.equal(text.includes('PRIVATE_PROBE_TOKEN'), false); assert.equal(text.includes('private-probe-job'), false); assert.equal(Object.hasOwn(status, 'probeLease'), false); assert.equal(Object.hasOwn(status, 'version'), false);
+});
+
+test('quota-blocked provider admits and deduplicates consented durable jobs without dispatch or fabricated analysis', async t => {
+  const { api, store, dispatched } = await fixture(t); const account = await register(api); const video = (await upload(api, account.cookie)).video; const provider = await blockProviderQuota(store);
+  const response = await api(req('/jobs', { method: 'POST', cookie: account.cookie, body: { videoId: video.id, analysisConsent: true } })); assert.equal(response.status, 202); const job = (await response.json()).job; assert.equal(job.status, 'blocked'); assert.equal(job.stage, 'quota'); assert.equal(job.retryAt, provider.retryAt); assert.equal(job.error.code, 'analysis_quota_exceeded'); assert.equal(dispatched.length, 0); assert.equal(Object.hasOwn(job, 'tokenHash'), false); assert.equal(Object.hasOwn(job, 'probeToken'), false);
+  const duplicate = await api(req('/jobs', { method: 'POST', cookie: account.cookie, body: { videoId: video.id, analysisConsent: true } })); assert.equal(duplicate.status, 200); assert.equal((await duplicate.json()).job.id, job.id); assert.equal((await store.list('jobs/')).length, 1); assert.equal(dispatched.length, 0);
+  const jobs = (await (await api(req('/jobs', { cookie: account.cookie }))).json()).jobs; assert.equal(jobs[0].retryAt, provider.retryAt);
+  const workspace = await (await api(req('/workspace', { cookie: account.cookie }))).json(); assert.equal(workspace.consents.analysis, true); assert.deepEqual(workspace.analyses, []);
+});
+
+test('manual retry cannot bypass quota cooldown or treat elapsed time as provider recovery', async t => {
+  const { api, store, dispatched } = await fixture(t); const account = await register(api); const video = (await upload(api, account.cookie)).video; await blockProviderQuota(store);
+  const response = await api(req('/jobs', { method: 'POST', cookie: account.cookie, body: { videoId: video.id, analysisConsent: true } })); const job = (await response.json()).job;
+  for (const expired of [false, true]) {
+    if (expired) await store.update('providers/openai', current => ({ ...current, retryAt: new Date(Date.now() - 1000).toISOString() }));
+    const retry = await api(req(`/jobs/${job.id}/retry`, { method: 'POST', cookie: account.cookie })); assert.equal(retry.status, 409); assert.equal((await retry.json()).code, 'automatic_retry_pending'); assert.equal(dispatched.length, 0); assert.equal((await store.get(`jobs/${job.id}`)).attempt, 1);
+  }
+  // Mock an actual successful provider probe's persisted state; time alone above did not clear it.
+  await store.set('providers/openai', { status: 'ready', retryAt: null, checkedAt: new Date().toISOString(), probeLease: null, version: 1 });
+  const ready = await (await api(req('/status'))).json(); assert.equal(ready.available, true); assert.equal(ready.liveVerified, true);
+  const retried = await api(req(`/jobs/${job.id}/retry`, { method: 'POST', cookie: account.cookie })); assert.equal(retried.status, 202); const resumed = (await retried.json()).job; assert.equal(resumed.id, job.id); assert.equal(resumed.status, 'queued'); assert.equal(resumed.retryAt, null); assert.equal(dispatched.length, 1);
+});
+
+test('blocked jobs consume active capacity and cancellation or consent withdrawal stops their scheduled retry', async t => {
+  const { api, store, dispatched } = await fixture(t); const account = await register(api); await blockProviderQuota(store); const videos = []; for (let index = 0; index < 3; index++) videos.push((await upload(api, account.cookie)).video);
+  const queued = []; for (const video of videos.slice(0, 2)) queued.push((await (await api(req('/jobs', { method: 'POST', cookie: account.cookie, body: { videoId: video.id, analysisConsent: true } }))).json()).job);
+  const limited = await api(req('/jobs', { method: 'POST', cookie: account.cookie, body: { videoId: videos[2].id, analysisConsent: true } })); assert.equal(limited.status, 429); assert.equal((await limited.json()).code, 'active_job_limit');
+  const cancel = await api(req(`/jobs/${queued[0].id}/cancel`, { method: 'POST', cookie: account.cookie })); assert.equal(cancel.status, 200); const cancelled = (await cancel.json()).job; assert.equal(cancelled.status, 'cancelled'); assert.equal(cancelled.retryAt, null);
+  const third = await api(req('/jobs', { method: 'POST', cookie: account.cookie, body: { videoId: videos[2].id, analysisConsent: true } })); assert.equal(third.status, 202); assert.equal((await third.json()).job.status, 'blocked');
+  const workspace = await (await api(req('/workspace', { cookie: account.cookie }))).json(); const withdraw = await api(req('/workspace', { method: 'PUT', cookie: account.cookie, body: { ...workspace, consents: { ...workspace.consents, analysis: false } } })); assert.equal(withdraw.status, 200);
+  for (const key of await store.list('jobs/')) { const job = await store.get(key); assert.equal(job.status, 'cancelled'); assert.equal(job.cancelRequested, true); assert.equal(job.retryAt, null); }
+  assert.equal(dispatched.length, 0);
+});
+
+test('missing server credentials never turn into a quota waiting job and account deletion preserves shared provider protection', async t => {
+  const first = await fixture(t, { availability: async () => ({ available: false, reason: 'missing_credentials' }) }); const account = await register(first.api); const video = (await upload(first.api, account.cookie)).video; await blockProviderQuota(first.store);
+  const status = await (await first.api(req('/status'))).json(); assert.equal(status.available, false); assert.equal(status.reason, 'missing_credentials');
+  const rejected = await first.api(req('/jobs', { method: 'POST', cookie: account.cookie, body: { videoId: video.id, analysisConsent: true } })); assert.equal(rejected.status, 503); assert.equal((await rejected.json()).code, 'analysis_unavailable'); assert.deepEqual(await first.store.list('jobs/'), []);
+  const second = await fixture(t); const secondAccount = await register(second.api); const secondVideo = (await upload(second.api, secondAccount.cookie)).video; const provider = await blockProviderQuota(second.store);
+  const waiting = await second.api(req('/jobs', { method: 'POST', cookie: secondAccount.cookie, body: { videoId: secondVideo.id, analysisConsent: true } })); assert.equal(waiting.status, 202); const id = (await waiting.json()).job.id;
+  const deletion = await second.api(req('/auth/account', { method: 'DELETE', cookie: secondAccount.cookie, body: { password: PASSWORD } })); assert.equal(deletion.status, 200); assert.equal(await second.store.get(`jobs/${id}`), null); assert.equal((await second.store.get('providers/openai')).retryAt, provider.retryAt);
+});
+
+test('concurrent retries of an older failed job cannot repeatedly replace a quota-blocked checkpoint or consume extra attempts', async t => {
+  const { api, store, dispatched } = await fixture(t); const account = await register(api); const video = (await upload(api, account.cookie)).video;
+  const queued = await api(req('/jobs', { method: 'POST', cookie: account.cookie, body: { videoId: video.id, analysisConsent: true } })); const id = (await queued.json()).job.id;
+  await store.update(`jobs/${id}`, current => ({ ...current, status: 'failed', error: { code: 'analysis_quota_exceeded', message: '이전 공급자 한도 오류' } })); await blockProviderQuota(store);
+  const retries = await Promise.all(Array.from({ length: 2 }, () => api(req(`/jobs/${id}/retry`, { method: 'POST', cookie: account.cookie })))); assert.deepEqual(retries.map(response => response.status).sort(), [202, 409]);
+  const record = await store.get(`jobs/${id}`); assert.equal(record.status, 'blocked'); assert.equal(record.attempt, 2); assert.equal(dispatched.length, 1);
+  const budgetKey = (await store.list(`budgets/attempt/${id}/`))[0]; assert.equal((await store.get(budgetKey)).entries.length, 2);
+});
+
+function deferred() { let resolve; const promise = new Promise(done => { resolve = done; }); return { promise, resolve }; }
+
+test('deleting an archive invalidates an in-flight duplicate generation and leaves no hidden personal record after account deletion', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const archive = legacyArchive(); const body = { archive, importConsent: true };
+  const original = await api(req('/imports', { method: 'POST', cookie: account.cookie, body })); const id = (await original.json()).import.id;
+  const paused = deferred(), resume = deferred(); let intercept = true;
+  const delayedAPI = createGrowthAPI({ store: { ...store, async create(key, value) { if (intercept && key.startsWith('imports/')) { intercept = false; paused.resolve(); await resume.promise; } return store.create(key, value); } } });
+  const duplicate = delayedAPI(req('/imports', { method: 'POST', cookie: account.cookie, body })); await paused.promise;
+  assert.equal((await api(req(`/imports/${id}`, { method: 'DELETE', cookie: account.cookie }))).status, 200); resume.resolve();
+  const result = await duplicate; assert.equal(result.status, 409); assert.equal((await result.json()).code, 'import_changed');
+  assert.deepEqual((await (await api(req('/imports', { cookie: account.cookie }))).json()).imports, []); assert.deepEqual(await store.list('imports/'), []); assert.deepEqual(await store.list(`import-owners/${account.user.id}/`), []);
+  assert.equal((await api(req('/auth/account', { method: 'DELETE', cookie: account.cookie, body: { password: PASSWORD } }))).status, 200); assert.deepEqual(await store.list('imports/'), []); assert.equal(await store.get(`import-quotas/${account.user.id}`), null);
+});
+
+test('account deletion wins over an in-flight archive replay without recreating its quota or owner index', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const body = { archive: legacyArchive(), importConsent: true };
+  assert.equal((await api(req('/imports', { method: 'POST', cookie: account.cookie, body }))).status, 201);
+  const paused = deferred(), resume = deferred(); let intercept = true;
+  const delayedAPI = createGrowthAPI({ store: { ...store, async create(key, value) { if (intercept && key.startsWith('imports/')) { intercept = false; paused.resolve(); await resume.promise; } return store.create(key, value); } } });
+  const duplicate = delayedAPI(req('/imports', { method: 'POST', cookie: account.cookie, body })); await paused.promise;
+  assert.equal((await api(req('/auth/account', { method: 'DELETE', cookie: account.cookie, body: { password: PASSWORD } }))).status, 200); resume.resolve(); const result = await duplicate; assert.ok([409, 410].includes(result.status));
+  assert.deepEqual(await store.list('imports/'), []); assert.deepEqual(await store.list(`import-owners/${account.user.id}/`), []); assert.equal(await store.get(`import-quotas/${account.user.id}`), null);
+});
+
+test('a conflicting initial mapping request cannot erase a concurrently saved valid archive checkpoint', async t => {
+  const { api, store } = await fixture(t); const account = await register(api); const archive = legacyArchive(); archive.videos.push({ ...archive.videos[1], id: `local-${randomUUID()}` });
+  const first = (await upload(api, account.cookie)).video, second = (await upload(api, account.cookie)).video;
+  const paused = deferred(), resume = deferred(); let intercept = true;
+  const delayedAPI = createGrowthAPI({ store: { ...store, async update(key, updater) { if (intercept && key.startsWith('imports/')) { intercept = false; paused.resolve(); await resume.promise; } return store.update(key, updater); } } });
+  const initial = delayedAPI(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, videoMap: [{ oldId: archive.videos[1].id, newId: first.id }], importConsent: true } })); await paused.promise;
+  const validMap = [{ oldId: archive.videos[1].id, newId: second.id }, { oldId: archive.videos[2].id, newId: first.id }];
+  const other = await api(req('/imports', { method: 'POST', cookie: account.cookie, body: { archive, videoMap: validMap, importConsent: true } })); assert.equal(other.status, 200); const id = (await other.json()).import.id;
+  resume.resolve(); const rejected = await initial; assert.equal(rejected.status, 400); assert.equal((await rejected.json()).code, 'invalid_import_mapping');
+  const saved = (await (await api(req(`/imports/${id}`, { cookie: account.cookie }))).json()).import; assert.deepEqual(saved.idMap, validMap.sort((a, b) => a.oldId.localeCompare(b.oldId))); assert.equal((await store.list('imports/')).length, 1);
+});
+
+test('account cleanup uses owner-prefixed import safety indexes without reading another family archive body', async t => {
+  const { api, store } = await fixture(t); const first = await register(api); const other = await register(api, 'archive-safe-other@example.com');
+  const created = await api(req('/imports', { method: 'POST', cookie: first.cookie, body: { archive: legacyArchive(), importConsent: true } })); const id = (await created.json()).import.id;
+  const theirs = await api(req('/imports', { method: 'POST', cookie: other.cookie, body: { archive: legacyArchive(), importConsent: true } })); const otherId = (await theirs.json()).import.id;
+  await store.delete(`import-quotas/${first.user.id}`); // Simulate a pre-existing unlisted record.
+  const watched = createGrowthAPI({ store: { ...store, async get(key) { assert.notEqual(key, `imports/${otherId}`, 'deleting one account must not read another archive body'); return store.get(key); } } });
+  const deletion = await watched(req('/auth/account', { method: 'DELETE', cookie: first.cookie, body: { password: PASSWORD } })); assert.equal(deletion.status, 200); assert.equal(await store.get(`imports/${id}`), null); assert.ok(await store.get(`imports/${otherId}`)); assert.deepEqual(await store.list(`import-owners/${first.user.id}/`), []);
 });

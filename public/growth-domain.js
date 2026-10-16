@@ -17,6 +17,9 @@ const finite = value => typeof value === 'number' && Number.isFinite(value);
 const integer = (value, min, max) => Number.isSafeInteger(value) && value >= min && value <= max;
 const text = (value, max, min = 0) => typeof value === 'string' && value.length <= max && value.trim().length >= min;
 const timestamp = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
+const isoTimestamp = value => typeof value === 'string'
+  && /^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d{1,3})?(?:Z|[+-]\d{2}:[0-5]\d)$/.test(value)
+  && isDate(value.slice(0, 10)) && timestamp(value);
 const recordId = value => typeof value === 'string' && RECORD_ID.test(value);
 
 export function kstToday(now = new Date()) {
@@ -63,6 +66,8 @@ export function createGrowthWorkspace() {
       roleView: 'parent', sensitiveConsent: false,
     },
     videos: [], analyses: [], jobs: [], observations: [], practices: [], checkins: [], scheduleChanges: [],
+    // `training` is the legacy name for AI model training consent, never a
+    // record of physical practice or permission inferred from video analysis.
     consents: { guardian: false, analysis: false, training: false },
   };
 }
@@ -142,9 +147,10 @@ function cleanObservation(value, videos) {
 }
 function cleanJob(value, videos) {
   if (!object(value) || !recordId(value.id) || !videos.some(video => video.id === value.videoId)
-    || !['queued', 'running', 'completed', 'failed', 'cancelled'].includes(value.status)
+    || !['queued', 'running', 'completed', 'failed', 'cancelled', 'blocked'].includes(value.status)
     || !text(value.stage, 100) || !timestamp(value.createdAt) || !timestamp(value.updatedAt)
-    || !integer(value.attempt ?? 0, 0, 100)) fail('분석 작업 정보를 확인해 주세요.');
+    || !integer(value.attempt ?? 0, 0, 100)
+    || !(value.retryAt === undefined || value.retryAt === null || isoTimestamp(value.retryAt))) fail('분석 작업 정보를 확인해 주세요.');
   const progress = {};
   if (value.progress !== undefined && !object(value.progress)) fail('분석 진행 정보를 확인해 주세요.');
   for (const key of ['sampleCount', 'sampledCount', 'detectedCount', 'selectedCount', 'completedCount']) {
@@ -162,7 +168,7 @@ function cleanJob(value, videos) {
     if (!object(value.error) || !text(value.error.code, 80, 1) || !text(value.error.message, 1500)) fail('분석 작업 오류 정보를 확인해 주세요.');
     error = { code: value.error.code, message: value.error.message };
   }
-  return { id: value.id, videoId: value.videoId, status: value.status, stage: value.stage, createdAt: value.createdAt, updatedAt: value.updatedAt, progress, error, target: validateTarget(value.target), context: validateMatchContext(value.context), attempt: value.attempt ?? 0 };
+  return { id: value.id, videoId: value.videoId, status: value.status, stage: value.stage, createdAt: value.createdAt, updatedAt: value.updatedAt, progress, error, target: validateTarget(value.target), context: validateMatchContext(value.context), attempt: value.attempt ?? 0, ...(value.retryAt !== undefined ? { retryAt: value.retryAt } : {}) };
 }
 function collection(value, field, max, clean) {
   const list = value[field] === undefined ? [] : value[field];

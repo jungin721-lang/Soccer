@@ -40,6 +40,26 @@ test('background dispatch waits only for platform acceptance and keeps the job c
   } finally { globalThis.fetch = originalFetch; }
 });
 
+test('background dispatch propagates the recovery deadline instead of waiting beyond it', async () => {
+  const originalFetch = globalThis.fetch;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(new Error('recovery stopped')), 10);
+  let received;
+  try {
+    globalThis.fetch = async (_url, options) => {
+      received = options.signal;
+      return new Promise((_resolve, reject) => {
+        if (options.signal.aborted) reject(options.signal.reason);
+        else options.signal.addEventListener('abort', () => reject(options.signal.reason), { once: true });
+      });
+    };
+    const started = performance.now();
+    await assert.rejects(createBackgroundDispatch('https://next-xi.netlify.app')('job', 'token', { signal: controller.signal, timeoutMs: 5000 }), /recovery stopped/);
+    assert.ok(performance.now() - started < 1000);
+    assert.equal(received.aborted, true);
+  } finally { clearTimeout(timer); globalThis.fetch = originalFetch; }
+});
+
 test('a queued upload is analyzed over protected HTTP ranges after its browser session closes', async t => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'next-xi-runtime-'));
   const store = await createLocalStore(directory);

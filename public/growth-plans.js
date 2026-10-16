@@ -4,7 +4,7 @@ import { addDays, getWeekday, isDate, kstToday, weekdayLabel, validateTarget } f
 const DAYS = [0, 1, 2, 3, 4, 5, 6];
 const PRACTICE_MINUTES = 15;
 const WEEK_STAGES = ['편한 속도로 순서 익히기', '신호를 보고 방향 고르기', '가벼운 선택을 더하기', '경기 행동과 연결해 돌아보기'];
-const SLEEP_SOURCE = { title: 'CDC · About Sleep', url: 'https://www.cdc.gov/sleep/about/index.html', detail: '3~5세는 하루 10~13시간, 6~12세는 9~12시간, 13~17세는 8~10시간, 성인은 7시간 이상의 수면을 권장합니다.' };
+const SLEEP_SOURCE = { verifiedDate:'2026-10-16', checkedDate:'2026-10-16', screenSource:{title:'AAP · Healthy Sleep Habits',url:'https://www.healthychildren.org/English/healthy-living/sleep/Pages/healthy-sleep-habits-how-many-hours-does-your-child-need.aspx',updatedDate:'2026-08-07',verifiedDate:'2026-10-16'}, title: 'CDC · About Sleep', url: 'https://www.cdc.gov/sleep/about/index.html', detail: '3~5세는 하루 10~13시간, 6~12세는 9~12시간, 13~17세는 8~10시간, 성인은 7시간 이상의 수면을 권장합니다.' };
 const GENERAL_NOTE = '아직 영상 근거가 없어 일반 기초 연습을 제안해요. 선수의 약점이나 능력 판정이 아닙니다.';
 const LOAD_NOTE = '팀 훈련·경기 날에는 추가 개인 훈련을 넣지 않아요. 놓친 훈련을 다음 날 몰아서 하지 않습니다.';
 const clockNumber = (text, fallback) => /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(text || '') ? Number(text.slice(0, 2)) * 60 + Number(text.slice(3)) : fallback;
