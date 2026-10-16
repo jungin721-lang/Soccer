@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="460" viewBox="0 0 420 460" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">남색 11번 유니폼</title>
+  <desc id="desc">라임색 디테일이 있는 남색 축구 유니폼 일러스트</desc>
+  <defs>
+    <linearGradient id="fabric" x1="104" y1="73" x2="323" y2="410" gradientUnits="userSpaceOnUse"><stop stop-color="#2E4259"/><stop offset=".45" stop-color="#1A2A3F"/><stop offset="1" stop-color="#101D2D"/></linearGradient>
+    <linearGradient id="sleeve" x1="23" y1="109" x2="394" y2="174" gradientUnits="userSpaceOnUse"><stop stop-color="#293E54"/><stop offset=".5" stop-color="#1B2D43"/><stop offset="1" stop-color="#111F31"/></linearGradient>
+    <linearGradient id="shine" x1="122" y1="115" x2="296" y2="378" gradientUnits="userSpaceOnUse"><stop stop-color="#A9B9C9" stop-opacity=".14"/><stop offset="1" stop-color="#A9B9C9" stop-opacity="0"/></linearGradient>
+    <linearGradient id="number" x1="168" y1="192" x2="246" y2="318" gradientUnits="userSpaceOnUse"><stop stop-color="#E3F8A3"/><stop offset="1" stop-color="#B4DC68"/></linearGradient>
+    <filter id="shadow" x="0" y="0" width="420" height="460" filterUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="15"/></filter>
+    <pattern id="weave" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8L8 0" stroke="#D8E5EF" stroke-opacity=".035" stroke-width="1"/></pattern>
+    <clipPath id="bodyClip"><path d="M151 56L94 80L26 145L73 195L113 165L107 392Q210 420 313 392L307 165L347 195L394 145L326 80L269 56Q244 82 210 82Q176 82 151 56Z"/></clipPath>
+  </defs>
+  <ellipse cx="214" cy="403" rx="121" ry="17" fill="#06101F" opacity=".4" filter="url(#shadow)"/>
+  <path d="M151 56L94 80L26 145L73 195L113 165L107 392Q210 420 313 392L307 165L347 195L394 145L326 80L269 56Q244 82 210 82Q176 82 151 56Z" fill="url(#fabric)" stroke="#41556C" stroke-width="1.5"/>
+  <g clip-path="url(#bodyClip)">
+    <path d="M93 79L116 165L74 195L26 145L93 79Z" fill="url(#sleeve)"/>
+    <path d="M327 79L305 165L347 195L394 145L327 79Z" fill="url(#sleeve)"/>
+    <path d="M121 86L143 111L133 392H110L114 165L121 86Z" fill="#0D1A2B" opacity=".6"/>
+    <path d="M299 86L277 111L287 397H314L306 165L299 86Z" fill="#0C192A" opacity=".9"/>
+    <path d="M139 89Q210 121 281 89L284 397Q210 412 136 397L139 89Z" fill="url(#shine)"/>
+    <path d="M110 172L99 218M310 172L321 218" stroke="#536C83" stroke-opacity=".3" stroke-width="2"/>
+    <path d="M96 81L116 165M324 81L304 165" stroke="#73899C" stroke-opacity=".28"/>
+    <path d="M40 160L83 205M380 160L337 205" stroke="#C9EE82" stroke-width="5"/>
+    <path d="M107 384Q210 411 313 384" stroke="#536A7D" stroke-opacity=".3" stroke-width="1.5"/>
+    <rect width="420" height="460" fill="url(#weave)"/>
+  </g>
+  <path d="M151 56Q176 81 210 81Q244 81 269 56L257 49Q235 67 210 67Q185 67 163 49L151 56Z" fill="#C9EE82"/>
+  <path d="M163 49Q210 75 257 49Q242 43 210 44Q178 43 163 49Z" fill="#102033" stroke="#34475B"/>
+  <path d="M163 53Q210 79 257 53" stroke="#E0F6AF" stroke-opacity=".4"/>
+  <path d="M162 187L177 177H196V301H174V204L162 211V187ZM215 187L230 177H249V301H227V204L215 211V187Z" fill="url(#number)"/>
+  <path d="M163 308H196M216 308H249" stroke="#E3F8A3" stroke-opacity=".18" stroke-width="2"/>
+  <path d="M185 111H235" stroke="#8DA0B1" stroke-opacity=".4" stroke-width="2"/>
+  <path d="M198 119H222" stroke="#8DA0B1" stroke-opacity=".2" stroke-width="1.5"/>
+</svg>

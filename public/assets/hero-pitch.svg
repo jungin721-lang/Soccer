@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="620" viewBox="0 0 1000 620" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">다음 경기를 준비하는 11번 선수</title>
+  <desc id="desc">남색 11번 유니폼과 경기장의 공간을 라임색 선으로 표현한 축구 일러스트</desc>
+  <defs>
+    <linearGradient id="bg" x1="59" y1="105" x2="961" y2="583" gradientUnits="userSpaceOnUse"><stop stop-color="#152637"/><stop offset=".6" stop-color="#102231"/><stop offset="1" stop-color="#1A343B"/></linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(710 258) rotate(90) scale(360 351)" gradientUnits="userSpaceOnUse"><stop stop-color="#B9E887" stop-opacity=".17"/><stop offset="1" stop-color="#A7DB79" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ground" x1="600" y1="260" x2="600" y2="620" gradientUnits="userSpaceOnUse"><stop stop-color="#81A47D" stop-opacity="0"/><stop offset="1" stop-color="#81A47D" stop-opacity=".13"/></linearGradient>
+    <linearGradient id="shirt" x1="562" y1="123" x2="782" y2="424" gradientUnits="userSpaceOnUse"><stop stop-color="#344F65"/><stop offset=".48" stop-color="#20394D"/><stop offset="1" stop-color="#142738"/></linearGradient>
+    <linearGradient id="shirtLight" x1="615" y1="150" x2="735" y2="428" gradientUnits="userSpaceOnUse"><stop stop-color="#A9CAD8" stop-opacity=".1"/><stop offset="1" stop-color="#A9CAD8" stop-opacity="0"/></linearGradient>
+    <linearGradient id="lime" x1="634" y1="219" x2="719" y2="354" gradientUnits="userSpaceOnUse"><stop stop-color="#E1F7A7"/><stop offset="1" stop-color="#B8E475"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="19"/></filter>
+    <filter id="shirtShadow" x="430" y="50" width="470" height="510" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="30" stdDeviation="25" flood-color="#010C17" flood-opacity=".4"/></filter>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" stroke="#BDDAC6" stroke-opacity=".035"/></pattern>
+    <pattern id="weave" width="7" height="7" patternUnits="userSpaceOnUse"><path d="M0 7L7 0" stroke="#D8E5EF" stroke-opacity=".03"/></pattern>
+    <clipPath id="shirtClip"><path d="M623 125L579 143L526 195L563 234L594 211L590 389Q670 411 750 389L746 211L777 234L814 195L761 143L717 125Q697 145 670 145Q643 145 623 125Z"/></clipPath>
+  </defs>
+  <rect width="1000" height="620" fill="url(#bg)"/>
+  <rect width="1000" height="620" fill="url(#grid)"/>
+  <rect width="1000" height="620" fill="url(#glow)"/>
+  <circle cx="689" cy="271" r="184" stroke="#C9EE82" stroke-opacity=".07"/>
+  <circle cx="689" cy="271" r="221" stroke="#C9EE82" stroke-opacity=".035" stroke-dasharray="3 10"/>
+  <path d="M224 620L517 282H833L1126 620H224Z" fill="url(#ground)"/>
+  <g stroke="#C0D9BE" stroke-opacity=".11" stroke-width="1.2">
+    <path d="M232 620L526 294H824L1118 620M325 620L560 294M459 620L598 294M593 620L635 294M727 620L674 294M861 620L711 294M995 620L750 294"/>
+    <path d="M493 330H856M449 379H900M393 441H955M323 518H1025M232 620H1118"/>
+  </g>
+  <g stroke="#C9EE82" stroke-opacity=".32" stroke-width="1.5">
+    <path d="M340 586L549 320H802L1010 586H340Z"/>
+    <path d="M440 459H910"/>
+    <ellipse cx="675" cy="459" rx="70" ry="37"/>
+    <path d="M505 376H846L813 333H539L505 376ZM520 360H831L815 339H536L520 360Z"/>
+    <path d="M526 587L570 528H779L824 587M595 587L612 564H737L754 587"/>
+  </g>
+  <path d="M489 505C560 486 559 445 624 442C696 439 710 484 786 470C838 460 825 420 859 395" stroke="#C9EE82" stroke-width="2" stroke-dasharray="5 8" stroke-linecap="round" opacity=".75"/>
+  <path d="M849 396L861 391L862 404" stroke="#C9EE82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <g fill="#172F3C" stroke="#C9EE82" stroke-width="1.5">
+    <circle cx="490" cy="505" r="7"/><circle cx="625" cy="442" r="7"/><circle cx="786" cy="470" r="7"/>
+  </g>
+  <circle cx="490" cy="505" r="2.5" fill="#C9EE82"/>
+  <ellipse cx="677" cy="423" rx="120" ry="15" fill="#020B14" opacity=".45" filter="url(#soft)"/>
+  <g transform="rotate(-8 670 259)" filter="url(#shirtShadow)">
+    <path d="M623 125L579 143L526 195L563 234L594 211L590 389Q670 411 750 389L746 211L777 234L814 195L761 143L717 125Q697 145 670 145Q643 145 623 125Z" fill="url(#shirt)" stroke="#506D7C" stroke-width="1.2"/>
+    <g clip-path="url(#shirtClip)">
+      <path d="M579 143L595 211L563 234L526 195L579 143Z" fill="#29465A"/>
+      <path d="M761 143L745 211L777 234L814 195L761 143Z" fill="#183245"/>
+      <path d="M600 150L618 166L610 396L589 389L594 211L600 150Z" fill="#102738" opacity=".5"/>
+      <path d="M740 150L722 166L730 396L751 389L746 211L740 150Z" fill="#0B2132" opacity=".65"/>
+      <path d="M618 151Q670 178 722 151L727 397Q670 409 613 397L618 151Z" fill="url(#shirtLight)"/>
+      <path d="M536 205L573 243M804 205L767 243" stroke="#C9EE82" stroke-width="4"/>
+      <path d="M581 145L595 211M759 145L745 211" stroke="#8BA6B6" stroke-opacity=".23"/>
+      <path d="M590 382Q670 404 750 382" stroke="#8BA6B6" stroke-opacity=".17"/>
+      <rect x="520" y="115" width="300" height="295" fill="url(#weave)"/>
+    </g>
+    <path d="M623 125Q643 145 670 145Q697 145 717 125L707 120Q689 134 670 134Q651 134 633 120L623 125Z" fill="#C9EE82"/>
+    <path d="M633 120Q670 140 707 120Q695 115 670 116Q645 115 633 120Z" fill="#122A3A" stroke="#425B6C"/>
+    <path d="M633 227L645 219H660V316H643V241L633 246V227ZM674 227L686 219H701V316H684V241L674 246V227Z" fill="url(#lime)"/>
+    <path d="M650 168H689M660 174H678" stroke="#A0B7C6" stroke-opacity=".3"/>
+  </g>
+  <g transform="translate(836 148)">
+    <path d="M0 12H30M15-3V27" stroke="#B9D98E" stroke-opacity=".45"/>
+    <circle cx="15" cy="12" r="23" stroke="#B9D98E" stroke-opacity=".15"/>
+  </g>
+  <g transform="translate(860 492) rotate(9)">
+    <ellipse cy="39" rx="38" ry="8" fill="#061522" opacity=".5" filter="url(#soft)"/>
+    <circle r="33" fill="#DCE6D4" stroke="#A9BEAF"/>
+    <path d="M-5-15L11-11L15 4L2 14L-12 5L-5-15Z" fill="#28413E"/>
+    <path d="M-5-15L-10-31M11-11L25-21M15 4L32 10M2 14L3 32M-12 5L-29 11M-10-31L-25-21L-29-5L-29 11L-17 28L3 32L22 24L32 10L31-9L25-21L9-31L-10-31Z" stroke="#829A8C" stroke-width="1.1"/>
+    <path d="M-25-21L-19-7L-29-5M25-21L20-9L31-9M22 24L13 20L3 32M-17 28L-14 16L-29 11" stroke="#829A8C" stroke-width="1.1"/>
+    <path d="M-10-31L-25-21L-19-7L-5-15L-10-31ZM25-21L31-9L20-9L11-11L25-21ZM22 24L3 32L13 20L15 4L32 10L22 24Z" fill="#28413E"/>
+    <ellipse cx="-9" cy="-14" rx="15" ry="11" fill="white" opacity=".17" transform="rotate(-35 -9 -14)"/>
+  </g>
+  <g stroke="#D5ECC0" stroke-opacity=".35" stroke-linecap="round"><path d="M445 206H457M451 200V212"/><path d="M797 329H805M801 325V333"/></g>
+  <path d="M926 0H1000V620H926" fill="url(#bg)" opacity=".15"/>
+</svg>

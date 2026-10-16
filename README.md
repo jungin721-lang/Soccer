@@ -1,9 +1,117 @@
-# NEXT XI 1.1 — original video registration
+# NEXT XI
 
-Download `NEXT-XI-original-video.zip`, extract it, and upload the `NEXT-XI-site` folder to the **existing** Netlify project's Deploys page. This updates the same site URL.
+남색 유니폼 11번 유소년 선수를 위한 경기 영상·관찰 평가·성장 기록 웹앱입니다. 최신 요청의 샘플 `arJ6xMRKnbw` 한 개를 **00:57** 시작 시점으로 등록합니다.
 
-Original videos are selected from the device and stored unchanged in its browser (IndexedDB), not uploaded to cloud storage or synced between devices. Supports MP4/MOV/M4V/WebM/3GP containers up to 2 GiB within available browser quota; actual codec playback depends on the device. Original export, deletion, missing-file reconnection, native playback and timestamped scene evidence are included.
+## 실행
 
-JSON record exports contain metadata only. Keep a separate original copy in Photos/Files. Automatic AI analysis is not connected.
+Node.js 22 이상. 외부 npm 의존성이나 API 키 없이 실행합니다.
 
-This branch contains only generated public static app files and deploy archives, never user records or original media.
+```sh
+cd /workspace/Soccer
+npm start
+```
+
+기본 포트는 `3000`입니다. `PORT`로 변경할 수 있습니다. 개발 중 자동 재시작은 `npm run dev`를 사용합니다.
+
+## 구현한 기능
+
+- 데스크톱·태블릿·모바일 레이아웃, 키보드 탐색, 대화상자 포커스 처리
+- 스마트폰 원본 파일 선택·IndexedDB 저장·인라인 재생·내보내기·삭제·재연결
+- 유튜브 링크 등록, 중복·주소 검증, 시작 시점 재생, 외부 재생 대안
+- 남색 11번 고정 선수 지정과 프로필 편집
+- 영상 시점·관찰 행동·8개 평가 항목·선택 단계(1~5) 기록
+- 실제 관찰 기록으로 계산하는 스파이더맵과 항목별 근거 조회
+- 실제 데이터와 분리된, 명시적으로 표시하는 예시 리포트
+- 관찰된 항목에서 고르는 8종의 4주 연습 제안과 몸·마음 루틴 완료 기록
+- 누적 관찰 평가 스냅샷, 성장 기록, JSON 내보내기, 삭제·초기화
+- 서버 JSON 저장, atomic rename, revision 충돌 방지, 서버 재시작 후 복원
+
+## 데이터와 분석 범위
+
+관찰 전 능력치는 모두 `null`이며 전국 순위는 생성하지 않습니다. 예시 점수는 서버에 저장하거나 실제 영상 장면과 연결하지 않습니다. 기록자는 실제 확인한 장면을 입력하고, 단계 평가는 기록자의 잠정 판단입니다. 누적 평균은 검증된 축구 표준 검사 점수가 아닙니다.
+
+**경기 전체의 자동 능력치 평가·선수 추적·전문 코치 검증·전국 비교 데이터는 제공하지 않습니다.** v1.2에는 인증된 서버를 연결한 뒤 최대 12초 구간의 정지 화면을 실제 AI 서비스로 보내는 장면 피드백 기능이 있습니다. 현재 개발 환경에는 인증 정보가 없어 실제 모델 분석을 실행하지 않았습니다. 실행 환경에서 YouTube 요청이 차단되어 실제 선수 평가를 수행하지 않았습니다. 브라우저의 임베드 재생은 브라우저 네트워크와 영상 소유자의 임베드 허용 여부에 따라 달라집니다. 재생 제한 시 원본 YouTube 링크를 사용할 수 있습니다.
+
+훈련 계획은 관찰자가 기록한 평가 중 가장 낮은 관찰 항목을 기준으로 준비된 연습을 선택합니다. 미관찰 항목은 후보에서 제외하고, 점수가 없으면 주변 확인 루틴을 예시로 제공합니다. 이는 자동 영상 분석·전문 코치의 개별 처방이 아닙니다. 항목별 실천 기록은 서로 분리됩니다. 생활 가이드는 일반적인 시작 안내입니다.
+
+이 버전은 **개발·시연용 단일 워크스페이스**입니다. 로그인·사용자 분리·보호자 동의 검증은 연결되지 않았습니다. 공개 다중 사용자 서비스로 운영하려면 인증·인가·동의 관리·배포 운영을 먼저 추가해야 합니다. 로그인 없는 API를 인터넷에 공개하지 마세요.
+
+개인 데이터는 `.data/workspace.json`에 보관하며 Git 추적에서 제외합니다. `NEXT_XI_DATA_DIR`로 보관 위치를 변경할 수 있습니다. 실행 중인 프로세스를 새 환경에서 다시 시작해야 합니다. 별도 Git worktree는 필요하지 않습니다.
+
+## 검증
+
+```sh
+npm run check
+npm test
+```
+
+단위 테스트와 실제 HTTP 서버 테스트는 Node.js 기본 테스트 도구를 사용합니다. HTTP 테스트는 임시 포트·임시 저장소로 실행하므로 사용 중인 기록을 변경하지 않습니다.
+
+브라우저 검증에는 Python Playwright와 Chromium이 필요합니다.
+
+```sh
+python3 tests/browser.py
+```
+
+브라우저 테스트도 별도 서버·저장소를 사용합니다. 관찰→점수→성장 저장, 지속 저장, 등록·삭제, 예시 구분, 훈련, 375/768/1440px의 모든 화면을 검사합니다. 외부 YouTube 영상의 실제 내용이나 재생 성공을 검증하는 테스트는 아닙니다.
+
+## 구성
+
+- `server.js`: Node HTTP 서버·저장 API
+- `public/domain.js`: 평가 항목·URL/시간 파서·데이터 검증
+- `public/plans.js`: 8개 관찰 항목별 4주 연습 제안 규칙
+- `public/app.js`: 화면·사용 흐름
+- `public/styles.css`: 반응형 디자인
+- `public/assets/`: 직접 제작한 SVG
+- `tests/`: 단위·HTTP·브라우저 검증
+
+## 단일 HTML 실행 파일
+
+`npm run export`로 `.artifacts/NEXT-XI.html`을 생성합니다. 스타일·앱 코드·SVG가 모두 포함되어 별도 API 서버 없이 브라우저 저장소로 동작합니다. YouTube 재생에는 인터넷 연결이 필요합니다. 서버 버전과 기록은 동기화되지 않습니다.
+
+생성된 HTML은 정적 파일 서버에서 프로필·장면 저장, 재로딩 후 복원, 능력치 계산까지 검증했습니다. AI 분석을 요청하지 않는 일반 기록 흐름은 워크스페이스 API 요청 없이 동작합니다. 이 환경의 관리형 Chromium은 `file://` 탐색을 차단하므로 파일 프로토콜 자체는 이 환경에서 검증하지 못했습니다.
+
+## 스마트폰과 공개 배포 준비
+
+스마트폰에는 5개 하단 메뉴, 44px 이상 주요 터치 버튼, 노치·홈 표시줄 여백, 작은 화면용 입력창을 제공합니다. 320·390·600px에서 메뉴·장면 입력과 가로 넘침을 검증했습니다.
+
+`npm run export`는 다운로드용 HTML과 정적 호스팅용 `.artifacts/site/index.html`, `.nojekyll`을 함께 생성합니다. 정적 버전의 데이터는 브라우저별로 보관되고 서버의 개인 기록을 공개하지 않습니다. 기기 간 자동 동기화는 없습니다.
+
+현재 외부 배포는 네트워크 프록시가 GitHub Pages 제어 API 요청을 403으로 차단해 완료하지 못했습니다. 환경 설정 초안에는 기존 허용 목록을 보존하고 `api.github.com`, `jungin721-lang.github.io`를 추가했습니다. 초안의 검토·저장·환경 게시와 실제 사이트 배포는 별개입니다. 이후 배포 ZIP은 GitHub 다운로드 브랜치에 게시했고, 사용자가 Netlify 수동 배포를 진행했습니다. 이 로컬 작업 공간은 사용자의 Netlify 계정에 연결되어 있지 않으므로 정적 파일 수정은 해당 사이트에 자동 반영되지 않습니다.
+
+## 원본 영상 등록 (v1.1)
+
+영상 등록 창의 기본 탭은 **원본 파일**입니다. 스마트폰의 사진·파일 선택기로 MP4/MOV/M4V/WebM/3GP 파일을 고르고 등록합니다. YouTube 링크는 별도 탭으로 유지됩니다.
+
+- 파일은 현재 기기·브라우저·사이트 주소에 종속된 IndexedDB에 원본 Blob으로 저장합니다. 클라우드로 업로드하거나 다른 기기로 동기화하지 않습니다.
+- 최대 크기는 2 GiB이며 실제 허용 크기는 기기 여유 공간·브라우저 저장 한도에 따라 더 작습니다. 저장 실패 시 영상 목록이 성공한 것처럼 추가되지 않으며, 목록 저장 실패 시 저장한 Blob을 되돌립니다.
+- 영상의 이름·크기·재생 시간만 일반 기록에 들어갑니다. JSON 내보내기에는 원본 바이트가 포함되지 않습니다. 원본 내보내기는 별도 버튼으로 제공합니다.
+- 브라우저 데이터를 삭제하거나 저장소가 정리되면 원본이 사라질 수 있습니다. 사진·파일 앱의 원본은 별도로 보관해야 합니다. 메타데이터가 남아 있으면 이름·크기가 같은 파일을 재연결할 수 있습니다.
+- 등록 가능한 컨테이너라도 기기에서 코덱을 지원하지 않으면 재생이 제한됩니다. 호환성이 높은 MP4(H.264)를 권장하며, 재생 불가 시 명확한 안내를 표시합니다.
+- 원본을 재생하면서 장면 기록을 열면 현재 재생 시간이 채워집니다. 원본 삭제 시 연결된 장면 기록과 기기 내 Blob을 함께 제거합니다.
+- 등록 자체가 자동 평가를 실행하지 않습니다. v1.2의 짧은 구간 AI 피드백은 별도 서버 배포·인증·사용자 전송 동의가 필요합니다.
+
+검증: `python3 tests/original-browser.py`는 FFmpeg로 실제 MP4를 생성하고 모바일 터치 환경에서 원본 바이트 보존, 재생, 새로고침 복원, 장면·점수 연결, 재연결, 저장 공간 오류, 저장 롤백, 삭제와 320/390/600px 등록 창을 검사합니다. 실제 iPhone 하드웨어나 모든 HEVC 코덱을 시험했다는 의미는 아닙니다.
+
+정적 사이트 업데이트는 기존 Netlify 프로젝트의 Deploys 화면에서 새 `.artifacts/site` 폴더를 수동 배포합니다. 같은 사이트 주소를 유지해야 브라우저의 기존 기록과 원본에 계속 접근할 수 있습니다.
+
+
+## v1.2: 저장과 분석 상태 분리, 선택 구간 AI 피드백
+
+원본을 저장하면 대시보드에 영상 제목·크기·길이와 저장 완료 안내가 즉시 표시되고 새로고침 후에도 유지됩니다. 분석 전에는 그 상태를 명시합니다. 메타데이터를 읽는 중 등록 버튼을 누르면 대기 후 자동으로 저장하며, 권한 미확인 오류는 등록 버튼 바로 위에 표시합니다.
+
+AI 기능은 **별도 연결이 필요한 실제 서버 요청 경로**입니다. 최대 12초/24프레임의 JPEG만 사용자가 동의한 경우 전송합니다. 키는 서버 환경변수에서만 읽고, 12자 이상 테스트 이용 코드로 요청을 제한합니다. 식별되지 않은 선수는 평가를 보류합니다. 결과는 강점·연습 행동·근거 시각·불확실성·다음 행동을 담는 AI 초안이며, 대시보드·영상 화면·리포트에 보관됩니다. 스파이더맵의 점수나 전체 경기의 성공률로 자동 환산하지 않습니다. 경기 전체 능력치를 원하는 최종 제품의 완성 버전은 아닙니다.
+
+**현재 실사이트에 자동 배포하거나 실제 AI 호출을 완료하지 않았습니다.** 이 환경에는 Netlify 배포 인증과 유효한 AI 키가 없습니다. 정적 ZIP 재업로드는 화면 개선만 반영하고 서버 함수는 설치하지 않습니다. 기존 사이트 주소를 유지해 Git/CLI로 서버를 배포하는 정확한 절차는 [분석 서버 연결 안내](docs/analysis-deployment.md)에 정리했습니다. 분석 이용 코드는 로그인·회원별 권한·과금 한도 시스템을 대신하지 않는 비공개 파일럿용입니다.
+
+검증 명령:
+
+```sh
+npm run check
+npm test
+python3 tests/browser.py
+python3 tests/original-browser.py
+python3 tests/analysis-browser.py
+```
+
+AI 관련 자동 검증은 서비스 응답을 모의한 계약·오류 검증입니다. MP4 디코딩과 JPEG 추출, 결과 저장·재로딩은 실제 브라우저로 검사하지만, 실제 선수의 분석 정확도를 검증했다는 뜻은 아닙니다.

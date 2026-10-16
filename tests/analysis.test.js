@@ -1,0 +1,148 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { handleAnalysis, MAX_ANALYSIS_BYTES } from '../lib/analysis.js';
+
+const env = { SOCCER_AI_API_KEY: 'test-server-key', SOCCER_ANALYSIS_ACCESS_CODE: 'test-private-code-123' };
+const image = 'data:image/jpeg;base64,' + Buffer.from([255, 216, 255, 224, 0, 16, 1, 2, 3, 4, 255, 217]).toString('base64');
+const input = () => ({ videoId: 'local-12345678-1234-1234-1234-123456789abc', start: 57, end: 69, frames: [{ time: 57, image }, { time: 63, image }, { time: 69, image }], consent: true, accessCode: env.SOCCER_ANALYSIS_ACCESS_CODE });
+const result = () => ({ identified: true, summary: '남색 11번이 동료를 도울 위치로 이동한 장면입니다.', observations: [{ skill: 'move', time: 63, note: '동료 옆 빈 공간에 위치합니다.', type: 'note', confidence: 'medium' }], limitations: ['12초 구간의 정지 프레임만으로 반복 능력을 판단할 수 없습니다.'], nextAction: '패스 후 동료가 볼 수 있는 공간으로 한 걸음 이동해 보세요.' });
+const request = (value = input(), headers = {}) => new Request('https://next-xi.example/api/analysis', { method: 'POST', headers: { 'Content-Type': 'application/json', origin: 'https://next-xi.example', ...headers }, body: typeof value === 'string' ? value : JSON.stringify(value) });
+const upstream = value => async () => new Response(JSON.stringify({ status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: JSON.stringify(value) }] }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+const neverFetch = async () => { assert.fail('Invalid or unauthorized requests must never reach the paid API'); };
+
+test('availability exposes no keys, access code, or model configuration', async () => {
+  for (const [config, available] of [[{}, false], [{ ...env, SOCCER_ANALYSIS_ACCESS_CODE: 'short' }, false], [env, true]]) {
+    const response = await handleAnalysis(new Request('https://next-xi.example/api/analysis'), { env: config, fetchImpl: neverFetch });
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { available, reason: available ? 'ready' : 'missing_credentials' });
+  }
+});
+
+test('unconfigured analysis returns actionable unavailable response without pretending it ran', async () => {
+  const response = await handleAnalysis(request(), { env: {}, fetchImpl: neverFetch });
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).code, 'analysis_unavailable');
+});
+
+test('cross-origin, malformed origins, cross-site fetch and unsupported methods are rejected', async () => {
+  for (const headers of [{ origin: 'https://attacker.example' }, { origin: 'null' }, { 'sec-fetch-site': 'cross-site' }]) {
+    assert.equal((await handleAnalysis(request(input(), headers), { env, fetchImpl: neverFetch })).status, 403);
+  }
+  assert.equal((await handleAnalysis(new Request('https://next-xi.example/api/analysis', { method: 'DELETE' }), { env, fetchImpl: neverFetch })).status, 405);
+});
+
+test('paid API is protected by a server-only pilot code', async () => {
+  for (const accessCode of [undefined, '', 'wrong', 'x'.repeat(257)]) {
+    const response = await handleAnalysis(request({ ...input(), accessCode }), { env, fetchImpl: neverFetch });
+    assert.equal(response.status, 401);
+    assert.equal((await response.json()).code, 'invalid_access_code');
+  }
+});
+
+test('input rejects missing consent, oversized/invalid clips and image data', async () => {
+  const cases = [
+    { consent: false }, { videoId: 'arJ6xMRKnbw' }, { start: 57, end: 70 }, { start: -1 }, { end: 57 },
+    { frames: [{ time: 57, image }] }, { frames: Array.from({ length: 25 }, (_, n) => ({ time: 57 + n / 3, image })) },
+    { frames: [{ time: 57, image }, { time: 57, image }] }, { frames: [{ time: 57, image }, { time: 70, image }] },
+    { frames: [{ time: 57, image }, { time: 58, image: 'https://external.example/image.jpg' }] },
+    { frames: [{ time: 57, image }, { time: 58, image: 'data:image/jpeg;base64,QQ==' }] },
+  ];
+  for (const change of cases) {
+    const response = await handleAnalysis(request({ ...input(), ...change }), { env, fetchImpl: neverFetch });
+    assert.equal(response.status, 400, JSON.stringify(change));
+  }
+  assert.equal((await handleAnalysis(request('{malformed'), { env, fetchImpl: neverFetch })).status, 400);
+  assert.equal((await handleAnalysis(request(input(), { 'Content-Type': 'text/plain' }), { env, fetchImpl: neverFetch })).status, 415);
+});
+
+test('request body cap applies with and without a Content-Length header', async () => {
+  const declared = request(input(), { 'content-length': String(MAX_ANALYSIS_BYTES + 1) });
+  assert.equal((await handleAnalysis(declared, { env, fetchImpl: neverFetch })).status, 413);
+  const actual = request(' '.repeat(MAX_ANALYSIS_BYTES + 1));
+  assert.equal((await handleAnalysis(actual, { env, fetchImpl: neverFetch })).status, 413);
+});
+
+test('real provider contract sends selected JPEG frames, structured schema, no storage and server key only', async () => {
+  let called = 0;
+  const fetchImpl = async (url, options) => {
+    called++;
+    assert.equal(url, 'https://api.openai.com/v1/responses');
+    assert.equal(options.headers.Authorization, `Bearer ${env.SOCCER_AI_API_KEY}`);
+    const payload = JSON.parse(options.body);
+    assert.equal(payload.model, 'gpt-4.1-mini');
+    assert.equal(payload.store, false);
+    assert.equal(payload.text.format.type, 'json_schema');
+    assert.equal(payload.text.format.strict, true);
+    assert.equal(payload.input[0].content.filter(c => c.type === 'input_image').length, 3);
+    assert.equal(options.body.includes(env.SOCCER_ANALYSIS_ACCESS_CODE), false);
+    assert.equal(options.body.includes(env.SOCCER_AI_API_KEY), false);
+    assert.match(payload.instructions, /identified=false/);
+    assert.match(payload.instructions, /전국 순위/);
+    return upstream(result())();
+  };
+  const response = await handleAnalysis(request(), { env, fetchImpl });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { result: result(), model: 'gpt-4.1-mini' });
+  assert.equal(called, 1);
+});
+
+test('uncertain jersey identity may return an explicit abstention without observations', async () => {
+  const abstention = { ...result(), identified: false, observations: [], summary: '남색 상의는 보이지만 11번 등번호를 확인하지 못했습니다.', nextAction: '등번호가 선명하게 보이는 구간을 선택해 주세요.' };
+  const response = await handleAnalysis(request(), { env, fetchImpl: upstream(abstention) });
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).result, abstention);
+});
+
+test('invalid, contradictory and out-of-bounds results never become observations', async () => {
+  const cases = [
+    { ...result(), identified: false },
+    { ...result(), observations: [{ ...result().observations[0], time: 70 }] },
+    { ...result(), observations: [{ ...result().observations[0], time: 56 }] },
+    { ...result(), observations: [{ ...result().observations[0], confidence: 'certain' }] },
+    { ...result(), observations: [{ ...result().observations[0], skill: 'talent' }] },
+    { ...result(), limitations: [] },
+    { ...result(), limitations: ['가'.repeat(501)] },
+    { ...result(), summary: '' },
+  ];
+  for (const value of cases) {
+    const response = await handleAnalysis(request(), { env, fetchImpl: upstream(value) });
+    assert.equal(response.status, 502);
+    assert.equal((await response.json()).code, 'analysis_invalid_result');
+  }
+  const ratingInjected = { ...result(), overallRating: 99, observations: [{ ...result().observations[0], rating: 5 }] };
+  const response = await handleAnalysis(request(), { env, fetchImpl: upstream(ratingInjected) });
+  assert.deepEqual((await response.json()).result, result());
+});
+
+test('provider authentication, rate limits, malformed output and incomplete output are explained safely', async () => {
+  for (const [upstreamStatus, expectedStatus, code] of [[401, 503, 'analysis_credentials_rejected'], [403, 503, 'analysis_credentials_rejected'], [429, 429, 'analysis_rate_limited'], [500, 502, 'analysis_provider_failed']]) {
+    const response = await handleAnalysis(request(), { env, fetchImpl: async () => new Response('secret upstream details', { status: upstreamStatus }) });
+    assert.equal(response.status, expectedStatus);
+    const text = await response.text(); assert.equal(JSON.parse(text).code, code); assert.equal(text.includes('secret upstream details'), false);
+  }
+  const incomplete = await handleAnalysis(request(), { env, fetchImpl: async () => new Response(JSON.stringify({ status: 'incomplete' })) });
+  assert.equal((await incomplete.json()).code, 'analysis_incomplete');
+  const malformed = await handleAnalysis(request(), { env, fetchImpl: async () => new Response(JSON.stringify({ output_text: 'not JSON' })) });
+  assert.equal((await malformed.json()).code, 'analysis_invalid_result');
+});
+
+test('provider timeout and network errors finish with actionable errors', async () => {
+  const timeout = await handleAnalysis(request(), { env, timeoutMs: 5, fetchImpl: async (_url, options) => new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(Object.assign(new Error('timeout'), { name: 'AbortError' })))) });
+  assert.equal(timeout.status, 504);
+  assert.equal((await timeout.json()).code, 'analysis_timeout');
+  const offline = await handleAnalysis(request(), { env, fetchImpl: async () => { throw new Error('private DNS and secrets'); } });
+  assert.equal(offline.status, 502);
+  assert.equal((await offline.json()).code, 'analysis_provider_failed');
+});
+
+test('OPENAI_API_KEY fallback and explicit model work without leaking secrets to responses', async () => {
+  const configured = { OPENAI_API_KEY: 'alternate-private-server-key', SOCCER_ANALYSIS_ACCESS_CODE: env.SOCCER_ANALYSIS_ACCESS_CODE, SOCCER_AI_MODEL: 'gpt-4.1' };
+  const response = await handleAnalysis(request(), { env: configured, fetchImpl: async (_url, options) => {
+    assert.equal(options.headers.Authorization, 'Bearer alternate-private-server-key');
+    assert.equal(JSON.parse(options.body).model, 'gpt-4.1');
+    return upstream(result())();
+  } });
+  const text = await response.text();
+  assert.equal(JSON.parse(text).model, 'gpt-4.1');
+  assert.equal(text.includes(configured.OPENAI_API_KEY), false);
+});
