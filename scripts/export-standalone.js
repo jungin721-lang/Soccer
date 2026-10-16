@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const source = name => readFile(path.join(root, 'public', name), 'utf8');
-const [html, css, domainSource, planSource, mediaSource, analysisSource, appSource] = await Promise.all(['index.html', 'styles.css', 'domain.js', 'plans.js', 'media-store.js', 'analysis-client.js', 'app.js'].map(source));
+const [html, css, domainSource, planSource, mediaSource, autoSource, analysisSource, appSource] = await Promise.all(['index.html', 'styles.css', 'domain.js', 'plans.js', 'media-store.js', 'auto-analysis.js', 'analysis-client.js', 'app.js'].map(source));
 const inlineModule = code => code.replace(/^import .*?;\n/gm, '').replace(/^export /gm, '');
 const localAPI = `
 const STANDALONE_KEY = 'next-xi-standalone-v1';
@@ -31,7 +31,7 @@ app = app.replace('개인 개발 워크스페이스', '브라우저에 저장되
 app = app.replace('성장 공간에 연결하지 못했어요.', '브라우저 저장 공간을 열지 못했어요.');
 app = app.replace('서버 연결을 확인한 뒤 다시 시도해 주세요.', '파일을 일반 브라우저에서 열고 저장소 사용을 허용한 뒤 다시 시도해 주세요.');
 let output = html.replace('<link rel="stylesheet" href="/styles.css">', `<style>${css}</style>`).replace('<script type="module" src="/app.js"></script>', '');
-let javascript = inlineModule(domainSource) + '\n' + inlineModule(planSource) + '\n' + inlineModule(mediaSource) + '\n' + inlineModule(analysisSource) + '\n' + localAPI + '\n' + app;
+let javascript = inlineModule(domainSource) + '\n' + inlineModule(planSource) + '\n' + inlineModule(mediaSource) + '\n' + inlineModule(autoSource) + '\n' + inlineModule(analysisSource) + '\n' + localAPI + '\n' + app;
 for (const name of ['favicon.svg','jersey-11.svg','hero-pitch.svg']) {
   const svg = await source('assets/' + name);
   const data = 'data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64');

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="next-xi-version" content="1.2.0-scene-analysis">
+  <meta name="next-xi-version" content="1.3.0-auto-discovery">
   <meta name="theme-color" content="#15251f">
   <meta name="description" content="경기 속 작은 발견에서 시작하는 유소년 축구 성장 기록. NEXT XI에서 영상, 능력치, 훈련 계획을 연결하세요.">
   <title>NEXT XI — 내일의 선수를 만드는 오늘</title>
@@ -152,6 +152,8 @@ h1,h2,h3,p{word-break:keep-all;overflow-wrap:break-word}.observation-item p{word
 @media(max-width:720px){.dashboard-feedback{padding:20px 18px;flex-direction:column;align-items:stretch}.dashboard-feedback>.button{white-space:normal;min-height:44px}}
 .analysis-panel,.analysis-result{margin:0 0 20px}.analysis-panel .card-heading{align-items:flex-start}.analysis-panel-note{font-size:12px;padding:16px 25px 23px;color:#68775f}.analysis-result{padding:24px}.analysis-result-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px}.analysis-summary{font-size:14px;line-height:1.9;white-space:pre-wrap}.ai-observation{display:flex;align-items:flex-start;gap:14px;border-top:1px solid #edf0e9;margin-top:18px;padding-top:18px}.ai-observation>div{min-width:0;flex:1}.ai-observation p{font-size:13px;line-height:1.9;margin-top:8px;white-space:pre-wrap;overflow-wrap:anywhere}.ai-confidence{display:inline-block;font-size:11px;color:#77826f;margin-left:9px}.analysis-next{margin-top:20px;padding:16px;background:#f2f5eb;border-radius:10px}.analysis-next strong{font-size:13px;color:#45633b}.analysis-next p{margin-top:5px;font-size:13px;white-space:pre-wrap}.analysis-limitations{font-size:12px;color:#746d56;padding-left:18px;line-height:1.9}.analysis-footnote{font-size:11px;color:#748069;border-top:1px solid #e9ede4;margin-top:16px;padding-top:12px;line-height:1.9;overflow-wrap:anywhere}
 .analysis-setup{display:flex;gap:14px;align-items:flex-start;background:#f1f5eb;border-radius:12px;padding:20px;color:#4e6742}.analysis-setup h3{font-size:17px;margin-bottom:10px}.analysis-setup p{font-size:13px;line-height:1.9;margin-bottom:12px;overflow-wrap:anywhere}.analysis-setup details{font-size:12px;margin:16px 0}.analysis-setup summary{cursor:pointer;min-height:44px;display:flex;align-items:center;text-decoration:underline}.analysis-setup .button{margin-top:6px}
+.auto-analysis-status{background:#f6f8f1;border:1px solid #e0e8d5;border-radius:14px;padding:22px 24px;margin:0 0 24px;min-width:0}.analysis-panel>.auto-analysis-status{margin:0 20px 20px}.auto-status-heading{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.auto-status-heading>div{flex:1;min-width:140px}.auto-status-heading h3{font-size:17px;line-height:1.7}.auto-symbol{width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:#e3eed5;border-radius:12px;color:#4e713b;flex-shrink:0}.auto-message{font-size:13px;line-height:1.9;margin:14px 0;overflow-wrap:anywhere}.auto-status-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:15px 0}.auto-status-metrics>span{font-size:11px;color:#6d7f61}.auto-status-metrics strong{display:block;font-size:17px;font-weight:650;color:#35532e;margin-top:3px}.auto-progress-track{height:6px;border-radius:6px;background:#e1e8d8;overflow:hidden;margin:7px 0 12px}.auto-progress-track>span{display:block;height:100%;border-radius:6px;background:#7da65e;transition:width .25s}.auto-coverage{font-size:11px;color:#6b795f;line-height:1.9}.auto-analysis-status>.button{margin-top:14px}.auto-analysis-status[data-auto-status=not_found],.auto-analysis-status[data-auto-status=failed]{background:#fcf8ec;border-color:#eee2bd}.auto-workflow{list-style:none;padding:0;margin:8px 0 18px;display:grid;gap:14px}.auto-workflow li{display:flex;gap:12px;align-items:center}.auto-workflow li>span{width:30px;height:30px;display:flex;justify-content:center;align-items:center;border-radius:50%;background:#eaf1de;color:#638344;font-size:11px;font-weight:650;flex-shrink:0}.auto-workflow strong{display:block;font-size:14px;line-height:1.8}.auto-workflow small{display:block;font-size:12px;color:#6e7d62;line-height:1.8}.auto-resume-note{font-size:13px;background:#edf3e4;border-radius:9px;padding:13px 15px;margin-bottom:15px;color:#4a6639}#analysis-live-status>.auto-analysis-status{margin:18px 0 0;padding:17px}#analysis-live-status .auto-status-heading h3{font-size:14px}#analysis-live-status .auto-status-metrics strong{font-size:15px}#analysis-live-status .auto-status-heading>.badge{display:none}
+@media(max-width:720px){.auto-analysis-status{padding:18px}.analysis-panel>.auto-analysis-status{margin:0 14px 18px;padding:16px}.auto-status-metrics{grid-template-columns:repeat(2,1fr);gap:14px}.auto-status-heading{gap:10px}.auto-status-heading>div{min-width:0}.auto-status-heading h3{font-size:15px}.auto-status-heading>.badge{margin-left:50px}.auto-message{font-size:12px}.auto-workflow{gap:12px}.auto-workflow strong{font-size:14px}.auto-workflow small{font-size:12px}.auto-analysis-status>.button{width:100%;min-height:44px;white-space:normal}#analysis-form .modal-actions>.primary{white-space:normal}}
 @media(max-width:720px){.upload-receipt{padding:18px;gap:12px;align-items:flex-start;flex-wrap:wrap}.upload-receipt>div:not(.receipt-actions){width:calc(100% - 52px)}.receipt-actions{width:100%}.receipt-actions .button{flex:1;font-size:12px;min-height:44px}.analysis-panel .card-heading{flex-direction:column;padding:20px 18px 0}.analysis-panel .card-heading>.button{width:100%;font-size:13px}.analysis-panel-note{padding:14px 18px 20px}.analysis-result{padding:20px 18px}.analysis-result-heading{align-items:flex-start;flex-direction:column}.ai-observation{gap:10px;flex-direction:column}.analysis-setup{padding:17px;gap:10px}.upload-actions>.form-error{font-size:13px}.analysis-result .badge{white-space:normal}}
 .original-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;color:#bfd0ab;font-size:12px;padding:20px}
 .video-player>video{display:block;width:100%;height:100%;object-fit:contain;position:absolute;inset:0;background:#111e18}
@@ -230,7 +232,7 @@ function seedState() {
   return { revision: 0, player: { name: '', age: 11, number: 11, kit: '남색', position: '미등록', weeklyTraining: 3 },
     videos: [
       { id: 'arJ6xMRKnbw', title: '남색 11번 · 경기 영상', start: 57, source: '제공한 샘플 영상', addedAt: '2026-10-16T00:00:00.000Z' }
-    ], observations: [], completed: [], snapshots: [], analyses: [] };
+    ], observations: [], completed: [], snapshots: [], analyses: [], autoAnalyses: [] };
 }
 function validVideo(video) {
   if (!video || typeof video.title !== 'string' || video.title.length < 1 || video.title.length > 100 || typeof video.addedAt !== 'string' || !Number.isFinite(Date.parse(video.addedAt))) return false;
@@ -284,10 +286,42 @@ function cleanAnalysis(analysis) {
     },
   };
 }
+function validAutoAnalysis(job, videos) {
+  if (!job || typeof job.id !== 'string' || !/^[\w-]{1,80}$/.test(job.id)
+    || !videos.some(video => video.kind === 'file' && video.id === job.videoId)
+    || typeof job.createdAt !== 'string' || !Number.isFinite(Date.parse(job.createdAt))
+    || typeof job.updatedAt !== 'string' || !Number.isFinite(Date.parse(job.updatedAt))
+    || typeof job.model !== 'string' || job.model.length > 100
+    || typeof job.duration !== 'number' || !Number.isFinite(job.duration) || job.duration < 1 || job.duration > 86400
+    || !Number.isInteger(job.sampleCount) || job.sampleCount < 1 || job.sampleCount > 120
+    || !Number.isInteger(job.sampledCount) || job.sampledCount < 0 || job.sampledCount > job.sampleCount
+    || typeof job.interval !== 'number' || !Number.isFinite(job.interval) || job.interval <= 0 || job.interval > 86400
+    || !Number.isInteger(job.detectedCount) || job.detectedCount < 0 || job.detectedCount > 120
+    || !Number.isInteger(job.selectedCount) || job.selectedCount < 0 || job.selectedCount > 6
+    || !Number.isInteger(job.completedCount) || job.completedCount < 0 || job.completedCount > job.selectedCount
+    || !['scanning', 'analyzing', 'completed', 'partial', 'not_found', 'cancelled', 'failed', 'interrupted'].includes(job.status)
+    || !Array.isArray(job.detections) || job.detections.length !== job.detectedCount
+    || !Array.isArray(job.segments) || job.segments.length !== job.selectedCount
+    || typeof job.message !== 'string' || job.message.length > 1500) return false;
+  if (job.detections.some(detection => !detection || typeof detection.time !== 'number' || !Number.isFinite(detection.time) || detection.time < 0 || detection.time > job.duration
+    || !['medium', 'high'].includes(detection.confidence) || typeof detection.reason !== 'string' || !detection.reason.trim() || detection.reason.length > 500)) return false;
+  return job.segments.every(segment => segment && typeof segment.start === 'number' && Number.isFinite(segment.start) && segment.start >= 0
+    && typeof segment.end === 'number' && Number.isFinite(segment.end) && segment.end <= job.duration && segment.end - segment.start >= 1 && segment.end - segment.start <= 12);
+}
+function cleanAutoAnalysis(job) {
+  return {
+    id: job.id, videoId: job.videoId, createdAt: job.createdAt, updatedAt: job.updatedAt, model: job.model,
+    duration: job.duration, sampleCount: job.sampleCount, sampledCount: job.sampledCount, interval: job.interval,
+    detectedCount: job.detectedCount, selectedCount: job.selectedCount, completedCount: job.completedCount, status: job.status,
+    detections: job.detections.map(detection => ({ time: detection.time, confidence: detection.confidence, reason: detection.reason })),
+    segments: job.segments.map(segment => ({ start: segment.start, end: segment.end })), message: job.message,
+  };
+}
 function validateState(value) {
   if (!value || typeof value !== 'object') throw new Error('저장할 데이터가 올바르지 않습니다.');
   const { player, videos, observations, completed, snapshots } = value;
   const analyses = value.analyses === undefined ? [] : value.analyses;
+  const autoAnalyses = value.autoAnalyses === undefined ? [] : value.autoAnalyses;
   if (!player || typeof player.name !== 'string' || player.name.length > 30 || player.number !== 11 || player.kit !== '남색' || !Number.isInteger(player.age) || player.age < 5 || player.age > 18 || typeof player.position !== 'string' || player.position.length > 30 || !Number.isInteger(player.weeklyTraining) || player.weeklyTraining < 0 || player.weeklyTraining > 14) throw new Error('선수 정보를 확인해 주세요. 분석 대상은 남색 11번입니다.');
   if (!Array.isArray(videos) || videos.length > 100 || videos.some(v => !validVideo(v))) throw new Error('영상 정보를 확인해 주세요.');
   if (new Set(videos.map(v => v.id)).size !== videos.length) throw new Error('이미 등록된 영상입니다.');
@@ -297,7 +331,9 @@ function validateState(value) {
   if (!Array.isArray(snapshots) || snapshots.length > 100 || snapshots.some(s => !s || typeof s.id !== 'string' || !Number.isFinite(Date.parse(s.createdAt)) || !Number.isInteger(s.observationCount) || s.observationCount < 1 || !Array.isArray(s.scores) || s.scores.length !== 8 || s.scores.some(n => n !== null && (typeof n !== 'number' || !Number.isFinite(n) || n < 1 || n > 5)))) throw new Error('성장 기록을 확인해 주세요.');
   if (!Array.isArray(analyses) || analyses.length > 100 || analyses.some(analysis => !validAnalysis(analysis, videos))) throw new Error('AI 분석 기록을 확인해 주세요.');
   if (new Set(analyses.map(analysis => analysis.id)).size !== analyses.length) throw new Error('중복된 AI 분석 기록입니다.');
-  return { player: { ...player }, videos: videos.map(cleanVideo), observations: observations.map(o => ({ id: o.id, videoId: o.videoId, skill: o.skill, time: o.time, rating: o.rating, note: o.note, type: o.type, createdAt: o.createdAt })), completed: [...new Set(completed)], snapshots: snapshots.map(s => ({ id: s.id, createdAt: s.createdAt, observationCount: s.observationCount, scores: s.scores })), analyses: analyses.map(cleanAnalysis) };
+  if (!Array.isArray(autoAnalyses) || autoAnalyses.length > 100 || autoAnalyses.some(job => !validAutoAnalysis(job, videos))) throw new Error('자동 분석 진행 기록을 확인해 주세요.');
+  if (new Set(autoAnalyses.map(job => job.id)).size !== autoAnalyses.length || new Set(autoAnalyses.map(job => job.videoId)).size !== autoAnalyses.length) throw new Error('중복된 자동 분석 진행 기록입니다.');
+  return { player: { ...player }, videos: videos.map(cleanVideo), observations: observations.map(o => ({ id: o.id, videoId: o.videoId, skill: o.skill, time: o.time, rating: o.rating, note: o.note, type: o.type, createdAt: o.createdAt })), completed: [...new Set(completed)], snapshots: snapshots.map(s => ({ id: s.id, createdAt: s.createdAt, observationCount: s.observationCount, scores: s.scores })), analyses: analyses.map(cleanAnalysis), autoAnalyses: autoAnalyses.map(cleanAutoAnalysis) };
 }
 
 
@@ -645,7 +681,54 @@ function deleteOriginalVideo(id) {
   return removeVideo(id);
 }
 
-// Only the selected short segment is sent to the analysis server. The original
+// Planning uses only timestamps and detections. It never scores a player or
+// assumes that unsampled time has been observed.
+function makeAutoScanPlan(duration) {
+  if (!Number.isFinite(duration) || duration < 1 || duration > 86400) {
+    throw new Error('자동 분석은 1초 이상, 24시간 이하의 원본 영상에서 이용할 수 있습니다.');
+  }
+  const lastTime = Math.max(0, duration - Math.min(0.1, duration / 10));
+  const sampleCount = Math.min(120, Math.max(2, Math.ceil(lastTime / 5) + 1));
+  const interval = lastTime / (sampleCount - 1);
+  const times = Array.from({ length: sampleCount }, (_, index) => index === sampleCount - 1 ? lastTime : index * interval);
+  return { duration, sampleCount, interval, times };
+}
+
+function selectAutoSegments(detections, duration, maximum = 6) {
+  makeAutoScanPlan(duration);
+  if (!Array.isArray(detections) || !Number.isInteger(maximum) || maximum < 1 || maximum > 6) return [];
+  const length = Math.min(12, duration);
+  const candidates = detections.filter(item => item && Number.isFinite(item.time) && item.time >= 0 && item.time <= duration && ['medium', 'high'].includes(item.confidence)).map(item => {
+    const start = Math.max(0, Math.min(duration - length, item.time - length / 2));
+    let end = Math.min(duration, start + length);
+    // Avoid an IEEE-754 subtraction of 12.000000000000002 at fractional times.
+    if (end - start > 12) end -= 0.000001;
+    return { start, end, time: item.time, confidence: item.confidence };
+  }).sort((a, b) => a.start - b.start || Number(b.confidence === 'high') - Number(a.confidence === 'high'));
+  const unique = candidates.filter((item, index) => index === 0 || Math.abs(item.start - candidates[index - 1].start) > 0.001);
+  const selected = [];
+  const compatible = item => selected.every(other => item.start >= other.end || item.end <= other.start);
+  while (selected.length < maximum) {
+    const remaining = unique.filter(compatible);
+    if (!remaining.length) break;
+    // Begin with the earliest visible evidence, then cover the most distant
+    // remaining evidence. This prevents six adjacent detections using the budget.
+    let next = remaining[0];
+    if (selected.length) {
+      const distance = item => Math.min(...selected.map(other => Math.abs((item.start + item.end) / 2 - (other.start + other.end) / 2)));
+      next = remaining.reduce((best, item) => {
+        const difference = distance(item) - distance(best);
+        if (difference > 0.000001 || (Math.abs(difference) <= 0.000001 && item.confidence === 'high' && best.confidence !== 'high')) return item;
+        return best;
+      });
+    }
+    selected.push(next);
+  }
+  return selected.sort((a, b) => a.start - b.start).map(({ start, end }) => ({ start, end }));
+}
+
+
+// Only sampled still images and selected short segments go to the server. The original
 // video stays in the browser, and credentials for the AI provider never belong
 // in this module or the generated static page.
 const ANALYSIS_ENDPOINT = '/api/analysis';
@@ -654,7 +737,7 @@ const ANALYSIS_MAX_FRAMES = 24;
 const ANALYSIS_FRAME_INTERVAL = 0.5;
 const ANALYSIS_FRAME_BYTES = 250_000;
 const ANALYSIS_PAYLOAD_BYTES = 3_000_000;
-const ANALYSIS_LONG_EDGE = 768;
+const ANALYSIS_LONG_EDGE = 1280;
 
 function analysisCancelledError() {
   const error = new Error('분석을 취소했습니다. 영상은 기기에 그대로 보관됩니다.');
@@ -674,13 +757,16 @@ function analysisContentIsJSON(response) {
   return (response.headers.get('content-type') || '').toLowerCase().includes('application/json');
 }
 
-function analysisHTTPError(status) {
+function analysisHTTPError(status, code) {
+  if (code === 'analysis_credentials_rejected') return new Error('OpenAI가 서버의 API 키 인증을 거절했습니다. 운영자가 Netlify에 등록한 전체 API 키와 호출 권한을 확인해야 합니다.');
+  if (code === 'analysis_timeout') return new Error('AI 응답 시간이 초과됐습니다. 완료된 결과는 보관되어 있으니 이어서 분석할 수 있습니다.');
+  if (code === 'analysis_invalid_result') return new Error('장면 근거를 확인할 수 있는 AI 응답을 받지 못했습니다. 이번 구간의 관찰을 만들지 않았으며 완료된 결과는 보관됩니다.');
   if (status === 401 || status === 403) return new Error('분석 이용 코드가 올바르지 않습니다. 코드를 확인한 뒤 다시 시도해 주세요.');
   if (status === 404 || status === 405) return new Error('이 사이트에 분석 서버가 연결되지 않았습니다. 원본 저장은 완료되어 있으며, 분석 서버 연결 후 평가할 수 있습니다.');
-  if (status === 413) return new Error('선택한 장면의 전송 용량이 큽니다. 더 짧은 구간을 선택해 주세요.');
+  if (status === 413) return new Error('장면 전송 용량이 허용 크기를 넘었습니다. 완료된 결과는 보관되며 다시 시도할 수 있습니다.');
   if (status === 429) return new Error('지금은 분석 요청이 많습니다. 잠시 후 다시 시도해 주세요.');
   if (status === 503) return new Error('분석 서버 설정이 아직 완료되지 않았습니다. 원본 저장과 재생은 계속 이용할 수 있습니다.');
-  if (status === 400 || status === 422) return new Error('이 구간을 분석 요청으로 처리하지 못했습니다. 다른 1~12초 구간을 선택해 주세요.');
+  if (status === 400 || status === 422) return new Error('영상 장면을 분석 요청으로 처리하지 못했습니다. 완료된 결과는 보관되며 다시 시도할 수 있습니다.');
   return new Error('분석 서버에서 결과를 받지 못했습니다. 원본은 보관되어 있으니 잠시 후 다시 시도해 주세요.');
 }
 
@@ -750,22 +836,37 @@ function analysisWaitForVideo(video, { events, predicate, signal, message, trigg
   });
 }
 
-function analysisValidateRequest({ blob, start, end, videoId, accessCode, consent, signal }) {
+function analysisValidateOriginal({ blob, videoId, accessCode, consent, signal }) {
   analysisCheckSignal(signal);
   if (!(blob instanceof Blob) || blob.size <= 0) throw new Error('분석할 원본 파일을 이 기기에서 찾지 못했습니다. 원본을 다시 연결해 주세요.');
-  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end - start < 1 || end - start > ANALYSIS_MAX_SECONDS) {
-    throw new Error('영상 안에서 1~12초 길이의 분석 구간을 선택해 주세요.');
-  }
   if (typeof videoId !== 'string' || !videoId.trim() || videoId.length > 200) throw new Error('영상 정보를 확인할 수 없습니다. 원본을 다시 연결해 주세요.');
   if (typeof accessCode !== 'string' || !accessCode.trim() || accessCode.length > 256) throw new Error('분석 이용 코드를 입력해 주세요.');
   if (consent !== true) throw new Error('선택한 장면을 분석 서버에 전송하는 데 동의해 주세요.');
   if (!globalThis.document?.createElement || !globalThis.URL?.createObjectURL) throw new Error('이 브라우저에서는 영상 장면을 준비할 수 없습니다. 최신 Safari 또는 Chrome에서 이용해 주세요.');
 }
 
-async function analysisExtractFrames({ blob, start, end, onProgress, signal }) {
+function analysisValidateRequest(request) {
+  const { start, end, referenceTime } = request;
+  // Validate timestamps before accessing the browser, including in a plain Node
+  // environment where only request-boundary tests run.
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start < 0 || end - start < 1 || end - start > ANALYSIS_MAX_SECONDS) {
+    throw new Error('영상 안에서 1~12초 길이의 분석 구간을 선택해 주세요.');
+  }
+  if (referenceTime !== undefined && (!Number.isFinite(referenceTime) || referenceTime < start || referenceTime >= end)) throw new Error('선수 식별 근거의 시각이 분석 구간과 일치하지 않습니다.');
+  analysisValidateOriginal(request);
+}
+
+async function analysisOpenVideo(blob, signal, onProgress) {
   const video = document.createElement('video');
   const canvas = document.createElement('canvas');
   let objectURL;
+  const close = () => {
+    try { video.pause(); video.removeAttribute('src'); video.load(); }
+    catch { /* An unsupported codec must not prevent resource cleanup. */ }
+    canvas.width = 0;
+    canvas.height = 0;
+    if (objectURL) { URL.revokeObjectURL(objectURL); objectURL = null; }
+  };
   try {
     video.preload = 'auto';
     video.muted = true;
@@ -773,7 +874,7 @@ async function analysisExtractFrames({ blob, start, end, onProgress, signal }) {
     video.setAttribute('playsinline', '');
     video.setAttribute('webkit-playsinline', '');
     objectURL = URL.createObjectURL(blob);
-    onProgress?.({ stage: 'preparing', message: '원본 영상에서 선택한 구간을 준비하고 있어요.' });
+    onProgress?.({ stage: 'preparing', message: '원본 영상의 길이와 재생 상태를 확인하고 있어요.' });
     await analysisWaitForVideo(video, {
       events: ['loadedmetadata', 'loadeddata', 'canplay', 'progress'],
       predicate: () => video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0,
@@ -782,63 +883,87 @@ async function analysisExtractFrames({ blob, start, end, onProgress, signal }) {
       trigger: () => { video.src = objectURL; video.load(); },
       timeout: 20_000,
     });
-    if (!Number.isFinite(video.duration) || video.duration < 1 || start >= video.duration || end > video.duration + 0.05) {
-      throw new Error('선택한 구간이 영상 길이를 벗어납니다. 영상 안에서 1~12초 구간을 선택해 주세요.');
-    }
-    const scale = Math.min(1, ANALYSIS_LONG_EDGE / Math.max(video.videoWidth, video.videoHeight));
-    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
-    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+    makeAutoScanPlan(video.duration);
     const context = canvas.getContext('2d', { alpha: false });
     if (!context) throw new Error('이 브라우저에서 영상 장면을 준비하지 못했습니다. Safari 또는 Chrome에서 다시 시도해 주세요.');
-    const count = Math.min(ANALYSIS_MAX_FRAMES, Math.ceil((end - start) / ANALYSIS_FRAME_INTERVAL));
-    const frames = [];
-    for (let index = 0; index < count; index += 1) {
-      analysisCheckSignal(signal);
-      const target = start + index * ANALYSIS_FRAME_INTERVAL;
-      if (target >= end || target >= video.duration) break;
-      await analysisWaitForVideo(video, {
-        events: ['seeked', 'loadeddata', 'canplay'],
-        predicate: () => !video.seeking && video.readyState >= 2 && Math.abs(video.currentTime - target) < 0.1,
-        signal,
-        message: '이 장면을 불러오지 못했습니다. 다른 구간을 선택하거나 MP4 영상으로 다시 시도해 주세요.',
-        trigger: () => { if (Math.abs(video.currentTime - target) > 0.001) video.currentTime = target; },
-      });
-      analysisCheckSignal(signal);
-      let image;
-      try {
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        image = canvas.toDataURL('image/jpeg', 0.6);
-      } catch {
-        throw new Error('이 장면을 이미지로 준비하지 못했습니다. 다른 구간이나 MP4 원본으로 다시 시도해 주세요.');
-      }
-      if (!image.startsWith('data:image/jpeg;base64,') || analysisByteLength(image) > ANALYSIS_FRAME_BYTES) {
-        throw new Error('장면 이미지의 용량이 큽니다. 더 낮은 해상도의 MP4 원본으로 다시 시도해 주세요.');
-      }
-      // Some browsers quantize media time. Keep its measured value inside the
-      // selected bounds without rounding a fractional start to an earlier time.
-      frames.push({ time: Math.max(start, Math.min(end, video.currentTime)), image });
-      onProgress?.({ stage: 'extracting', message: `분석할 장면을 준비하고 있어요. ${frames.length}/${count}`, current: frames.length, total: count });
-    }
-    if (frames.length < 2 || frames.some((frame, index) => index > 0 && frame.time <= frames[index - 1].time)) {
-      throw new Error('분석에 필요한 연속 장면을 준비하지 못했습니다. 다른 1~12초 구간을 선택해 주세요.');
-    }
-    return frames;
-  } finally {
-    try { video.pause(); video.removeAttribute('src'); video.load(); }
-    catch { /* An unsupported codec must not prevent resource cleanup. */ }
-    canvas.width = 0;
-    canvas.height = 0;
-    if (objectURL) URL.revokeObjectURL(objectURL);
+    return { video, canvas, context, duration: video.duration, close };
+  } catch (error) {
+    close();
+    throw error;
   }
 }
 
-async function analyzeOriginalClip({ blob, start, end, videoId, accessCode, consent, onProgress, signal } = {}) {
-  const request = { blob, start, end, videoId, accessCode, consent, onProgress, signal };
-  analysisValidateRequest(request);
-  const frames = await analysisExtractFrames(request);
+async function analysisCaptureFrame(session, target, { signal, longEdge = ANALYSIS_LONG_EDGE, maxBytes = ANALYSIS_FRAME_BYTES, start = 0, end = session.duration } = {}) {
+  const { video, canvas, context } = session;
   analysisCheckSignal(signal);
-  const body = JSON.stringify({ frames, videoId, start, end, accessCode, consent: true });
-  if (analysisByteLength(body) > ANALYSIS_PAYLOAD_BYTES) throw new Error('선택한 장면의 전송 용량이 큽니다. 더 짧은 구간을 선택해 주세요.');
+  const needsSeek = Math.abs(video.currentTime - target) > 0.001;
+  let seekCompleted = !needsSeek;
+  const markSeeked = () => { seekCompleted = true; };
+  if (needsSeek) video.addEventListener('seeked', markSeeked);
+  try {
+    await analysisWaitForVideo(video, {
+      events: ['seeked', 'loadeddata', 'canplay'],
+      predicate: () => seekCompleted && !video.seeking && video.readyState >= 2 && Math.abs(video.currentTime - target) < 0.1,
+      signal,
+      message: '영상 장면을 불러오지 못했습니다. 완료된 결과는 보관되며 다시 시도할 수 있습니다.',
+      trigger: () => { if (needsSeek) video.currentTime = target; },
+    });
+  } finally {
+    if (needsSeek) video.removeEventListener('seeked', markSeeked);
+  }
+  analysisCheckSignal(signal);
+  let image;
+  let edge = longEdge;
+  do {
+    const scale = Math.min(1, edge / Math.max(video.videoWidth, video.videoHeight));
+    canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+    canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+    try {
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      image = canvas.toDataURL('image/jpeg', 0.6);
+    } catch {
+      throw new Error('이 장면을 이미지로 준비하지 못했습니다. MP4 원본으로 다시 시도해 주세요.');
+    }
+    if (!image.startsWith('data:image/jpeg;base64,')) throw new Error('영상 장면을 JPEG 이미지로 준비하지 못했습니다.');
+    if (analysisByteLength(image) <= maxBytes) break;
+    edge = Math.floor(edge * 0.8);
+  } while (edge >= 256);
+  if (analysisByteLength(image) > maxBytes) throw new Error('장면 이미지의 용량을 줄이지 못했습니다. 완료된 결과는 보관되며 다시 시도할 수 있습니다.');
+  return { time: Math.max(start, Math.min(end, video.currentTime)), image };
+}
+
+async function analysisExtractFrames({ blob, start, end, referenceTime, onProgress, signal }) {
+  const session = await analysisOpenVideo(blob, signal, onProgress);
+  try {
+    if (start >= session.duration || end > session.duration + 0.05) throw new Error('자동으로 준비한 구간이 영상 길이와 일치하지 않습니다. 처음부터 다시 분석해 주세요.');
+    const count = Math.min(ANALYSIS_MAX_FRAMES, Math.ceil((end - start) / ANALYSIS_FRAME_INTERVAL));
+    const times = Array.from({ length: count }, (_, index) => start + index * ANALYSIS_FRAME_INTERVAL).filter(time => time < end && time < session.duration);
+    if (referenceTime !== undefined) {
+      const closest = times.reduce((best, time, index) => Math.abs(time - referenceTime) < Math.abs(times[best] - referenceTime) ? index : best, 0);
+      times[closest] = referenceTime;
+      times.sort((a, b) => a - b);
+    }
+    const frames = [];
+    for (let index = 0; index < times.length; index += 1) {
+      analysisCheckSignal(signal);
+      const target = times[index];
+      const imageBudget = referenceTime === undefined ? Math.floor(2_700_000 / times.length) : (target === referenceTime ? ANALYSIS_FRAME_BYTES : Math.floor((2_700_000 - ANALYSIS_FRAME_BYTES) / (times.length - 1)));
+      frames.push(await analysisCaptureFrame(session, target, { signal, start, end, maxBytes: Math.min(ANALYSIS_FRAME_BYTES, imageBudget) }));
+      onProgress?.({ stage: 'extracting', message: `분석할 장면을 준비하고 있어요. ${frames.length}/${times.length}`, current: frames.length, total: times.length });
+    }
+    if (frames.length < 2 || frames.some((frame, index) => index > 0 && frame.time <= frames[index - 1].time)) {
+      throw new Error('자동 분석에 필요한 연속 장면을 준비하지 못했습니다. 완료된 결과는 보관되어 있으니 다시 시도해 주세요.');
+    }
+    return frames;
+  } finally {
+    session.close();
+  }
+}
+
+async function analysisPost(payload, signal, onProgress) {
+  analysisCheckSignal(signal);
+  const body = JSON.stringify(payload);
+  if (analysisByteLength(body) > ANALYSIS_PAYLOAD_BYTES) throw new Error('자동 분석 장면의 전송 용량을 줄이지 못했습니다. 완료된 결과는 보관되어 있으니 다시 시도해 주세요.');
   const controller = new AbortController();
   let timedOut = false;
   const abort = () => controller.abort();
@@ -846,7 +971,7 @@ async function analyzeOriginalClip({ blob, start, end, videoId, accessCode, cons
   const timer = setTimeout(() => { timedOut = true; controller.abort(); }, 90_000);
   try {
     analysisCheckSignal(signal);
-    onProgress?.({ stage: 'sending', message: `선택한 ${frames.length}개 장면을 분석 서버로 전송하고 있어요.`, current: frames.length, total: frames.length });
+    onProgress?.({ stage: 'sending', message: `${payload.frames.length}개 장면을 분석 서버로 전송하고 있어요.`, current: payload.frames.length, total: payload.frames.length });
     const pendingResponse = fetch(ANALYSIS_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -856,17 +981,16 @@ async function analyzeOriginalClip({ blob, start, end, videoId, accessCode, cons
     onProgress?.({ stage: 'analyzing', message: '분석 서버의 응답을 기다리고 있어요. 선수 식별이 어려운 장면은 평가를 보류합니다.' });
     const response = await pendingResponse;
     if (!analysisContentIsJSON(response)) throw analysisHTTPError(response.ok ? 404 : response.status);
-    if (!response.ok) throw analysisHTTPError(response.status);
-    let payload;
-    try { payload = await response.json(); }
-    catch { throw new Error('분석 결과를 읽지 못했습니다. 잠시 후 다시 시도해 주세요.'); }
-    const result = payload?.result;
-    if (!result || typeof result.identified !== 'boolean' || typeof result.summary !== 'string' || !Array.isArray(result.observations) || !Array.isArray(result.limitations)) {
-      throw new Error('분석 결과의 형식이 올바르지 않습니다. 잠시 후 다시 시도해 주세요.');
+    if (!response.ok) {
+      let serverCode;
+      try { serverCode = (await response.json()).code; } catch {}
+      throw analysisHTTPError(response.status, serverCode);
     }
+    let responseData;
+    try { responseData = await response.json(); }
+    catch { throw new Error('분석 결과를 읽지 못했습니다. 잠시 후 다시 시도해 주세요.'); }
     analysisCheckSignal(signal);
-    onProgress?.({ stage: 'complete', message: result.identified ? '선택한 구간의 관찰 결과를 받았어요.' : '선수 식별이 어려워 평가를 보류했어요.' });
-    return payload;
+    return responseData;
   } catch (error) {
     if (signal?.aborted) throw analysisCancelledError();
     if (timedOut) throw new Error('분석 서버의 응답이 늦어지고 있습니다. 원본은 보관되어 있으니 잠시 후 다시 시도해 주세요.');
@@ -875,6 +999,157 @@ async function analyzeOriginalClip({ blob, start, end, videoId, accessCode, cons
   } finally {
     clearTimeout(timer);
     signal?.removeEventListener('abort', abort);
+  }
+}
+
+function analysisValidText(value, maximum) {
+  return typeof value === 'string' && value.trim().length > 0 && value.length <= maximum;
+}
+
+function analysisValidateClipResponse(payload, start, end) {
+  const result = payload?.result;
+  const skills = ['touch', 'pass', 'dribble', 'shoot', 'defend', 'scan', 'move', 'team'];
+  if (!result || typeof result.identified !== 'boolean' || !analysisValidText(result.summary, 1800) || !Array.isArray(result.observations) || result.observations.length > 6 || !Array.isArray(result.limitations) || result.limitations.length < 1 || result.limitations.length > 8 || result.limitations.some(item => !analysisValidText(item, 500)) || !analysisValidText(result.nextAction, 1200) || !analysisValidText(payload.model, 100)) {
+    throw new Error('분석 결과의 형식이 올바르지 않습니다. 완료된 결과는 보관되며 다시 시도할 수 있습니다.');
+  }
+  if (!result.identified && result.observations.length) throw new Error('선수 식별 결과가 일치하지 않아 이 구간의 관찰을 저장하지 않았습니다.');
+  for (const item of result.observations) {
+    if (!item || !skills.includes(item.skill) || !['strength', 'focus', 'note'].includes(item.type) || !['low', 'medium', 'high'].includes(item.confidence) || !Number.isInteger(item.time) || item.time < Math.ceil(start) || item.time > Math.floor(end) || !analysisValidText(item.note, 1200)) throw new Error('장면 근거를 확인할 수 없어 이 구간의 관찰을 저장하지 않았습니다.');
+  }
+  return payload;
+}
+
+async function analyzeOriginalClip({ blob, start, end, referenceTime, videoId, accessCode, consent, onProgress, signal } = {}) {
+  const request = { blob, start, end, referenceTime, videoId, accessCode, consent, onProgress, signal };
+  analysisValidateRequest(request);
+  const frames = await analysisExtractFrames(request);
+  const payload = analysisValidateClipResponse(await analysisPost({ frames, videoId, start, end, accessCode, consent: true }, signal, onProgress), start, end);
+  onProgress?.({ stage: 'complete', message: payload.result.identified ? '선택한 구간의 관찰 결과를 받았어요.' : '선수 식별이 어려워 평가를 보류했어요.' });
+  return payload;
+}
+
+function analysisValidateDiscovery(payload, frames) {
+  if (!payload || payload.mode !== 'discover' || !Array.isArray(payload.detections) || payload.detections.length > frames.length || !analysisValidText(payload.summary, 1500) || !Array.isArray(payload.limitations) || payload.limitations.length > 8 || payload.limitations.some(item => !analysisValidText(item, 500)) || !analysisValidText(payload.model, 100)) {
+    throw new Error('선수 탐색 결과의 형식이 올바르지 않습니다. 완료된 탐색 기록은 보관됩니다.');
+  }
+  const used = new Set();
+  const detections = payload.detections.map(item => {
+    if (!item || !Number.isFinite(item.time) || !['medium', 'high'].includes(item.confidence) || !analysisValidText(item.reason, 500)) throw new Error('선수 식별 근거를 확인할 수 없어 이번 탐색 결과를 저장하지 않았습니다.');
+    let index = frames.findIndex(frame => frame.time === item.time);
+    if (index < 0) index = frames.findIndex(frame => Math.abs(frame.time - item.time) <= 0.15);
+    if (index < 0 || used.has(index)) throw new Error('선수 탐색 시각이 보낸 장면과 일치하지 않아 이번 탐색 결과를 저장하지 않았습니다.');
+    used.add(index);
+    return { time: frames[index].time, confidence: item.confidence, reason: item.reason.trim() };
+  }).sort((a, b) => a.time - b.time);
+  return { ...payload, detections };
+}
+
+function analysisCopyReport(report) {
+  return { ...report, detections: report.detections.map(item => ({ ...item })), segments: report.segments.map(item => ({ ...item })) };
+}
+
+function analysisInitialReport(plan, snapshot) {
+  const report = { duration: plan.duration, sampleCount: plan.sampleCount, sampledCount: 0, interval: plan.interval, detectedCount: 0, selectedCount: 0, completedCount: 0, status: 'scanning', detections: [], segments: [], message: '전체 시간대 표본 탐색을 시작합니다.', model: '' };
+  if (!snapshot) return report;
+  const valid = Math.abs(snapshot.duration - plan.duration) <= 0.01 && snapshot.sampleCount === plan.sampleCount && Number.isFinite(snapshot.interval) && Math.abs(snapshot.interval - plan.interval) <= 0.000001 && Number.isInteger(snapshot.sampledCount) && snapshot.sampledCount >= 0 && snapshot.sampledCount <= plan.sampleCount && Array.isArray(snapshot.detections) && snapshot.detections.length <= snapshot.sampledCount && snapshot.detections.every((item, index, items) => item && Number.isFinite(item.time) && ['medium', 'high'].includes(item.confidence) && analysisValidText(item.reason, 500) && plan.times.slice(0, snapshot.sampledCount).some(time => Math.abs(time - item.time) <= 0.15) && (index === 0 || item.time > items[index - 1].time)) && Array.isArray(snapshot.segments) && snapshot.segments.length <= 6 && Number.isInteger(snapshot.completedCount) && snapshot.completedCount >= 0 && snapshot.completedCount <= snapshot.segments.length;
+  if (!valid) throw new Error('이전 자동 분석 기록이 이 원본 영상과 일치하지 않습니다. 새 분석으로 다시 시작해 주세요.');
+  const expected = snapshot.sampledCount === plan.sampleCount ? selectAutoSegments(snapshot.detections, plan.duration) : [];
+  const selectionPending = snapshot.segments.length === 0 && snapshot.completedCount === 0;
+  if (!selectionPending && (snapshot.segments.length !== expected.length || snapshot.segments.some((item, index) => !item || Math.abs(item.start - expected[index].start) > 0.000001 || Math.abs(item.end - expected[index].end) > 0.000001))) throw new Error('이전 자동 분석 구간을 확인하지 못했습니다. 새 분석으로 다시 시작해 주세요.');
+  report.sampledCount = snapshot.sampledCount;
+  report.detections = snapshot.detections.map(item => ({ time: item.time, confidence: item.confidence, reason: item.reason }));
+  report.detectedCount = report.detections.length;
+  report.segments = expected;
+  report.selectedCount = expected.length;
+  report.completedCount = snapshot.completedCount;
+  report.model = typeof snapshot.model === 'string' && snapshot.model.length <= 100 ? snapshot.model : '';
+  report.message = `저장된 표본 ${report.sampledCount}개와 구간 결과 ${report.completedCount}개를 유지하며 이어서 시작합니다.`;
+  return report;
+}
+
+async function analyzeOriginalVideo({ blob, videoId, accessCode, consent, onProgress, onScan, onClip, signal, scanSnapshot } = {}) {
+  analysisValidateOriginal({ blob, videoId, accessCode, consent, signal });
+  if (typeof onScan !== 'function' || typeof onClip !== 'function') throw new Error('분석 결과 저장 기능을 연결하지 못했습니다. 페이지를 다시 연 뒤 시도해 주세요.');
+  let report;
+  let session;
+  try {
+    session = await analysisOpenVideo(blob, signal, onProgress);
+    const plan = makeAutoScanPlan(session.duration);
+    report = analysisInitialReport(plan, scanSnapshot);
+    await onScan(analysisCopyReport(report));
+    // One decoder and canvas are reused throughout discovery. At most twelve
+    // small JPEGs exist at once; no complete video or all scan frames are read.
+    while (report.sampledCount < plan.sampleCount) {
+      analysisCheckSignal(signal);
+      const frames = [];
+      let imageBytes = 0;
+      for (let index = report.sampledCount; index < plan.sampleCount && frames.length < 12; index += 1) {
+        const frame = await analysisCaptureFrame(session, plan.times[index], { signal, longEdge: 1280 });
+        const frameBytes = analysisByteLength(frame.image);
+        if (frames.length && imageBytes + frameBytes > 2_000_000) break;
+        if (frames.length && frame.time <= frames[frames.length - 1].time) throw new Error('영상의 시간순 표본을 준비하지 못했습니다. 완료된 결과는 보관됩니다.');
+        frames.push(frame);
+        imageBytes += frameBytes;
+        onProgress?.({ stage: 'scanning', message: `전체 시간대 표본 탐색 · 장면 ${index + 1}/${plan.sampleCount} 준비`, current: index + 1, total: plan.sampleCount });
+      }
+      const payload = analysisValidateDiscovery(await analysisPost({ mode: 'discover', videoId, start: 0, end: plan.duration, frames, accessCode, consent: true }, signal, onProgress), frames);
+      // Advance only after a valid response. A failed paid request is never
+      // retried automatically, and its sample indices remain pending on resume.
+      report.sampledCount += frames.length;
+      report.detections.push(...payload.detections);
+      report.detectedCount = report.detections.length;
+      report.model = payload.model;
+      report.message = `전체 시간대 표본 ${report.sampledCount}/${plan.sampleCount}개 확인 · 남색 11번 식별 표본 ${report.detectedCount}개`;
+      await onScan(analysisCopyReport(report));
+      onProgress?.({ stage: 'scanning', message: report.message, current: report.sampledCount, total: plan.sampleCount });
+    }
+    session.close();
+    session = null;
+    analysisCheckSignal(signal);
+    if (!report.detections.length) {
+      report.status = 'not_found';
+      report.message = `${report.sampleCount}개 표본에서 남색 상의와 등번호 11을 함께 확인하지 못해 평가를 보류했습니다. 영상에 선수가 없다는 뜻은 아닙니다.`;
+      await onScan(analysisCopyReport(report));
+      onProgress?.({ stage: 'complete', message: report.message, current: report.sampledCount, total: report.sampleCount });
+      return analysisCopyReport(report);
+    }
+    report.segments = selectAutoSegments(report.detections, report.duration);
+    report.selectedCount = report.segments.length;
+    report.status = 'analyzing';
+    report.message = `식별 근거가 있는 ${report.selectedCount}개 구간을 자동으로 골랐습니다. ${report.completedCount}개 결과가 저장되어 있습니다.`;
+    await onScan(analysisCopyReport(report));
+    for (let index = report.completedCount; index < report.segments.length; index += 1) {
+      analysisCheckSignal(signal);
+      const segment = report.segments[index];
+      const center = (segment.start + segment.end) / 2;
+      const reference = report.detections.filter(item => item.time >= segment.start && item.time < segment.end).sort((a, b) => Number(b.confidence === 'high') - Number(a.confidence === 'high') || Math.abs(a.time - center) - Math.abs(b.time - center))[0];
+      onProgress?.({ stage: 'analyzing', message: `자동 선택 구간 ${index + 1}/${report.selectedCount} 분석을 시작합니다.`, current: index, total: report.selectedCount });
+      const payload = await analyzeOriginalClip({ blob, ...segment, referenceTime: reference?.time, videoId, accessCode, consent: true, signal, onProgress: progress => onProgress?.({ ...progress, message: `자동 선택 구간 ${index + 1}/${report.selectedCount} · ${progress.message}` }) });
+      // Persist each real result before beginning the next paid request.
+      await onClip({ ...segment, result: payload.result, model: payload.model });
+      report.completedCount += 1;
+      report.model = payload.model;
+      report.message = `자동 선택 구간 ${report.completedCount}/${report.selectedCount}개의 결과를 저장했습니다.`;
+      await onScan(analysisCopyReport(report));
+    }
+    report.status = 'completed';
+    report.message = `전체 시간대의 ${report.sampleCount}개 표본을 탐색하고 자동 선택한 ${report.completedCount}개 구간을 확인했습니다. 표본 사이의 모든 플레이를 연속 분석한 결과는 아닙니다.`;
+    await onScan(analysisCopyReport(report));
+    onProgress?.({ stage: 'complete', message: report.message, current: report.completedCount, total: report.selectedCount });
+    return analysisCopyReport(report);
+  } catch (originalError) {
+    const error = signal?.aborted ? analysisCancelledError() : originalError;
+    if (report) {
+      report.status = signal?.aborted || error.name === 'AbortError' ? 'cancelled' : (report.completedCount > 0 ? 'partial' : 'failed');
+      report.message = report.status === 'cancelled' ? `분석을 중단했습니다. 확인한 표본 ${report.sampledCount}개와 저장된 구간 결과 ${report.completedCount}개는 유지됩니다.` : `${error.message} 확인한 표본 ${report.sampledCount}개와 저장된 구간 결과 ${report.completedCount}개는 유지됩니다.`;
+      report.message = report.message.slice(0, 1500);
+      error.scanReport = analysisCopyReport(report);
+      try { await onScan(analysisCopyReport(report)); }
+      catch { /* Preserve the original failure and already persisted clip results. */ }
+    }
+    throw error;
+  } finally {
+    session?.close();
   }
 }
 
@@ -975,12 +1250,13 @@ function dashboardPage() {
   const focus = deriveTrainingPlan(state.observations).focus;
   const done = state.completed.filter(i => i.startsWith('week1-') && i.endsWith('-' + focus)).length;
   return `${sectionHeader('YOUR NEXT CHAPTER', '성장은, 오늘도 계속됩니다.', '한 경기의 결과보다 중요한 건, 다음 경기의 작은 변화예요.', `<button class="button primary" data-action="add-video">${icon('plus')}경기 영상 등록</button>`)}
-  ${latestOriginal ? `<section class="upload-receipt" role="status"><span class="receipt-icon">${icon('check')}</span><div><span class="eyebrow">ORIGINAL SAVED</span><h2>저장 완료 · ${escape(latestOriginal.title)}</h2><p>${formatBytes(latestOriginal.size)}${latestOriginal.duration ? ' · ' + formatTime(latestOriginal.duration) : ''} · 이 기기의 브라우저에 보관 중</p><p>${latestAnalysis ? 'AI 장면 피드백이 있어요. 전체 경기의 능력치 평가와는 구분됩니다.' : '아직 분석 전이에요. 영상 저장만으로 능력치가 생성되지는 않아요.'}</p></div><div class="receipt-actions"><button class="button primary small" data-action="analyze-video" data-id="${latestOriginal.id}">${icon('spark')}${latestAnalysis ? '다른 장면 분석' : '장면 분석하기'}</button><button class="button secondary small" data-action="open-video" data-id="${latestOriginal.id}">영상 보기 ${icon('arrow')}</button></div></section>` : ''}
+  ${latestOriginal ? `<section class="upload-receipt" role="status"><span class="receipt-icon">${icon('check')}</span><div><span class="eyebrow">ORIGINAL SAVED</span><h2>저장 완료 · ${escape(latestOriginal.title)}</h2><p>${formatBytes(latestOriginal.size)}${latestOriginal.duration ? ' · ' + formatTime(latestOriginal.duration) : ''} · 이 기기의 브라우저에 보관 중</p><p>${latestAnalysis ? '앱이 분석한 플레이 피드백을 확인할 수 있어요.' : '자동 분석을 시작하면 앱이 남색 11번을 찾아 플레이를 살펴봐요.'}</p></div><div class="receipt-actions"><button class="button primary small" data-action="analyze-video" data-id="${latestOriginal.id}">${icon('spark')}${canResumeAuto(autoJobFor(latestOriginal.id)) ? '자동 분석 이어서 하기' : '남색 11번 자동 분석'}</button><button class="button secondary small" data-action="open-video" data-id="${latestOriginal.id}">영상 보기 ${icon('arrow')}</button></div></section>` : ''}
+  ${latestOriginal && !demo ? autoStatusCard(autoJobFor(latestOriginal.id), true) : ''}
   ${latestAnalysis && !demo ? `<section class="card dashboard-feedback"><div><span class="eyebrow">LATEST AI FEEDBACK</span><h3>${latestAnalysis.result.identified ? '최근 장면의 피드백이 도착했어요.' : '이 장면은 선수 확인이 어려워요.'}</h3><p>${escape(latestAnalysis.result.summary)}</p><span class="field-help">AI 초안 · 전체 경기 능력치가 아닌 선택 구간의 관찰입니다.</span></div><button class="button secondary" data-action="open-video" data-id="${latestOriginal.id}">근거와 다음 연습 보기 ${icon('arrow')}</button></section>` : ''}
   <section class="hero-card"><div class="hero-copy"><div class="hero-tag"><span></span>EVERY LITTLE STEP COUNTS</div><h2>어제의 나를 넘어,<br>내일의 나를 향해.</h2><p>경기 속 작은 발견을 나만의 성장으로.<br>${escape(playerName())} 선수의 다음 한 걸음을 함께 찾아요.</p><button class="button lime" data-action="navigate" data-page="videos">내 경기 살펴보기 ${icon('arrow')}</button></div><img class="hero-art" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjYyMCIgdmlld0JveD0iMCAwIDEwMDAgNjIwIiBmaWxsPSJub25lIiByb2xlPSJpbWciIGFyaWEtbGFiZWxsZWRieT0idGl0bGUgZGVzYyI+CiAgPHRpdGxlIGlkPSJ0aXRsZSI+64uk7J2MIOqyveq4sOulvCDspIDruYTtlZjripQgMTHrsogg7ISg7IiYPC90aXRsZT4KICA8ZGVzYyBpZD0iZGVzYyI+64Ko7IOJIDEx67KIIOycoOuLiO2PvOqzvCDqsr3quLDsnqXsnZgg6rO16rCE7J2EIOudvOyehOyDiSDshKDsnLzroZwg7ZGc7ZiE7ZWcIOy2leq1rCDsnbzrn6zsiqTtirg8L2Rlc2M+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImJnIiB4MT0iNTkiIHkxPSIxMDUiIHgyPSI5NjEiIHkyPSI1ODMiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjMTUyNjM3Ii8+PHN0b3Agb2Zmc2V0PSIuNiIgc3RvcC1jb2xvcj0iIzEwMjIzMSIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzFBMzQzQiIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8cmFkaWFsR3JhZGllbnQgaWQ9Imdsb3ciIGN4PSIwIiBjeT0iMCIgcj0iMSIgZ3JhZGllbnRUcmFuc2Zvcm09InRyYW5zbGF0ZSg3MTAgMjU4KSByb3RhdGUoOTApIHNjYWxlKDM2MCAzNTEpIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI0I5RTg4NyIgc3RvcC1vcGFjaXR5PSIuMTciLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNBN0RCNzkiIHN0b3Atb3BhY2l0eT0iMCIvPjwvcmFkaWFsR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Imdyb3VuZCIgeDE9IjYwMCIgeTE9IjI2MCIgeDI9IjYwMCIgeTI9IjYyMCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiM4MUE0N0QiIHN0b3Atb3BhY2l0eT0iMCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzgxQTQ3RCIgc3RvcC1vcGFjaXR5PSIuMTMiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJzaGlydCIgeDE9IjU2MiIgeTE9IjEyMyIgeDI9Ijc4MiIgeTI9IjQyNCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiMzNDRGNjUiLz48c3RvcCBvZmZzZXQ9Ii40OCIgc3RvcC1jb2xvcj0iIzIwMzk0RCIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzE0MjczOCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InNoaXJ0TGlnaHQiIHgxPSI2MTUiIHkxPSIxNTAiIHgyPSI3MzUiIHkyPSI0MjgiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjQTlDQUQ4IiBzdG9wLW9wYWNpdHk9Ii4xIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjQTlDQUQ4IiBzdG9wLW9wYWNpdHk9IjAiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJsaW1lIiB4MT0iNjM0IiB5MT0iMjE5IiB4Mj0iNzE5IiB5Mj0iMzU0IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI0UxRjdBNyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iI0I4RTQ3NSIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8ZmlsdGVyIGlkPSJzb2Z0Ij48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxOSIvPjwvZmlsdGVyPgogICAgPGZpbHRlciBpZD0ic2hpcnRTaGFkb3ciIHg9IjQzMCIgeT0iNTAiIHdpZHRoPSI0NzAiIGhlaWdodD0iNTEwIiBmaWx0ZXJVbml0cz0idXNlclNwYWNlT25Vc2UiPjxmZURyb3BTaGFkb3cgZHg9IjAiIGR5PSIzMCIgc3RkRGV2aWF0aW9uPSIyNSIgZmxvb2QtY29sb3I9IiMwMTBDMTciIGZsb29kLW9wYWNpdHk9Ii40Ii8+PC9maWx0ZXI+CiAgICA8cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjUwIiBoZWlnaHQ9IjUwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNNTAgMEgwVjUwIiBzdHJva2U9IiNCRERBQzYiIHN0cm9rZS1vcGFjaXR5PSIuMDM1Ii8+PC9wYXR0ZXJuPgogICAgPHBhdHRlcm4gaWQ9IndlYXZlIiB3aWR0aD0iNyIgaGVpZ2h0PSI3IiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMCA3TDcgMCIgc3Ryb2tlPSIjRDhFNUVGIiBzdHJva2Utb3BhY2l0eT0iLjAzIi8+PC9wYXR0ZXJuPgogICAgPGNsaXBQYXRoIGlkPSJzaGlydENsaXAiPjxwYXRoIGQ9Ik02MjMgMTI1TDU3OSAxNDNMNTI2IDE5NUw1NjMgMjM0TDU5NCAyMTFMNTkwIDM4OVE2NzAgNDExIDc1MCAzODlMNzQ2IDIxMUw3NzcgMjM0TDgxNCAxOTVMNzYxIDE0M0w3MTcgMTI1UTY5NyAxNDUgNjcwIDE0NVE2NDMgMTQ1IDYyMyAxMjVaIi8+PC9jbGlwUGF0aD4KICA8L2RlZnM+CiAgPHJlY3Qgd2lkdGg9IjEwMDAiIGhlaWdodD0iNjIwIiBmaWxsPSJ1cmwoI2JnKSIvPgogIDxyZWN0IHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjYyMCIgZmlsbD0idXJsKCNncmlkKSIvPgogIDxyZWN0IHdpZHRoPSIxMDAwIiBoZWlnaHQ9IjYyMCIgZmlsbD0idXJsKCNnbG93KSIvPgogIDxjaXJjbGUgY3g9IjY4OSIgY3k9IjI3MSIgcj0iMTg0IiBzdHJva2U9IiNDOUVFODIiIHN0cm9rZS1vcGFjaXR5PSIuMDciLz4KICA8Y2lyY2xlIGN4PSI2ODkiIGN5PSIyNzEiIHI9IjIyMSIgc3Ryb2tlPSIjQzlFRTgyIiBzdHJva2Utb3BhY2l0eT0iLjAzNSIgc3Ryb2tlLWRhc2hhcnJheT0iMyAxMCIvPgogIDxwYXRoIGQ9Ik0yMjQgNjIwTDUxNyAyODJIODMzTDExMjYgNjIwSDIyNFoiIGZpbGw9InVybCgjZ3JvdW5kKSIvPgogIDxnIHN0cm9rZT0iI0MwRDlCRSIgc3Ryb2tlLW9wYWNpdHk9Ii4xMSIgc3Ryb2tlLXdpZHRoPSIxLjIiPgogICAgPHBhdGggZD0iTTIzMiA2MjBMNTI2IDI5NEg4MjRMMTExOCA2MjBNMzI1IDYyMEw1NjAgMjk0TTQ1OSA2MjBMNTk4IDI5NE01OTMgNjIwTDYzNSAyOTRNNzI3IDYyMEw2NzQgMjk0TTg2MSA2MjBMNzExIDI5NE05OTUgNjIwTDc1MCAyOTQiLz4KICAgIDxwYXRoIGQ9Ik00OTMgMzMwSDg1Nk00NDkgMzc5SDkwME0zOTMgNDQxSDk1NU0zMjMgNTE4SDEwMjVNMjMyIDYyMEgxMTE4Ii8+CiAgPC9nPgogIDxnIHN0cm9rZT0iI0M5RUU4MiIgc3Ryb2tlLW9wYWNpdHk9Ii4zMiIgc3Ryb2tlLXdpZHRoPSIxLjUiPgogICAgPHBhdGggZD0iTTM0MCA1ODZMNTQ5IDMyMEg4MDJMMTAxMCA1ODZIMzQwWiIvPgogICAgPHBhdGggZD0iTTQ0MCA0NTlIOTEwIi8+CiAgICA8ZWxsaXBzZSBjeD0iNjc1IiBjeT0iNDU5IiByeD0iNzAiIHJ5PSIzNyIvPgogICAgPHBhdGggZD0iTTUwNSAzNzZIODQ2TDgxMyAzMzNINTM5TDUwNSAzNzZaTTUyMCAzNjBIODMxTDgxNSAzMzlINTM2TDUyMCAzNjBaIi8+CiAgICA8cGF0aCBkPSJNNTI2IDU4N0w1NzAgNTI4SDc3OUw4MjQgNTg3TTU5NSA1ODdMNjEyIDU2NEg3MzdMNzU0IDU4NyIvPgogIDwvZz4KICA8cGF0aCBkPSJNNDg5IDUwNUM1NjAgNDg2IDU1OSA0NDUgNjI0IDQ0MkM2OTYgNDM5IDcxMCA0ODQgNzg2IDQ3MEM4MzggNDYwIDgyNSA0MjAgODU5IDM5NSIgc3Ryb2tlPSIjQzlFRTgyIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1kYXNoYXJyYXk9IjUgOCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIuNzUiLz4KICA8cGF0aCBkPSJNODQ5IDM5Nkw4NjEgMzkxTDg2MiA0MDQiIHN0cm9rZT0iI0M5RUU4MiIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KICA8ZyBmaWxsPSIjMTcyRjNDIiBzdHJva2U9IiNDOUVFODIiIHN0cm9rZS13aWR0aD0iMS41Ij4KICAgIDxjaXJjbGUgY3g9IjQ5MCIgY3k9IjUwNSIgcj0iNyIvPjxjaXJjbGUgY3g9IjYyNSIgY3k9IjQ0MiIgcj0iNyIvPjxjaXJjbGUgY3g9Ijc4NiIgY3k9IjQ3MCIgcj0iNyIvPgogIDwvZz4KICA8Y2lyY2xlIGN4PSI0OTAiIGN5PSI1MDUiIHI9IjIuNSIgZmlsbD0iI0M5RUU4MiIvPgogIDxlbGxpcHNlIGN4PSI2NzciIGN5PSI0MjMiIHJ4PSIxMjAiIHJ5PSIxNSIgZmlsbD0iIzAyMEIxNCIgb3BhY2l0eT0iLjQ1IiBmaWx0ZXI9InVybCgjc29mdCkiLz4KICA8ZyB0cmFuc2Zvcm09InJvdGF0ZSgtOCA2NzAgMjU5KSIgZmlsdGVyPSJ1cmwoI3NoaXJ0U2hhZG93KSI+CiAgICA8cGF0aCBkPSJNNjIzIDEyNUw1NzkgMTQzTDUyNiAxOTVMNTYzIDIzNEw1OTQgMjExTDU5MCAzODlRNjcwIDQxMSA3NTAgMzg5TDc0NiAyMTFMNzc3IDIzNEw4MTQgMTk1TDc2MSAxNDNMNzE3IDEyNVE2OTcgMTQ1IDY3MCAxNDVRNjQzIDE0NSA2MjMgMTI1WiIgZmlsbD0idXJsKCNzaGlydCkiIHN0cm9rZT0iIzUwNkQ3QyIgc3Ryb2tlLXdpZHRoPSIxLjIiLz4KICAgIDxnIGNsaXAtcGF0aD0idXJsKCNzaGlydENsaXApIj4KICAgICAgPHBhdGggZD0iTTU3OSAxNDNMNTk1IDIxMUw1NjMgMjM0TDUyNiAxOTVMNTc5IDE0M1oiIGZpbGw9IiMyOTQ2NUEiLz4KICAgICAgPHBhdGggZD0iTTc2MSAxNDNMNzQ1IDIxMUw3NzcgMjM0TDgxNCAxOTVMNzYxIDE0M1oiIGZpbGw9IiMxODMyNDUiLz4KICAgICAgPHBhdGggZD0iTTYwMCAxNTBMNjE4IDE2Nkw2MTAgMzk2TDU4OSAzODlMNTk0IDIxMUw2MDAgMTUwWiIgZmlsbD0iIzEwMjczOCIgb3BhY2l0eT0iLjUiLz4KICAgICAgPHBhdGggZD0iTTc0MCAxNTBMNzIyIDE2Nkw3MzAgMzk2TDc1MSAzODlMNzQ2IDIxMUw3NDAgMTUwWiIgZmlsbD0iIzBCMjEzMiIgb3BhY2l0eT0iLjY1Ii8+CiAgICAgIDxwYXRoIGQ9Ik02MTggMTUxUTY3MCAxNzggNzIyIDE1MUw3MjcgMzk3UTY3MCA0MDkgNjEzIDM5N0w2MTggMTUxWiIgZmlsbD0idXJsKCNzaGlydExpZ2h0KSIvPgogICAgICA8cGF0aCBkPSJNNTM2IDIwNUw1NzMgMjQzTTgwNCAyMDVMNzY3IDI0MyIgc3Ryb2tlPSIjQzlFRTgyIiBzdHJva2Utd2lkdGg9IjQiLz4KICAgICAgPHBhdGggZD0iTTU4MSAxNDVMNTk1IDIxMU03NTkgMTQ1TDc0NSAyMTEiIHN0cm9rZT0iIzhCQTZCNiIgc3Ryb2tlLW9wYWNpdHk9Ii4yMyIvPgogICAgICA8cGF0aCBkPSJNNTkwIDM4MlE2NzAgNDA0IDc1MCAzODIiIHN0cm9rZT0iIzhCQTZCNiIgc3Ryb2tlLW9wYWNpdHk9Ii4xNyIvPgogICAgICA8cmVjdCB4PSI1MjAiIHk9IjExNSIgd2lkdGg9IjMwMCIgaGVpZ2h0PSIyOTUiIGZpbGw9InVybCgjd2VhdmUpIi8+CiAgICA8L2c+CiAgICA8cGF0aCBkPSJNNjIzIDEyNVE2NDMgMTQ1IDY3MCAxNDVRNjk3IDE0NSA3MTcgMTI1TDcwNyAxMjBRNjg5IDEzNCA2NzAgMTM0UTY1MSAxMzQgNjMzIDEyMEw2MjMgMTI1WiIgZmlsbD0iI0M5RUU4MiIvPgogICAgPHBhdGggZD0iTTYzMyAxMjBRNjcwIDE0MCA3MDcgMTIwUTY5NSAxMTUgNjcwIDExNlE2NDUgMTE1IDYzMyAxMjBaIiBmaWxsPSIjMTIyQTNBIiBzdHJva2U9IiM0MjVCNkMiLz4KICAgIDxwYXRoIGQ9Ik02MzMgMjI3TDY0NSAyMTlINjYwVjMxNkg2NDNWMjQxTDYzMyAyNDZWMjI3Wk02NzQgMjI3TDY4NiAyMTlINzAxVjMxNkg2ODRWMjQxTDY3NCAyNDZWMjI3WiIgZmlsbD0idXJsKCNsaW1lKSIvPgogICAgPHBhdGggZD0iTTY1MCAxNjhINjg5TTY2MCAxNzRINjc4IiBzdHJva2U9IiNBMEI3QzYiIHN0cm9rZS1vcGFjaXR5PSIuMyIvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg4MzYgMTQ4KSI+CiAgICA8cGF0aCBkPSJNMCAxMkgzME0xNS0zVjI3IiBzdHJva2U9IiNCOUQ5OEUiIHN0cm9rZS1vcGFjaXR5PSIuNDUiLz4KICAgIDxjaXJjbGUgY3g9IjE1IiBjeT0iMTIiIHI9IjIzIiBzdHJva2U9IiNCOUQ5OEUiIHN0cm9rZS1vcGFjaXR5PSIuMTUiLz4KICA8L2c+CiAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoODYwIDQ5Mikgcm90YXRlKDkpIj4KICAgIDxlbGxpcHNlIGN5PSIzOSIgcng9IjM4IiByeT0iOCIgZmlsbD0iIzA2MTUyMiIgb3BhY2l0eT0iLjUiIGZpbHRlcj0idXJsKCNzb2Z0KSIvPgogICAgPGNpcmNsZSByPSIzMyIgZmlsbD0iI0RDRTZENCIgc3Ryb2tlPSIjQTlCRUFGIi8+CiAgICA8cGF0aCBkPSJNLTUtMTVMMTEtMTFMMTUgNEwyIDE0TC0xMiA1TC01LTE1WiIgZmlsbD0iIzI4NDEzRSIvPgogICAgPHBhdGggZD0iTS01LTE1TC0xMC0zMU0xMS0xMUwyNS0yMU0xNSA0TDMyIDEwTTIgMTRMMyAzMk0tMTIgNUwtMjkgMTFNLTEwLTMxTC0yNS0yMUwtMjktNUwtMjkgMTFMLTE3IDI4TDMgMzJMMjIgMjRMMzIgMTBMMzEtOUwyNS0yMUw5LTMxTC0xMC0zMVoiIHN0cm9rZT0iIzgyOUE4QyIgc3Ryb2tlLXdpZHRoPSIxLjEiLz4KICAgIDxwYXRoIGQ9Ik0tMjUtMjFMLTE5LTdMLTI5LTVNMjUtMjFMMjAtOUwzMS05TTIyIDI0TDEzIDIwTDMgMzJNLTE3IDI4TC0xNCAxNkwtMjkgMTEiIHN0cm9rZT0iIzgyOUE4QyIgc3Ryb2tlLXdpZHRoPSIxLjEiLz4KICAgIDxwYXRoIGQ9Ik0tMTAtMzFMLTI1LTIxTC0xOS03TC01LTE1TC0xMC0zMVpNMjUtMjFMMzEtOUwyMC05TDExLTExTDI1LTIxWk0yMiAyNEwzIDMyTDEzIDIwTDE1IDRMMzIgMTBMMjIgMjRaIiBmaWxsPSIjMjg0MTNFIi8+CiAgICA8ZWxsaXBzZSBjeD0iLTkiIGN5PSItMTQiIHJ4PSIxNSIgcnk9IjExIiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iLjE3IiB0cmFuc2Zvcm09InJvdGF0ZSgtMzUgLTkgLTE0KSIvPgogIDwvZz4KICA8ZyBzdHJva2U9IiNENUVDQzAiIHN0cm9rZS1vcGFjaXR5PSIuMzUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCI+PHBhdGggZD0iTTQ0NSAyMDZINDU3TTQ1MSAyMDBWMjEyIi8+PHBhdGggZD0iTTc5NyAzMjlIODA1TTgwMSAzMjVWMzMzIi8+PC9nPgogIDxwYXRoIGQ9Ik05MjYgMEgxMDAwVjYyMEg5MjYiIGZpbGw9InVybCgjYmcpIiBvcGFjaXR5PSIuMTUiLz4KPC9zdmc+Cg==" alt="남색 11번 유니폼과 축구 경기장 일러스트"><span class="hero-bottom-note">YOUR GAME. YOUR GROWTH.</span></section>
   <div class="stats-grid"><div class="stat-card"><span class="stat-icon green">${icon('video')}</span><div><span class="stat-label">등록한 경기</span><strong>${String(state.videos.length).padStart(2, '0')}<small>경기</small></strong></div><span class="stat-foot">성장의 출발점</span></div><div class="stat-card"><span class="stat-icon blue">${icon('bookmark')}</span><div><span class="stat-label">기록한 장면</span><strong>${String(count).padStart(2, '0')}<small>개</small></strong></div><span class="stat-foot">평가와 연결되는 근거</span></div><div class="stat-card"><span class="stat-icon violet">${icon('chart')}</span><div><span class="stat-label">관찰한 능력</span><strong>${ratedCount()}<small>/ 8 항목</small></strong></div><span class="stat-foot">${ratedCount() ? '직접 기록한 관찰 평가' : '첫 관찰을 기다리고 있어요'}</span></div><div class="stat-card"><span class="stat-icon peach">${icon('target')}</span><div><span class="stat-label">첫 주 훈련 실천</span><strong>${done}<small>/ 3 과제</small></strong></div><span class="stat-foot">작은 실천이 만드는 변화</span></div></div>
   <div class="dashboard-grid"><section class="card capability-card"><div class="card-heading"><div><h2>나의 플레이, 한눈에</h2><p>8가지 관점으로 발견하는 나만의 가능성</p></div><button class="text-button" data-action="navigate" data-page="report">리포트 보기 ${icon('chevron')}</button></div><div class="radar-layout"><div class="radar-wrap">${radarChart(scores(), !demo && !ratedCount())}</div><div class="radar-summary">${demo ? `<span class="badge amber">예시 데이터</span><h3>협력하는 플레이가<br>나의 강점이에요.</h3><p>공을 받기 전 주변 확인을 더하면,<br>다음 선택이 한결 여유로워져요.</p>` : ratedCount() ? `<span class="badge green">관찰 기록 ${count}개</span><h3>작은 발견이<br>쌓이고 있어요.</h3><p>${ratedCount()}개 항목에 직접 기록한 평가가 있어요.<br>여러 경기의 장면을 더해 보세요.</p>` : `<span class="badge subtle">아직 평가 전이에요</span><h3>점수보다 먼저, <br>플레이를 살펴봐요.</h3><p>영상을 보고 근거 장면을 기록하면<br>나의 플레이 지도가 채워져요.</p>`}<div class="legend"><span class="legend-dot"></span>${demo ? '예시 능력치' : '기록한 능력치'}<span class="legend-ring"></span>5단계 행동 기준</div><button class="button secondary small" data-action="${demo ? 'navigate' : 'demo'}" ${demo ? 'data-page="report"' : ''}>${demo ? '자세히 살펴보기' : '예시 리포트 체험'} ${icon('arrow')}</button></div></div><div class="card-bottom-note">${icon('info')}관찰하지 못한 능력은 0점이 아닌 ‘관찰 부족’으로 표시해요.</div></section>
-  <section class="card next-step-card"><div class="card-heading"><div><span class="eyebrow">YOUR NEXT STEP</span><h2>지금, 한 걸음부터</h2></div><span class="step-number">01</span></div><div class="next-step-visual">${icon('flag')}<span class="path-dot one"></span><span class="path-dot two"></span><span class="path-dot three"></span></div><h3>나를 발견하는<br>첫 경기를 열어볼까요?</h3><p>남색 유니폼 11번 선수를 찾아,<br>기억하고 싶은 장면 하나를 남겨요.</p><button class="button dark full" data-action="navigate" data-page="videos">${latestOriginal ? '등록한 원본 영상 보기' : '00:57부터 영상 보기'} ${icon('arrow')}</button><div class="next-step-note">${icon('clock')}한 장면의 기록부터 시작해요</div></section></div>
+  <section class="card next-step-card"><div class="card-heading"><div><span class="eyebrow">YOUR NEXT STEP</span><h2>지금, 한 걸음부터</h2></div><span class="step-number">01</span></div><div class="next-step-visual">${icon('flag')}<span class="path-dot one"></span><span class="path-dot two"></span><span class="path-dot three"></span></div><h3>${latestOriginal ? '영상은 맡기고,<br>성장에 집중해요.' : '나를 발견하는<br>첫 경기를 열어볼까요?'}</h3><p>${latestOriginal ? '남색 11번이 보이는 순간을<br>앱이 탐색하고 분석해요.' : '남색 유니폼 11번 선수를 찾아,<br>기억하고 싶은 장면 하나를 남겨요.'}</p><button class="button dark full" data-action="${latestOriginal ? 'analyze-video' : 'navigate'}" ${latestOriginal ? `data-id="${latestOriginal.id}"` : 'data-page="videos"'}>${latestOriginal ? '남색 11번 자동 분석' : '00:57부터 영상 보기'} ${icon('arrow')}</button><div class="next-step-note">${icon('clock')}${latestOriginal ? '시작 시간 입력 없이, 앱이 찾아서' : '한 장면의 기록부터 시작해요'}</div></section></div>
   <div class="bottom-grid"><section class="card recent-card"><div class="card-heading"><div><h2>나의 경기 영상</h2><p>성장의 순간을 놓치지 않도록</p></div><button class="text-button" data-action="navigate" data-page="videos">전체 보기 ${icon('chevron')}</button></div>${state.videos.length ? videoRow(state.videos[0]) : empty('video', '첫 경기를 등록해요', '유튜브 링크로 시작할 수 있어요.')}</section><section class="card growth-note"><span class="note-icon">${icon('leaf')}</span><div><span class="eyebrow">GROW AT YOUR PACE</span><h3>비교의 기준은,<br>어제의 나.</h3><p>지금은 전국 순위보다 나의 변화를 기록해요.<br>같은 기준의 데이터가 쌓이면 비교가 시작됩니다.</p></div></section></div>`;
 }
 function radarChart(data, isEmpty = false) {
@@ -996,7 +1272,7 @@ function videosPage() {
   const video = state.videos.find(v => v.id === selectedVideo) || state.videos[0];
   if (video) selectedVideo = video.id;
   return `${sectionHeader('MATCH LIBRARY', '경기 속에서, 나를 발견해요.', '한 장면씩 살펴보고, 다음 플레이를 위한 힌트를 남겨요.', `<button class="button primary" data-action="add-video">${icon('plus')}영상 등록</button>`)}
-  <div class="video-workspace"><section class="video-main"><div class="video-player" id="video-player">${video ? playerPlaceholder(video) : empty('video', '아직 등록한 영상이 없어요', '사진·파일 앱의 원본 영상 또는 유튜브 링크를 등록해 주세요.')} </div><div class="video-details"><div><div class="eyebrow">MATCH FILM ${video ? String(state.videos.indexOf(video) + 1).padStart(2, '0') : '00'}</div><h2>${escape(video?.title || '경기 영상')}</h2><p>분석 대상 <strong>남색 유니폼 · 11번</strong> ${badge('U' + state.player.age, 'subtle')}</p></div>${video ? isOriginal(video) ? `<div class="heading-actions"><button class="button secondary small" data-action="download-original" data-id="${video.id}">${icon('download')}원본 내보내기</button><button class="button danger small" data-action="delete-video" data-id="${video.id}">${icon('trash')}영상 삭제</button></div>` : `<a class="button secondary small" href="https://www.youtube.com/watch?v=${video.id}&t=${previewTime ?? video.start ?? 0}s" target="_blank" rel="noopener noreferrer">YouTube에서 열기 ${icon('external')}</a>` : ''}</div><div class="video-message">${icon('info')}<div><strong>영상 확인 후 직접 기록하는 워크스페이스예요.</strong><p>${isOriginal(video) ? `원본은 이 기기의 브라우저에 저장됩니다. 장면 분석에 동의하면 선택한 구간의 정지 화면만 AI 서비스로 전송해요. 브라우저 데이터를 지우면 삭제될 수 있어요. 사진·파일 앱의 원본도 계속 보관해 주세요. ${formatBytes(video.size)}${video.duration ? ' · ' + formatTime(video.duration) : ''}` : '자동 선수 추적·AI 평가는 아직 연결되지 않았어요. 재생이 제한되면 YouTube에서 확인하고 장면의 시간을 기록해 주세요.'}</p></div></div>${isOriginal(video) ? analysisPanel(video) : ''}<section class="card observations-card"><div class="card-heading"><div><h2>기억할 장면</h2><p>이 영상에서 남긴 근거와 관찰 기록</p></div>${video ? `<button class="button secondary small" data-action="add-observation">${icon('plus')}장면 기록</button>` : ''}</div>${video ? observationList(state.observations.filter(o => o.videoId === video.id)) : ''}</section></section><aside class="video-side"><section class="card identity-card"><span class="eyebrow">FOCUS PLAYER</span><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNDYwIiB2aWV3Qm94PSIwIDAgNDIwIDQ2MCIgZmlsbD0ibm9uZSIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPuuCqOyDiSAxMeuyiCDsnKDri4jtj7w8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7rnbzsnoTsg4kg65SU7YWM7J287J20IOyeiOuKlCDrgqjsg4kg7LaV6rWsIOycoOuLiO2PvCDsnbzrn6zsiqTtirg8L2Rlc2M+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImZhYnJpYyIgeDE9IjEwNCIgeTE9IjczIiB4Mj0iMzIzIiB5Mj0iNDEwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iIzJFNDI1OSIvPjxzdG9wIG9mZnNldD0iLjQ1IiBzdG9wLWNvbG9yPSIjMUEyQTNGIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTAxRDJEIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic2xlZXZlIiB4MT0iMjMiIHkxPSIxMDkiIHgyPSIzOTQiIHkyPSIxNzQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjMjkzRTU0Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iIzFCMkQ0MyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzExMUYzMSIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InNoaW5lIiB4MT0iMTIyIiB5MT0iMTE1IiB4Mj0iMjk2IiB5Mj0iMzc4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI0E5QjlDOSIgc3RvcC1vcGFjaXR5PSIuMTQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNBOUI5QzkiIHN0b3Atb3BhY2l0eT0iMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im51bWJlciIgeDE9IjE2OCIgeTE9IjE5MiIgeDI9IjI0NiIgeTI9IjMxOCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiNFM0Y4QTMiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCNERDNjgiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0ic2hhZG93IiB4PSIwIiB5PSIwIiB3aWR0aD0iNDIwIiBoZWlnaHQ9IjQ2MCIgZmlsdGVyVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxNSIvPjwvZmlsdGVyPgogICAgPHBhdHRlcm4gaWQ9IndlYXZlIiB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMCA4TDggMCIgc3Ryb2tlPSIjRDhFNUVGIiBzdHJva2Utb3BhY2l0eT0iLjAzNSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPgogICAgPGNsaXBQYXRoIGlkPSJib2R5Q2xpcCI+PHBhdGggZD0iTTE1MSA1Nkw5NCA4MEwyNiAxNDVMNzMgMTk1TDExMyAxNjVMMTA3IDM5MlEyMTAgNDIwIDMxMyAzOTJMMzA3IDE2NUwzNDcgMTk1TDM5NCAxNDVMMzI2IDgwTDI2OSA1NlEyNDQgODIgMjEwIDgyUTE3NiA4MiAxNTEgNTZaIi8+PC9jbGlwUGF0aD4KICA8L2RlZnM+CiAgPGVsbGlwc2UgY3g9IjIxNCIgY3k9IjQwMyIgcng9IjEyMSIgcnk9IjE3IiBmaWxsPSIjMDYxMDFGIiBvcGFjaXR5PSIuNCIgZmlsdGVyPSJ1cmwoI3NoYWRvdykiLz4KICA8cGF0aCBkPSJNMTUxIDU2TDk0IDgwTDI2IDE0NUw3MyAxOTVMMTEzIDE2NUwxMDcgMzkyUTIxMCA0MjAgMzEzIDM5MkwzMDcgMTY1TDM0NyAxOTVMMzk0IDE0NUwzMjYgODBMMjY5IDU2UTI0NCA4MiAyMTAgODJRMTc2IDgyIDE1MSA1NloiIGZpbGw9InVybCgjZmFicmljKSIgc3Ryb2tlPSIjNDE1NTZDIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxnIGNsaXAtcGF0aD0idXJsKCNib2R5Q2xpcCkiPgogICAgPHBhdGggZD0iTTkzIDc5TDExNiAxNjVMNzQgMTk1TDI2IDE0NUw5MyA3OVoiIGZpbGw9InVybCgjc2xlZXZlKSIvPgogICAgPHBhdGggZD0iTTMyNyA3OUwzMDUgMTY1TDM0NyAxOTVMMzk0IDE0NUwzMjcgNzlaIiBmaWxsPSJ1cmwoI3NsZWV2ZSkiLz4KICAgIDxwYXRoIGQ9Ik0xMjEgODZMMTQzIDExMUwxMzMgMzkySDExMEwxMTQgMTY1TDEyMSA4NloiIGZpbGw9IiMwRDFBMkIiIG9wYWNpdHk9Ii42Ii8+CiAgICA8cGF0aCBkPSJNMjk5IDg2TDI3NyAxMTFMMjg3IDM5N0gzMTRMMzA2IDE2NUwyOTkgODZaIiBmaWxsPSIjMEMxOTJBIiBvcGFjaXR5PSIuOSIvPgogICAgPHBhdGggZD0iTTEzOSA4OVEyMTAgMTIxIDI4MSA4OUwyODQgMzk3UTIxMCA0MTIgMTM2IDM5N0wxMzkgODlaIiBmaWxsPSJ1cmwoI3NoaW5lKSIvPgogICAgPHBhdGggZD0iTTExMCAxNzJMOTkgMjE4TTMxMCAxNzJMMzIxIDIxOCIgc3Ryb2tlPSIjNTM2QzgzIiBzdHJva2Utb3BhY2l0eT0iLjMiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgPHBhdGggZD0iTTk2IDgxTDExNiAxNjVNMzI0IDgxTDMwNCAxNjUiIHN0cm9rZT0iIzczODk5QyIgc3Ryb2tlLW9wYWNpdHk9Ii4yOCIvPgogICAgPHBhdGggZD0iTTQwIDE2MEw4MyAyMDVNMzgwIDE2MEwzMzcgMjA1IiBzdHJva2U9IiNDOUVFODIiIHN0cm9rZS13aWR0aD0iNSIvPgogICAgPHBhdGggZD0iTTEwNyAzODRRMjEwIDQxMSAzMTMgMzg0IiBzdHJva2U9IiM1MzZBN0QiIHN0cm9rZS1vcGFjaXR5PSIuMyIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICAgIDxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNDYwIiBmaWxsPSJ1cmwoI3dlYXZlKSIvPgogIDwvZz4KICA8cGF0aCBkPSJNMTUxIDU2UTE3NiA4MSAyMTAgODFRMjQ0IDgxIDI2OSA1NkwyNTcgNDlRMjM1IDY3IDIxMCA2N1ExODUgNjcgMTYzIDQ5TDE1MSA1NloiIGZpbGw9IiNDOUVFODIiLz4KICA8cGF0aCBkPSJNMTYzIDQ5UTIxMCA3NSAyNTcgNDlRMjQyIDQzIDIxMCA0NFExNzggNDMgMTYzIDQ5WiIgZmlsbD0iIzEwMjAzMyIgc3Ryb2tlPSIjMzQ0NzVCIi8+CiAgPHBhdGggZD0iTTE2MyA1M1EyMTAgNzkgMjU3IDUzIiBzdHJva2U9IiNFMEY2QUYiIHN0cm9rZS1vcGFjaXR5PSIuNCIvPgogIDxwYXRoIGQ9Ik0xNjIgMTg3TDE3NyAxNzdIMTk2VjMwMUgxNzRWMjA0TDE2MiAyMTFWMTg3Wk0yMTUgMTg3TDIzMCAxNzdIMjQ5VjMwMUgyMjdWMjA0TDIxNSAyMTFWMTg3WiIgZmlsbD0idXJsKCNudW1iZXIpIi8+CiAgPHBhdGggZD0iTTE2MyAzMDhIMTk2TTIxNiAzMDhIMjQ5IiBzdHJva2U9IiNFM0Y4QTMiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxwYXRoIGQ9Ik0xODUgMTExSDIzNSIgc3Ryb2tlPSIjOERBMEIxIiBzdHJva2Utb3BhY2l0eT0iLjQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxwYXRoIGQ9Ik0xOTggMTE5SDIyMiIgc3Ryb2tlPSIjOERBMEIxIiBzdHJva2Utb3BhY2l0eT0iLjIiIHN0cm9rZS13aWR0aD0iMS41Ii8+Cjwvc3ZnPgo=" alt="남색 11번 유니폼"><h3>${escape(playerName())}</h3><p>남색 유니폼 <span class="dot-divider">·</span> 등번호 11</p><div class="identity-facts"><span>연령<strong>U${state.player.age}</strong></span><span>포지션<strong>${escape(state.player.position)}</strong></span></div><span class="focus-confirm">${icon('target')}이 선수만 관찰해요</span></section><section class="card playlist"><div class="card-heading"><h3>내 경기 목록</h3><span class="number-pill">${state.videos.length}</span></div>${state.videos.map((v, i) => `<button class="playlist-item ${v.id === selectedVideo ? 'selected' : ''}" data-action="open-video" data-id="${v.id}"><span class="playlist-index">${String(i + 1).padStart(2, '0')}</span><span><strong>${escape(v.title)}</strong><small>${isOriginal(v) ? '원본 · ' + formatBytes(v.size) : formatTime(v.start || 0) + '부터'} · ${state.observations.filter(o => o.videoId === v.id).length}개 장면</small></span>${icon(v.id === selectedVideo ? 'play' : 'chevron')}</button>`).join('')}</section><div class="tip-card">${icon('spark')}<div><strong>무엇을 보면 좋을까요?</strong><p>공을 받을 때뿐 아니라, 공이 없을 때 어디로 움직이는지도 살펴보세요.</p></div></div></aside></div>`;
+  <div class="video-workspace"><section class="video-main"><div class="video-player" id="video-player">${video ? playerPlaceholder(video) : empty('video', '아직 등록한 영상이 없어요', '사진·파일 앱의 원본 영상 또는 유튜브 링크를 등록해 주세요.')} </div><div class="video-details"><div><div class="eyebrow">MATCH FILM ${video ? String(state.videos.indexOf(video) + 1).padStart(2, '0') : '00'}</div><h2>${escape(video?.title || '경기 영상')}</h2><p>분석 대상 <strong>남색 유니폼 · 11번</strong> ${badge('U' + state.player.age, 'subtle')}</p></div>${video ? isOriginal(video) ? `<div class="heading-actions"><button class="button secondary small" data-action="download-original" data-id="${video.id}">${icon('download')}원본 내보내기</button><button class="button danger small" data-action="delete-video" data-id="${video.id}">${icon('trash')}영상 삭제</button></div>` : `<a class="button secondary small" href="https://www.youtube.com/watch?v=${video.id}&t=${previewTime ?? video.start ?? 0}s" target="_blank" rel="noopener noreferrer">YouTube에서 열기 ${icon('external')}</a>` : ''}</div><div class="video-message">${icon('info')}<div><strong>원본 영상에서 남색 11번을 자동으로 탐색할 수 있어요.</strong><p>${isOriginal(video) ? `원본은 이 기기의 브라우저에 저장됩니다. 자동 분석에 동의하면 탐색과 구간 분석에 필요한 정지 화면을 AI 서비스로 전송해요. 브라우저 데이터를 지우면 삭제될 수 있어요. 사진·파일 앱의 원본도 계속 보관해 주세요. ${formatBytes(video.size)}${video.duration ? ' · ' + formatTime(video.duration) : ''}` : '자동 선수 추적·AI 평가는 아직 연결되지 않았어요. 재생이 제한되면 YouTube에서 확인하고 장면의 시간을 기록해 주세요.'}</p></div></div>${isOriginal(video) ? analysisPanel(video) : ''}<section class="card observations-card"><div class="card-heading"><div><h2>기억할 장면</h2><p>이 영상에서 남긴 근거와 관찰 기록</p></div>${video ? `<button class="button secondary small" data-action="add-observation">${icon('plus')}장면 기록</button>` : ''}</div>${video ? observationList(state.observations.filter(o => o.videoId === video.id)) : ''}</section></section><aside class="video-side"><section class="card identity-card"><span class="eyebrow">FOCUS PLAYER</span><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MjAiIGhlaWdodD0iNDYwIiB2aWV3Qm94PSIwIDAgNDIwIDQ2MCIgZmlsbD0ibm9uZSIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsbGVkYnk9InRpdGxlIGRlc2MiPgogIDx0aXRsZSBpZD0idGl0bGUiPuuCqOyDiSAxMeuyiCDsnKDri4jtj7w8L3RpdGxlPgogIDxkZXNjIGlkPSJkZXNjIj7rnbzsnoTsg4kg65SU7YWM7J287J20IOyeiOuKlCDrgqjsg4kg7LaV6rWsIOycoOuLiO2PvCDsnbzrn6zsiqTtirg8L2Rlc2M+CiAgPGRlZnM+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9ImZhYnJpYyIgeDE9IjEwNCIgeTE9IjczIiB4Mj0iMzIzIiB5Mj0iNDEwIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iIzJFNDI1OSIvPjxzdG9wIG9mZnNldD0iLjQ1IiBzdG9wLWNvbG9yPSIjMUEyQTNGIi8+PHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMTAxRDJEIi8+PC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0ic2xlZXZlIiB4MT0iMjMiIHkxPSIxMDkiIHgyPSIzOTQiIHkyPSIxNzQiIGdyYWRpZW50VW5pdHM9InVzZXJTcGFjZU9uVXNlIj48c3RvcCBzdG9wLWNvbG9yPSIjMjkzRTU0Ii8+PHN0b3Agb2Zmc2V0PSIuNSIgc3RvcC1jb2xvcj0iIzFCMkQ0MyIvPjxzdG9wIG9mZnNldD0iMSIgc3RvcC1jb2xvcj0iIzExMUYzMSIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9InNoaW5lIiB4MT0iMTIyIiB5MT0iMTE1IiB4Mj0iMjk2IiB5Mj0iMzc4IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHN0b3Agc3RvcC1jb2xvcj0iI0E5QjlDOSIgc3RvcC1vcGFjaXR5PSIuMTQiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNBOUI5QzkiIHN0b3Atb3BhY2l0eT0iMCIvPjwvbGluZWFyR3JhZGllbnQ+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9Im51bWJlciIgeDE9IjE2OCIgeTE9IjE5MiIgeDI9IjI0NiIgeTI9IjMxOCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPjxzdG9wIHN0b3AtY29sb3I9IiNFM0Y4QTMiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNCNERDNjgiLz48L2xpbmVhckdyYWRpZW50PgogICAgPGZpbHRlciBpZD0ic2hhZG93IiB4PSIwIiB5PSIwIiB3aWR0aD0iNDIwIiBoZWlnaHQ9IjQ2MCIgZmlsdGVyVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIxNSIvPjwvZmlsdGVyPgogICAgPHBhdHRlcm4gaWQ9IndlYXZlIiB3aWR0aD0iOCIgaGVpZ2h0PSI4IiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNMCA4TDggMCIgc3Ryb2tlPSIjRDhFNUVGIiBzdHJva2Utb3BhY2l0eT0iLjAzNSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPgogICAgPGNsaXBQYXRoIGlkPSJib2R5Q2xpcCI+PHBhdGggZD0iTTE1MSA1Nkw5NCA4MEwyNiAxNDVMNzMgMTk1TDExMyAxNjVMMTA3IDM5MlEyMTAgNDIwIDMxMyAzOTJMMzA3IDE2NUwzNDcgMTk1TDM5NCAxNDVMMzI2IDgwTDI2OSA1NlEyNDQgODIgMjEwIDgyUTE3NiA4MiAxNTEgNTZaIi8+PC9jbGlwUGF0aD4KICA8L2RlZnM+CiAgPGVsbGlwc2UgY3g9IjIxNCIgY3k9IjQwMyIgcng9IjEyMSIgcnk9IjE3IiBmaWxsPSIjMDYxMDFGIiBvcGFjaXR5PSIuNCIgZmlsdGVyPSJ1cmwoI3NoYWRvdykiLz4KICA8cGF0aCBkPSJNMTUxIDU2TDk0IDgwTDI2IDE0NUw3MyAxOTVMMTEzIDE2NUwxMDcgMzkyUTIxMCA0MjAgMzEzIDM5MkwzMDcgMTY1TDM0NyAxOTVMMzk0IDE0NUwzMjYgODBMMjY5IDU2UTI0NCA4MiAyMTAgODJRMTc2IDgyIDE1MSA1NloiIGZpbGw9InVybCgjZmFicmljKSIgc3Ryb2tlPSIjNDE1NTZDIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogIDxnIGNsaXAtcGF0aD0idXJsKCNib2R5Q2xpcCkiPgogICAgPHBhdGggZD0iTTkzIDc5TDExNiAxNjVMNzQgMTk1TDI2IDE0NUw5MyA3OVoiIGZpbGw9InVybCgjc2xlZXZlKSIvPgogICAgPHBhdGggZD0iTTMyNyA3OUwzMDUgMTY1TDM0NyAxOTVMMzk0IDE0NUwzMjcgNzlaIiBmaWxsPSJ1cmwoI3NsZWV2ZSkiLz4KICAgIDxwYXRoIGQ9Ik0xMjEgODZMMTQzIDExMUwxMzMgMzkySDExMEwxMTQgMTY1TDEyMSA4NloiIGZpbGw9IiMwRDFBMkIiIG9wYWNpdHk9Ii42Ii8+CiAgICA8cGF0aCBkPSJNMjk5IDg2TDI3NyAxMTFMMjg3IDM5N0gzMTRMMzA2IDE2NUwyOTkgODZaIiBmaWxsPSIjMEMxOTJBIiBvcGFjaXR5PSIuOSIvPgogICAgPHBhdGggZD0iTTEzOSA4OVEyMTAgMTIxIDI4MSA4OUwyODQgMzk3UTIxMCA0MTIgMTM2IDM5N0wxMzkgODlaIiBmaWxsPSJ1cmwoI3NoaW5lKSIvPgogICAgPHBhdGggZD0iTTExMCAxNzJMOTkgMjE4TTMxMCAxNzJMMzIxIDIxOCIgc3Ryb2tlPSIjNTM2QzgzIiBzdHJva2Utb3BhY2l0eT0iLjMiIHN0cm9rZS13aWR0aD0iMiIvPgogICAgPHBhdGggZD0iTTk2IDgxTDExNiAxNjVNMzI0IDgxTDMwNCAxNjUiIHN0cm9rZT0iIzczODk5QyIgc3Ryb2tlLW9wYWNpdHk9Ii4yOCIvPgogICAgPHBhdGggZD0iTTQwIDE2MEw4MyAyMDVNMzgwIDE2MEwzMzcgMjA1IiBzdHJva2U9IiNDOUVFODIiIHN0cm9rZS13aWR0aD0iNSIvPgogICAgPHBhdGggZD0iTTEwNyAzODRRMjEwIDQxMSAzMTMgMzg0IiBzdHJva2U9IiM1MzZBN0QiIHN0cm9rZS1vcGFjaXR5PSIuMyIgc3Ryb2tlLXdpZHRoPSIxLjUiLz4KICAgIDxyZWN0IHdpZHRoPSI0MjAiIGhlaWdodD0iNDYwIiBmaWxsPSJ1cmwoI3dlYXZlKSIvPgogIDwvZz4KICA8cGF0aCBkPSJNMTUxIDU2UTE3NiA4MSAyMTAgODFRMjQ0IDgxIDI2OSA1NkwyNTcgNDlRMjM1IDY3IDIxMCA2N1ExODUgNjcgMTYzIDQ5TDE1MSA1NloiIGZpbGw9IiNDOUVFODIiLz4KICA8cGF0aCBkPSJNMTYzIDQ5UTIxMCA3NSAyNTcgNDlRMjQyIDQzIDIxMCA0NFExNzggNDMgMTYzIDQ5WiIgZmlsbD0iIzEwMjAzMyIgc3Ryb2tlPSIjMzQ0NzVCIi8+CiAgPHBhdGggZD0iTTE2MyA1M1EyMTAgNzkgMjU3IDUzIiBzdHJva2U9IiNFMEY2QUYiIHN0cm9rZS1vcGFjaXR5PSIuNCIvPgogIDxwYXRoIGQ9Ik0xNjIgMTg3TDE3NyAxNzdIMTk2VjMwMUgxNzRWMjA0TDE2MiAyMTFWMTg3Wk0yMTUgMTg3TDIzMCAxNzdIMjQ5VjMwMUgyMjdWMjA0TDIxNSAyMTFWMTg3WiIgZmlsbD0idXJsKCNudW1iZXIpIi8+CiAgPHBhdGggZD0iTTE2MyAzMDhIMTk2TTIxNiAzMDhIMjQ5IiBzdHJva2U9IiNFM0Y4QTMiIHN0cm9rZS1vcGFjaXR5PSIuMTgiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxwYXRoIGQ9Ik0xODUgMTExSDIzNSIgc3Ryb2tlPSIjOERBMEIxIiBzdHJva2Utb3BhY2l0eT0iLjQiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxwYXRoIGQ9Ik0xOTggMTE5SDIyMiIgc3Ryb2tlPSIjOERBMEIxIiBzdHJva2Utb3BhY2l0eT0iLjIiIHN0cm9rZS13aWR0aD0iMS41Ii8+Cjwvc3ZnPgo=" alt="남색 11번 유니폼"><h3>${escape(playerName())}</h3><p>남색 유니폼 <span class="dot-divider">·</span> 등번호 11</p><div class="identity-facts"><span>연령<strong>U${state.player.age}</strong></span><span>포지션<strong>${escape(state.player.position)}</strong></span></div><span class="focus-confirm">${icon('target')}이 선수만 관찰해요</span></section><section class="card playlist"><div class="card-heading"><h3>내 경기 목록</h3><span class="number-pill">${state.videos.length}</span></div>${state.videos.map((v, i) => `<button class="playlist-item ${v.id === selectedVideo ? 'selected' : ''}" data-action="open-video" data-id="${v.id}"><span class="playlist-index">${String(i + 1).padStart(2, '0')}</span><span><strong>${escape(v.title)}</strong><small>${isOriginal(v) ? '원본 · ' + formatBytes(v.size) : formatTime(v.start || 0) + '부터'} · ${state.observations.filter(o => o.videoId === v.id).length}개 장면</small></span>${icon(v.id === selectedVideo ? 'play' : 'chevron')}</button>`).join('')}</section><div class="tip-card">${icon('spark')}<div><strong>무엇을 보면 좋을까요?</strong><p>공을 받을 때뿐 아니라, 공이 없을 때 어디로 움직이는지도 살펴보세요.</p></div></div></aside></div>`;
 }
 function playerPlaceholder(video) { return `<div class="player-placeholder"><div class="player-pitch-lines"></div><span class="player-kicker">${isOriginal(video) ? 'ORIGINAL FILM' : 'MATCH FILM'} · NAVY 11</span><button class="big-play" data-action="play" aria-label="${escape(video.title)} 재생">${icon('play')}</button><h3>${escape(video.title)}</h3><p>${formatTime(previewTime ?? video.start ?? 0)}부터 남색 11번 선수를 확인해요</p><span class="player-bottom">${isOriginal(video) ? '내 기기에 보관한 원본 영상' : 'YouTube 플레이어로 재생'} ${icon(isOriginal(video) ? 'video' : 'external')}</span></div>`; }
 function releaseOriginalPlayer() {
@@ -1054,7 +1330,8 @@ function reportPage() {
   <div class="report-top-grid"><section class="card"><div class="card-heading"><div><h2>플레이 스파이더맵</h2><p>남색 11번 · U${state.player.age} · ${demo ? '예시 평가' : '직접 기록한 관찰 평가'}</p></div>${badge(demo ? '예시 데이터' : `${state.observations.length}개 근거 장면`, demo ? 'amber' : 'subtle')}</div><div class="report-radar">${radarChart(data, !observed.length)}</div><div class="card-bottom-note">${icon('info')}1~5단계의 관찰 평가이며, 검증된 표준 검사 점수가 아닙니다.</div></section><section class="card skill-breakdown"><div class="card-heading"><div><h2>능력별 살펴보기</h2><p>항목을 선택하면 아래 근거 장면을 볼 수 있어요.</p></div></div><div class="skills-list">${data.map(s => `<button class="skill-row ${reportSkill === s.id ? 'selected' : ''}" data-action="filter-skill" data-id="${s.id}"><span>${s.name}</span><span class="skill-meter"><i style="width:${(s.value || 0) * 20}%"></i></span><strong>${s.value === null ? '<span class="not-observed">관찰 부족</span>' : s.value.toFixed(1) + '<small>/5</small>'}</strong>${icon('chevron')}</button>`).join('')}</div></section></div>
   ${demo ? `<div class="insight-grid"><article class="insight-card strength"><span class="insight-icon">${icon('spark')}</span><span class="eyebrow">SAMPLE STRENGTH</span><h3>동료와 함께 만드는 플레이</h3><p>예시 리포트에서는 협력을 강점으로 설정했어요. 실제 평가에는 반드시 확인한 장면이 연결됩니다.</p>${badge('화면 체험용 설명', 'subtle')}</article><article class="insight-card focus"><span class="insight-icon">${icon('target')}</span><span class="eyebrow">SAMPLE NEXT STEP</span><h3>공을 받기 전, 한 번 더 보기</h3><p>주변 확인을 연습하는 성장 계획의 예시예요. 실제 선수에게 필요한 과제인지는 영상 관찰이 필요해요.</p><button class="text-button" data-action="navigate" data-page="training">훈련 예시 보기 ${icon('arrow')}</button></article></div>` : ''}
   ${!demo && observed.length ? realInsights(data) : ''}
-  ${!demo && (state.analyses || []).length ? analysisResult(state.analyses.at(-1)) : ''}
+  ${!demo && (state.autoAnalyses || []).length ? autoStatusCard(state.autoAnalyses.at(-1)) : ''}
+  ${!demo ? (state.analyses || []).slice(-6).map(analysisResult).join('') : ''}
   <section class="card"><div class="card-heading"><div><h2>${reportSkill ? SKILLS.find(s => s.id === reportSkill).name + ' · ' : ''}평가의 근거</h2><p>직접 확인하고 기록한 장면만 표시해요.</p></div>${reportSkill ? '<button class="text-button" data-action="clear-filter">전체 항목 보기</button>' : '<button class="button secondary small" data-action="navigate" data-page="videos">장면 기록하러 가기 ' + icon('arrow') + '</button>'}</div>${demo ? empty('info', '예시 점수에는 실제 근거 영상을 연결하지 않았어요', '실제 선수의 영상 장면으로 오해하지 않도록 예시와 기록을 분리해요.') : observationList(filtered)}</section>
   <section class="comparison-note"><span class="comparison-icon">${icon('trend')}</span><div><h3>전국 등수보다, 나의 변화부터.</h3><p>현재는 전국 순위와 참여자 백분위를 제공하지 않아요. 비교 가능한 평가 데이터와 검증된 기준이 쌓이면 안내할게요.</p></div>${badge('비교 데이터 수집 전', 'subtle')}</section>`;
 }
@@ -1161,50 +1438,69 @@ function analysisResult(entry) {
   const r = entry.result;
   return `<article class="card analysis-result"><div class="analysis-result-heading"><div><span class="eyebrow">AI SCENE FEEDBACK · ${formatTime(entry.start)}–${formatTime(entry.end)}</span><h3>${r.identified ? '이 장면에서 발견한 플레이' : '선수 확인이 어려운 장면이에요'}</h3></div>${badge('AI 초안 · 확인 필요', 'amber')}</div><p class="analysis-summary">${escape(r.summary)}</p>${r.observations.map(o => `<div class="ai-observation"><button class="time-chip" data-action="seek" data-id="${entry.videoId}" data-time="${o.time}">${icon('play')}${formatTime(o.time)}</button><div>${badge(SKILLS.find(s => s.id === o.skill)?.name, 'subtle')} ${badge(({strength:'좋았어요',focus:'연습해요',note:'관찰'})[o.type], o.type === 'focus' ? 'amber' : 'green')}<span class="ai-confidence">확신 ${({low:'낮음',medium:'보통',high:'높음'})[o.confidence]}</span><p>${escape(o.note)}</p></div></div>`).join('')}${r.nextAction ? `<div class="analysis-next"><strong>다음 연습으로 연결해요</strong><p>${escape(r.nextAction)}</p></div>` : ''}<ul class="analysis-limitations">${r.limitations.map(text => `<li>${escape(text)}</li>`).join('')}</ul><div class="analysis-footnote">${escape(entry.model)} · ${dateLabel(entry.createdAt)} · 정지 화면을 보고 만든 참고 의견입니다. 공의 빠른 움직임·정확한 패스 결과는 놓칠 수 있어요. 전체 경기 능력치·전국 순위로 환산하지 않습니다.</div></article>`;
 }
-function analysisPanel(video) {
-  const entries = (state.analyses || []).filter(a => a.videoId === video.id);
-  return `<section class="card analysis-panel"><div class="card-heading"><div><span class="eyebrow">FROM FILM TO FEEDBACK</span><h2>영상 저장 다음은, 장면 분석.</h2><p>남색 11번이 잘 보이는 최대 12초 구간을 골라요.</p></div><button class="button primary small" data-action="analyze-video" data-id="${video.id}">${icon('spark')}장면 분석하기</button></div><p class="analysis-panel-note">${entries.length ? `AI 피드백 ${entries.length}개 · 아래 내용은 코치 확인 전 초안이에요.` : '아직 분석 결과가 없어요. 분석 서버가 연결된 뒤 직접 요청하면 강점·연습할 행동을 확인할 수 있어요.'} 자동 선수 추적과 경기 전체 평가는 지원하지 않습니다.</p></section>${entries.length ? analysisResult(entries.at(-1)) : ''}`;
+const autoStatusLabels = {scanning:'남색 11번을 찾고 있어요',analyzing:'발견한 구간을 분석하고 있어요',completed:'자동 분석 완료',partial:'일부 구간 분석 완료',not_found:'표본에서 남색 11번을 확인하지 못했어요',cancelled:'분석을 중지했어요',failed:'분석을 완료하지 못했어요',interrupted:'중단된 분석을 이어갈 수 있어요'};
+const autoJobFor = id => (state.autoAnalyses || []).find(job => job.videoId === id);
+const canResumeAuto = job => job && ['partial','cancelled','failed','interrupted'].includes(job.status);
+function autoStatusCard(job, summary = false) {
+  if (!job) return '';
+  const pct = Math.round((job.sampledCount / job.sampleCount * .6 + (job.selectedCount ? job.completedCount / job.selectedCount * .4 : 0)) * 100);
+  const complete = ['completed','not_found'].includes(job.status);
+  return `<section class="auto-analysis-status ${summary ? 'auto-summary' : ''}" data-auto-status="${job.status}"><div class="auto-status-heading"><span class="auto-symbol">${icon(complete ? 'check' : 'target')}</span><div><span class="eyebrow">AUTOMATIC · NAVY 11</span><h3>${autoStatusLabels[job.status] || '자동 분석'}</h3></div>${badge(`${job.completedCount}개 구간 저장`,complete ? 'green' : 'subtle')}</div><p class="auto-message">${escape(job.message)}</p><div class="auto-status-metrics"><span>전체 영상<strong>${formatTime(job.duration)}</strong></span><span>탐색한 시점<strong>${job.sampledCount} / ${job.sampleCount}</strong></span><span>선수 확인<strong>${job.detectedCount}개 시점</strong></span><span>구간 분석<strong>${job.completedCount} / ${job.selectedCount}</strong></span></div><div class="auto-progress-track" role="progressbar" aria-label="자동 탐색과 구간 분석 진행" aria-valuenow="${complete ? 100 : Math.min(99,pct)}" aria-valuemin="0" aria-valuemax="100"><span style="width:${complete ? 100 : Math.min(99,pct)}%"></span></div><p class="auto-coverage">전체 시간대에서 약 ${Math.round(job.interval * 10) / 10}초 간격으로 표본을 확인합니다. 연속 추적이 아니므로 짧은 플레이나 가려진 등번호를 놓칠 수 있어요. 발견한 구간 중 최대 6개를 분석합니다.</p>${canResumeAuto(job) ? `<button type="button" class="button secondary small" data-action="analyze-video" data-id="${job.videoId}">${icon('play')}중단 지점부터 이어서 분석</button><button type="button" class="text-button auto-restart" data-action="restart-analysis" data-id="${job.videoId}">처음부터 다시 분석</button>` : ''}</section>`;
 }
-async function openAnalysis(id) {
+function analysisPanel(video) {
+  const entries = (state.analyses || []).filter(a => a.videoId === video.id).slice(-6).sort((a,b) => a.start-b.start);
+  const job = autoJobFor(video.id);
+  return `<section class="card analysis-panel"><div class="card-heading"><div><span class="eyebrow">AUTOMATIC PLAYER DISCOVERY</span><h2>남색 11번, 앱이 찾아서 분석해요.</h2><p>장면을 고르거나 영상을 일시정지할 필요가 없어요.</p></div><button class="button primary small" data-action="analyze-video" data-id="${video.id}">${icon('spark')}${canResumeAuto(job) ? '자동 분석 이어서 하기' : '남색 11번 자동 분석'}</button></div><p class="analysis-panel-note">영상의 전체 시간대에서 선수를 탐색하고, 등번호가 확인된 구간을 자동으로 분석합니다. 결과는 코치 확인 전 AI 초안이며 전체 능력치 점수와 구분돼요.</p>${autoStatusCard(job)}</section>${entries.map(analysisResult).join('')}`;
+}
+async function openAnalysis(id, fresh = false) {
   const video = state.videos.find(v => v.id === id);
   if (!isOriginal(video)) throw new Error('이 기능은 이 기기에 저장한 원본 영상에서 사용할 수 있어요.');
-  const native = $('#video-player video');
-  const start = native && selectedVideo === id ? Math.floor(native.currentTime) : 0;
-  native?.pause();
-  openModal('한 장면에서, 다음 연습을 찾아요.', 'AI 장면 피드백은 잠정 의견이며, 선수 전체 능력치 평가가 아닙니다.', `<div id="analysis-setup" class="analysis-setup" role="status"><span class="loading-spinner"></span>분석 서버 연결을 확인하고 있어요.</div><form id="analysis-form" data-id="${id}" novalidate hidden><div class="fixed-player">${icon('target')}분석 대상<strong>남색 유니폼 · 11번 · U11</strong></div><p class="field-help">영상을 먼저 재생해 등번호가 보이는 구간을 찾으세요. 선수가 확인되지 않으면 평가를 보류합니다. 전체 경기 대신 선택한 구간의 정지 화면 최대 24장만 전송합니다.</p><div class="form-grid"><label>시작 시간<input name="start" value="${formatTime(start)}" placeholder="00:57" inputmode="text" required></label><label>분석 길이<select name="length"><option value="12">최대 12초</option><option value="6">6초</option><option value="2">2초</option></select></label></div><label>테스트 이용 코드<input name="accessCode" type="password" autocomplete="off" maxlength="200" required><span class="field-help">운영자가 정한 이용 코드입니다. AI 서비스의 API 키를 입력하는 칸이 아닙니다.</span></label><label class="consent-label"><input name="consent" type="checkbox"><span>분석에 필요한 영상 이용 권한을 확인했으며, 선택한 구간의 정지 화면을 OpenAI 서비스로 전송하는 데 동의해요.<small>다른 아동이 함께 등장할 수 있습니다. 원본 전체와 이용 코드는 결과 기록에 저장하지 않습니다. AI 학습용 동의와는 별개인 분석 요청입니다.</small></span></label><div id="analysis-progress" class="original-save-progress" role="status" hidden><span class="loading-spinner"></span><p></p></div><div class="modal-actions upload-actions"><div id="analysis-error" class="form-error" role="alert"></div><button type="button" class="button secondary" data-action="close-modal">닫기</button><button type="submit" class="button primary">${icon('spark')}이 구간 분석 요청</button></div></form>`, true);
+  $('#video-player video')?.pause();
+  const job = autoJobFor(id), resume = !fresh && canResumeAuto(job);
+  openModal('남색 11번의 플레이를, 자동으로.', '영상 탐색부터 구간 선택, 플레이 피드백까지 앱이 진행합니다.', `<div id="analysis-setup" class="analysis-setup" role="status"><span class="loading-spinner"></span>분석 서버 연결을 확인하고 있어요.</div><form id="analysis-form" data-id="${id}" data-fresh="${fresh}" novalidate hidden><div class="fixed-player">${icon('target')}분석 대상<strong>남색 유니폼 · 11번 · U${state.player.age}</strong></div><ol class="auto-workflow"><li><span>01</span><div><strong>영상 전체 시간대 탐색</strong><small>최대 120개 시점을 확인해 선수를 찾습니다.</small></div></li><li><span>02</span><div><strong>분석할 구간 자동 선택</strong><small>등번호가 확인된 시점의 앞뒤를 살펴봅니다.</small></div></li><li><span>03</span><div><strong>플레이와 다음 연습 정리</strong><small>최대 6개 구간의 결과를 하나씩 저장합니다.</small></div></li></ol>${resume ? `<p class="auto-resume-note">이전에 탐색한 ${job.sampledCount}개 시점과 완료한 ${job.completedCount}개 구간에서 이어갑니다.</p>` : ''}<p class="field-help">일정 간격의 표본 탐색이므로 모든 플레이를 찾는 방식은 아닙니다. 영상이 길면 수분 이상 걸릴 수 있으며, 분석 중에는 이 화면을 열어 두세요. OpenAI API 사용료가 발생합니다.</p><label>분석 이용 코드<input name="accessCode" type="password" autocomplete="off" maxlength="200" required><span class="field-help">운영자가 정한 이용 코드입니다. 이 코드와 영상 원본은 결과 기록에 저장하지 않습니다.</span></label><label class="consent-label"><input name="consent" type="checkbox"><span>영상 이용 권한을 확인했으며, 자동 탐색·분석에 필요한 정지 화면을 OpenAI 서비스로 전송하는 데 동의해요.<small>다른 아동이 함께 등장할 수 있습니다. 원본 파일 전체는 전송하지 않으며, 이 동의는 AI 학습용 동의와 별개입니다.</small></span></label><div id="analysis-progress" class="original-save-progress" role="status" hidden><span class="loading-spinner"></span><p></p></div><div id="analysis-live-status"></div><div class="modal-actions upload-actions"><div id="analysis-error" class="form-error" role="alert"></div><button type="button" class="button secondary" data-action="close-modal">닫기</button><button type="submit" class="button primary">${icon('spark')}남색 11번 자동 분석 시작</button></div></form>`, true);
   const setup = $('#analysis-setup'), form = $('#analysis-form');
   const availability = await getAnalysisAvailability();
   if (!setup.isConnected) return;
   if (availability.available) { setup.hidden = true; form.hidden = false; return; }
-  const unavailableText = availability.reason === 'backend_missing' ? '현재 사이트에는 화면 파일만 배포되어 있어 AI 분석을 실행할 서버가 없습니다.' : availability.reason === 'missing_credentials' ? '분석 서버에 AI 인증 정보와 테스트 이용 코드가 아직 설정되지 않았습니다.' : '분석 서버의 연결 상태를 확인하지 못했습니다. 네트워크 상태와 서버 응답을 확인한 뒤 다시 열어 주세요.';
+  const unavailableText = availability.reason === 'backend_missing' ? '이 주소에는 분석 서버가 배포되어 있지 않습니다.' : availability.reason === 'missing_credentials' ? '분석 서버에 AI 인증 정보 또는 이용 코드가 설정되지 않았습니다.' : '분석 서버의 연결 상태를 확인하지 못했습니다. 잠시 후 다시 열어 주세요.';
   setup.classList.add('unavailable');
-  setup.innerHTML = `${icon('info')}<div><h3>영상은 저장됐지만, 분석 연결이 필요해요.</h3><p>${unavailableText}</p><p>연결되지 않은 상태에서 분석 중으로 표시하거나 능력치를 만들지 않습니다. 원본은 이 기기에 그대로 보관됩니다.</p><details><summary>운영자 연결 안내</summary><p>서버 포함 버전을 Git으로 Netlify에 배포하고, Netlify의 Environment variables에 SOCCER_AI_API_KEY와 SOCCER_ANALYSIS_ACCESS_CODE(12자 이상)를 비밀값으로 등록한 뒤 다시 배포해야 합니다. 정적 파일을 Deploys에 드롭하는 것만으로는 분석 서버가 설치되지 않습니다. API 키는 이 화면이나 대화창에 입력하지 마세요.</p></details><button class="button secondary" data-action="close-modal">확인했어요</button></div>`;
+  setup.innerHTML = `${icon('info')}<div><h3>원본은 저장됐지만, 분석 서버 연결을 확인해 주세요.</h3><p>${unavailableText}</p><p>원본 영상과 기존 기록은 이 기기에 보관되어 있습니다.</p><button class="button secondary" data-action="close-modal">확인했어요</button></div>`;
 }
 async function submitAnalysis(form) {
   if (analysisBusy) return;
   const error = $('#analysis-error'), progress = $('#analysis-progress'), data = new FormData(form);
   error.textContent = '';
+  let wakeLock = null;
+  const video = state.videos.find(v => v.id === form.dataset.id);
   try {
-    const video = state.videos.find(v => v.id === form.dataset.id);
-    const start = parseTimestamp(data.get('start'));
-    if (start === null || start > 86400) throw new Error('시작 시간을 00:57 형식으로 입력해 주세요.');
-    if (!data.get('consent')) throw new Error('정지 화면 전송에 동의해 주세요.');
-    if (!data.get('accessCode')?.trim()) throw new Error('테스트 이용 코드를 입력해 주세요.');
-    const end = Math.min(start + Number(data.get('length')), video.duration || start + 12);
-    if (end - start < 1) throw new Error('영상 끝보다 최소 1초 앞선 시작 시간을 선택해 주세요.');
+    if (!data.get('consent')) throw new Error('자동 탐색·분석을 위한 정지 화면 전송에 동의해 주세요.');
+    if (!data.get('accessCode')?.trim()) throw new Error('분석 이용 코드를 입력해 주세요.');
     analysisBusy = true; analysisController = new AbortController();
     form.setAttribute('aria-busy', 'true'); progress.hidden = false;
-    $('p', progress).textContent = '원본을 확인하고 있어요.';
+    $('p', progress).textContent = '이 기기의 원본을 확인하고 있어요.';
     form.querySelectorAll('input,select,button[type=submit]').forEach(el => el.disabled = true);
+    $('[data-action=close-modal]', form).textContent = '분석 중지';
+    try { wakeLock = await navigator.wakeLock?.request('screen'); } catch {}
     const blob = await getOriginalVideo(video.id);
     if (!blob) throw new Error('이 기기에 원본이 없어요. 영상 화면에서 원본을 다시 연결해 주세요.');
-    const {result,model} = await analyzeOriginalClip({blob,start,end,videoId:video.id,accessCode:data.get('accessCode').trim(),consent:true,signal:analysisController.signal,onProgress:step => { if (progress.isConnected) $('p', progress).textContent = step.message; }});
-    await persist(s => { s.analyses ||= []; s.analyses.push({id:makeId(),videoId:video.id,createdAt:new Date().toISOString(),start,end,model,result}); });
-    analysisBusy = false; analysisController = null; demo = false; closeModal(); selectedVideo = video.id; navigate('videos'); toast(result.identified ? 'AI 장면 피드백을 저장했어요. 영상과 함께 확인해 주세요.' : '선수 식별이 어려워 평가를 보류했어요. 다른 구간을 골라 주세요.');
-  } catch (err) { error.textContent = err.message; }
-  finally {
+    const previous = autoJobFor(video.id), resume = form.dataset.fresh !== 'true' && canResumeAuto(previous);
+    const id = resume ? previous.id : makeId(), createdAt = resume ? previous.createdAt : new Date().toISOString();
+    const report = await analyzeOriginalVideo({blob,videoId:video.id,accessCode:data.get('accessCode').trim(),consent:true,signal:analysisController.signal,scanSnapshot:resume ? previous : undefined,onProgress:step => { if (progress.isConnected) $('p', progress).textContent = step.message; },onScan:async update => {
+      await persist(s => { s.autoAnalyses ||= []; const record = {id,videoId:video.id,createdAt,updatedAt:new Date().toISOString(),...update}; const index = s.autoAnalyses.findIndex(a => a.videoId === video.id); if (index < 0) s.autoAnalyses.push(record); else s.autoAnalyses[index] = record; });
+      if ($('#analysis-live-status')) $('#analysis-live-status').innerHTML = autoStatusCard(autoJobFor(video.id));
+    },onClip:async clip => {
+      await persist(s => { s.analyses ||= []; const index = s.analyses.findIndex(a => a.videoId === video.id && Math.abs(a.start-clip.start)<.01 && Math.abs(a.end-clip.end)<.01); const record = {id:index<0 ? makeId() : s.analyses[index].id,videoId:video.id,createdAt:new Date().toISOString(),...clip}; if (index < 0) s.analyses.push(record); else s.analyses[index] = record; });
+    }});
+    analysisBusy = false; analysisController = null; demo = false; closeModal(); selectedVideo = video.id; navigate('videos');
+    toast(report.status === 'not_found' ? '표본에서 남색 11번을 확인하지 못해 평가를 보류했어요.' : `${report.completedCount}개 구간의 자동 분석 결과를 저장했어요.`);
+  } catch (err) {
+    if (err.name === 'AbortError') { analysisBusy = false; analysisController = null; closeModal(); selectedVideo = video?.id; navigate('videos'); toast('분석을 중지했어요. 완료된 결과는 보관됩니다.'); }
+    else { const saved = autoJobFor(video?.id)?.completedCount || 0; error.textContent = err.message + (saved ? ` 완료한 ${saved}개 구간의 결과는 보관되어 있어요.` : ''); }
+  } finally {
     analysisBusy = false; analysisController = null;
-    if (form.isConnected) { form.removeAttribute('aria-busy'); progress.hidden = true; form.querySelectorAll('input,select,button').forEach(el => el.disabled = false); $('input[name=accessCode]', form).value = ''; }
+    try { await wakeLock?.release(); } catch {}
+    if (form.isConnected) { form.removeAttribute('aria-busy'); progress.hidden = true; form.querySelectorAll('input,select,button').forEach(el => el.disabled = false); $('input[name=accessCode]', form).value = ''; $('[data-action=close-modal]', form).textContent = '닫기'; }
+    render();
   }
 }
 async function actionHandler(event) {
@@ -1216,7 +1512,7 @@ async function actionHandler(event) {
     if (action === 'menu') { document.body.classList.toggle('menu-open'); syncMobileMenu(); return; }
     if (action === 'demo') { demo = !demo; reportSkill = null; render(); return; }
     if (action === 'add-video') return openAddVideo();
-    if (action === 'analyze-video') return openAnalysis(target.dataset.id);
+    if (action === 'analyze-video' || action === 'restart-analysis') { if (analysisBusy) return; return await openAnalysis(target.dataset.id, action === 'restart-analysis'); }
     if (action === 'cancel-analysis') { analysisController?.abort(); return; }
     if (action === 'video-source') return setVideoSource(target.dataset.kind);
     if (action === 'download-original') {
@@ -1231,7 +1527,7 @@ async function actionHandler(event) {
     if (action === 'delete-video') return openModal('이 원본 영상을 삭제할까요?', '이 기기의 원본 파일과 해당 영상의 장면 기록을 삭제해요. 사진·파일 앱의 원본과 이전 성장 기록은 유지됩니다.', `<div class="modal-actions"><button class="button secondary" data-action="close-modal">유지하기</button><button class="button danger" data-action="confirm-delete-video" data-id="${target.dataset.id}">원본 영상 삭제</button></div>`);
     if (action === 'confirm-delete-video') {
       const id = target.dataset.id;
-      await persist(s => { s.videos = s.videos.filter(v => v.id !== id); s.observations = s.observations.filter(o => o.videoId !== id); s.analyses = (s.analyses || []).filter(a => a.videoId !== id); });
+      await persist(s => { s.videos = s.videos.filter(v => v.id !== id); s.observations = s.observations.filter(o => o.videoId !== id); s.analyses = (s.analyses || []).filter(a => a.videoId !== id); s.autoAnalyses = (s.autoAnalyses || []).filter(a => a.videoId !== id); });
       closeModal(); selectedVideo = state.videos[0]?.id; previewTime = null; render();
       try { await deleteOriginalVideo(id); toast('영상과 연결된 장면 기록을 삭제했어요.'); }
       catch { toast('목록은 삭제했지만 기기의 원본 정리에 실패했어요. 브라우저 저장소를 확인해 주세요.'); }
@@ -1270,8 +1566,8 @@ async function actionHandler(event) {
       const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = 'next-xi-growth-record.json'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); return toast('기록을 JSON 파일로 내보냈어요. 원본 영상은 별도로 내보내 주세요.');
     }
     if (action === 'reset') return openModal('개인 기록을 초기화할까요?', '선수 정보, 장면, 훈련 실천과 성장 기록이 삭제돼요. 등록한 경기 영상은 유지됩니다.', `<p class="reset-note">필요한 기록은 먼저 내보내기로 보관해 주세요.</p><div class="modal-actions"><button class="button secondary" data-action="close-modal">취소</button><button class="button danger" data-action="confirm-reset">개인 기록 삭제</button></div>`);
-    if (action === 'confirm-reset') { await persist(s => { s.player = { name: '', age: 11, number: 11, kit: '남색', position: '미등록', weeklyTraining: 3 }; s.observations = []; s.analyses = []; s.snapshots = []; s.completed = []; }); demo = false; closeModal(); render(); return toast('개인 기록을 초기화했어요.'); }
-    if (action === 'help') return openModal('성장의 다음 장, 이렇게 시작해요.', '남색 11번 선수의 경기에서 작은 발견을 찾아보세요.', `<ol class="guide-list"><li><span>01</span><div><strong>경기 영상 열기</strong><p>원본 파일 또는 유튜브 링크를 등록해요. 원본은 등록한 기기의 브라우저에서 보관·재생됩니다.</p></div></li><li><span>02</span><div><strong>한 장면 기록하기</strong><p>시간과 관찰한 행동을 적어요. 직접 확인한 내용만 기록해요.</p></div></li><li><span>03</span><div><strong>나의 플레이 지도 살펴보기</strong><p>기록한 단계 평가가 스파이더맵에 반영돼요. 예시 체험은 실제 기록과 분리돼요.</p></div></li><li><span>04</span><div><strong>작게 연습하고, 다시 돌아보기</strong><p>일반 훈련 예시를 코치와 조절하고, 다음 경기의 변화를 기록해요.</p></div></li></ol><div class="modal-actions"><button class="button primary" data-action="close-modal">시작해 볼게요 ${icon('arrow')}</button></div>`);
+    if (action === 'confirm-reset') { await persist(s => { s.player = { name: '', age: 11, number: 11, kit: '남색', position: '미등록', weeklyTraining: 3 }; s.observations = []; s.analyses = []; s.autoAnalyses = []; s.snapshots = []; s.completed = []; }); demo = false; closeModal(); render(); return toast('개인 기록을 초기화했어요.'); }
+    if (action === 'help') return openModal('성장의 다음 장, 이렇게 시작해요.', '남색 11번 선수의 경기에서 작은 발견을 찾아보세요.', `<ol class="guide-list"><li><span>01</span><div><strong>경기 영상 열기</strong><p>원본 파일 또는 유튜브 링크를 등록해요. 원본은 등록한 기기의 브라우저에서 보관·재생됩니다.</p></div></li><li><span>02</span><div><strong>남색 11번 자동 분석 시작</strong><p>원본 영상에서 자동 분석을 누르면 앱이 선수를 탐색하고 분석 구간을 고릅니다. 장면 선택이나 시작 시간 입력은 필요 없어요.</p></div></li><li><span>03</span><div><strong>피드백과 근거 함께 살펴보기</strong><p>앱이 분석한 구간별 강점과 연습할 행동을 확인해요. 스파이더맵은 사람이 직접 기록한 단계 평가를 별도로 표시합니다.</p></div></li><li><span>04</span><div><strong>작게 연습하고, 다시 돌아보기</strong><p>일반 훈련 예시를 코치와 조절하고, 다음 경기의 변화를 기록해요.</p></div></li></ol><div class="modal-actions"><button class="button primary" data-action="close-modal">시작해 볼게요 ${icon('arrow')}</button></div>`);
   } catch (e) { toast(e.message); }
 }
 document.addEventListener('click', e => {
@@ -1360,10 +1656,11 @@ document.addEventListener('submit', async e => {
     }
   } catch (err) { error.textContent = err.message; } finally { if (button.isConnected) button.disabled = false; }
 });
+window.addEventListener('beforeunload', event => { if (analysisBusy) { event.preventDefault(); event.returnValue = ''; } });
 window.addEventListener('hashchange', () => { page = location.hash.slice(1) || 'dashboard'; closeMobileMenu(); render(); window.scrollTo({ top: 0, behavior: 'instant' }); $('#main').focus({ preventScroll: true }); });
 matchMedia('(max-width: 720px)').addEventListener('change', () => { closeMobileMenu(); });
 async function init() {
-  try { const response = await localRequest('/api/workspace'); if (!response.ok) throw new Error(); state = await response.json(); selectedVideo = state.videos[0]?.id; render(); }
+  try { const response = await localRequest('/api/workspace'); if (!response.ok) throw new Error(); state = await response.json(); selectedVideo = state.videos[0]?.id; if ((state.autoAnalyses || []).some(job => ['scanning','analyzing'].includes(job.status))) await persist(s => s.autoAnalyses.forEach(job => { if (['scanning','analyzing'].includes(job.status)) { job.status = 'interrupted'; job.updatedAt = new Date().toISOString(); job.message = '화면이 닫혀 분석이 중단됐어요. 완료된 결과는 남아 있으며 이어서 분석할 수 있어요.'; } })); render(); }
   catch { $('#app').innerHTML = `<div class="loading-screen"><span class="brand-symbol">↗</span><h1>브라우저 저장 공간을 열지 못했어요.</h1><p>파일을 일반 브라우저에서 열고 저장소 사용을 허용한 뒤 다시 시도해 주세요.</p><button class="button primary" id="retry">다시 연결</button></div>`; $('#retry').addEventListener('click', init); }
 }
 init();

@@ -42,7 +42,7 @@ export function seedState() {
   return { revision: 0, player: { name: '', age: 11, number: 11, kit: '남색', position: '미등록', weeklyTraining: 3 },
     videos: [
       { id: 'arJ6xMRKnbw', title: '남색 11번 · 경기 영상', start: 57, source: '제공한 샘플 영상', addedAt: '2026-10-16T00:00:00.000Z' }
-    ], observations: [], completed: [], snapshots: [], analyses: [] };
+    ], observations: [], completed: [], snapshots: [], analyses: [], autoAnalyses: [] };
 }
 function validVideo(video) {
   if (!video || typeof video.title !== 'string' || video.title.length < 1 || video.title.length > 100 || typeof video.addedAt !== 'string' || !Number.isFinite(Date.parse(video.addedAt))) return false;
@@ -96,10 +96,42 @@ function cleanAnalysis(analysis) {
     },
   };
 }
+function validAutoAnalysis(job, videos) {
+  if (!job || typeof job.id !== 'string' || !/^[\w-]{1,80}$/.test(job.id)
+    || !videos.some(video => video.kind === 'file' && video.id === job.videoId)
+    || typeof job.createdAt !== 'string' || !Number.isFinite(Date.parse(job.createdAt))
+    || typeof job.updatedAt !== 'string' || !Number.isFinite(Date.parse(job.updatedAt))
+    || typeof job.model !== 'string' || job.model.length > 100
+    || typeof job.duration !== 'number' || !Number.isFinite(job.duration) || job.duration < 1 || job.duration > 86400
+    || !Number.isInteger(job.sampleCount) || job.sampleCount < 1 || job.sampleCount > 120
+    || !Number.isInteger(job.sampledCount) || job.sampledCount < 0 || job.sampledCount > job.sampleCount
+    || typeof job.interval !== 'number' || !Number.isFinite(job.interval) || job.interval <= 0 || job.interval > 86400
+    || !Number.isInteger(job.detectedCount) || job.detectedCount < 0 || job.detectedCount > 120
+    || !Number.isInteger(job.selectedCount) || job.selectedCount < 0 || job.selectedCount > 6
+    || !Number.isInteger(job.completedCount) || job.completedCount < 0 || job.completedCount > job.selectedCount
+    || !['scanning', 'analyzing', 'completed', 'partial', 'not_found', 'cancelled', 'failed', 'interrupted'].includes(job.status)
+    || !Array.isArray(job.detections) || job.detections.length !== job.detectedCount
+    || !Array.isArray(job.segments) || job.segments.length !== job.selectedCount
+    || typeof job.message !== 'string' || job.message.length > 1500) return false;
+  if (job.detections.some(detection => !detection || typeof detection.time !== 'number' || !Number.isFinite(detection.time) || detection.time < 0 || detection.time > job.duration
+    || !['medium', 'high'].includes(detection.confidence) || typeof detection.reason !== 'string' || !detection.reason.trim() || detection.reason.length > 500)) return false;
+  return job.segments.every(segment => segment && typeof segment.start === 'number' && Number.isFinite(segment.start) && segment.start >= 0
+    && typeof segment.end === 'number' && Number.isFinite(segment.end) && segment.end <= job.duration && segment.end - segment.start >= 1 && segment.end - segment.start <= 12);
+}
+function cleanAutoAnalysis(job) {
+  return {
+    id: job.id, videoId: job.videoId, createdAt: job.createdAt, updatedAt: job.updatedAt, model: job.model,
+    duration: job.duration, sampleCount: job.sampleCount, sampledCount: job.sampledCount, interval: job.interval,
+    detectedCount: job.detectedCount, selectedCount: job.selectedCount, completedCount: job.completedCount, status: job.status,
+    detections: job.detections.map(detection => ({ time: detection.time, confidence: detection.confidence, reason: detection.reason })),
+    segments: job.segments.map(segment => ({ start: segment.start, end: segment.end })), message: job.message,
+  };
+}
 export function validateState(value) {
   if (!value || typeof value !== 'object') throw new Error('저장할 데이터가 올바르지 않습니다.');
   const { player, videos, observations, completed, snapshots } = value;
   const analyses = value.analyses === undefined ? [] : value.analyses;
+  const autoAnalyses = value.autoAnalyses === undefined ? [] : value.autoAnalyses;
   if (!player || typeof player.name !== 'string' || player.name.length > 30 || player.number !== 11 || player.kit !== '남색' || !Number.isInteger(player.age) || player.age < 5 || player.age > 18 || typeof player.position !== 'string' || player.position.length > 30 || !Number.isInteger(player.weeklyTraining) || player.weeklyTraining < 0 || player.weeklyTraining > 14) throw new Error('선수 정보를 확인해 주세요. 분석 대상은 남색 11번입니다.');
   if (!Array.isArray(videos) || videos.length > 100 || videos.some(v => !validVideo(v))) throw new Error('영상 정보를 확인해 주세요.');
   if (new Set(videos.map(v => v.id)).size !== videos.length) throw new Error('이미 등록된 영상입니다.');
@@ -109,5 +141,7 @@ export function validateState(value) {
   if (!Array.isArray(snapshots) || snapshots.length > 100 || snapshots.some(s => !s || typeof s.id !== 'string' || !Number.isFinite(Date.parse(s.createdAt)) || !Number.isInteger(s.observationCount) || s.observationCount < 1 || !Array.isArray(s.scores) || s.scores.length !== 8 || s.scores.some(n => n !== null && (typeof n !== 'number' || !Number.isFinite(n) || n < 1 || n > 5)))) throw new Error('성장 기록을 확인해 주세요.');
   if (!Array.isArray(analyses) || analyses.length > 100 || analyses.some(analysis => !validAnalysis(analysis, videos))) throw new Error('AI 분석 기록을 확인해 주세요.');
   if (new Set(analyses.map(analysis => analysis.id)).size !== analyses.length) throw new Error('중복된 AI 분석 기록입니다.');
-  return { player: { ...player }, videos: videos.map(cleanVideo), observations: observations.map(o => ({ id: o.id, videoId: o.videoId, skill: o.skill, time: o.time, rating: o.rating, note: o.note, type: o.type, createdAt: o.createdAt })), completed: [...new Set(completed)], snapshots: snapshots.map(s => ({ id: s.id, createdAt: s.createdAt, observationCount: s.observationCount, scores: s.scores })), analyses: analyses.map(cleanAnalysis) };
+  if (!Array.isArray(autoAnalyses) || autoAnalyses.length > 100 || autoAnalyses.some(job => !validAutoAnalysis(job, videos))) throw new Error('자동 분석 진행 기록을 확인해 주세요.');
+  if (new Set(autoAnalyses.map(job => job.id)).size !== autoAnalyses.length || new Set(autoAnalyses.map(job => job.videoId)).size !== autoAnalyses.length) throw new Error('중복된 자동 분석 진행 기록입니다.');
+  return { player: { ...player }, videos: videos.map(cleanVideo), observations: observations.map(o => ({ id: o.id, videoId: o.videoId, skill: o.skill, time: o.time, rating: o.rating, note: o.note, type: o.type, createdAt: o.createdAt })), completed: [...new Set(completed)], snapshots: snapshots.map(s => ({ id: s.id, createdAt: s.createdAt, observationCount: s.observationCount, scores: s.scores })), analyses: analyses.map(cleanAnalysis), autoAnalyses: autoAnalyses.map(cleanAutoAnalysis) };
 }

@@ -35,6 +35,25 @@ const validAnalysis = (overrides = {}) => ({
   },
   ...overrides,
 });
+const validAutoAnalysis = (overrides = {}) => ({
+  id: 'auto-8986afab-cb0a-4a8d-b6b7-cbceff083f06',
+  videoId: LOCAL_VIDEO,
+  createdAt: '2026-10-16T01:25:00.000Z',
+  updatedAt: '2026-10-16T01:26:00.000Z',
+  model: '',
+  duration: 1800.25,
+  sampleCount: 120,
+  sampledCount: 20,
+  interval: 15,
+  detectedCount: 2,
+  selectedCount: 1,
+  completedCount: 0,
+  status: 'interrupted',
+  detections: [{ time: 57.25, confidence: 'high', reason: '남색 11번 등번호 확인' }, { time: 62, confidence: 'medium', reason: '같은 유니폼과 이동 경로 확인' }],
+  segments: [{ start: 57.25, end: 69.25 }],
+  message: '중단된 위치에서 다시 시작할 수 있습니다.',
+  ...overrides,
+});
 const validObservation = (overrides = {}) => ({
   id: 'scene-1',
   videoId: FIRST_VIDEO,
@@ -361,4 +380,105 @@ test('analysis history is bounded, rejects duplicate IDs and removes fields outs
   assert.throws(() => validateState(state), /중복된 AI 분석 기록/);
   state.analyses = Array.from({ length: 101 }, (_, index) => validAnalysis({ id: `analysis-${index}` }));
   assert.throws(() => validateState(state), /AI 분석 기록/);
+});
+
+test('automatic analysis progress defaults to an empty history for older saved workspaces', () => {
+  const state = seedState();
+  assert.deepEqual(state.autoAnalyses, []);
+  delete state.autoAnalyses;
+  delete state.analyses;
+  const validated = validateState(state);
+  assert.deepEqual(validated.autoAnalyses, []);
+  assert.deepEqual(validated.analyses, []);
+  state.autoAnalyses = null;
+  assert.throws(() => validateState(state), /자동 분석 진행 기록/);
+});
+
+test('an interrupted automatic job round trips with qualitative clips without producing player scores', () => {
+  const state = seedState();
+  state.videos.push(validFileVideo());
+  state.autoAnalyses.push(validAutoAnalysis());
+  state.analyses.push(validAnalysis());
+  const validated = validateState(JSON.parse(JSON.stringify(state)));
+  assert.deepEqual(validated.autoAnalyses, state.autoAnalyses);
+  assert.deepEqual(validated.analyses, state.analyses);
+  assert.deepEqual(validateState(JSON.parse(JSON.stringify(validated))), validated);
+  assert.ok(getScores(validated.observations).every(score => score.value === null));
+  assert.notEqual(validated.autoAnalyses[0].detections[0], state.autoAnalyses[0].detections[0]);
+  assert.notEqual(validated.autoAnalyses[0].segments[0], state.autoAnalyses[0].segments[0]);
+});
+
+test('automatic jobs accept bounded empty scans and all resumable and terminal status names', () => {
+  for (const status of ['scanning', 'analyzing', 'completed', 'partial', 'not_found', 'cancelled', 'failed', 'interrupted']) {
+    const state = seedState();
+    state.videos.push(validFileVideo());
+    state.autoAnalyses.push(validAutoAnalysis({ status, duration: 1, sampleCount: 1, sampledCount: 0, interval: 1, detectedCount: 0, selectedCount: 0, completedCount: 0, detections: [], segments: [], message: '' }));
+    assert.equal(validateState(state).autoAnalyses[0].status, status);
+  }
+});
+
+test('automatic jobs validate file references, timestamps and bounded processing counts', () => {
+  const invalidChanges = [
+    { id: '' }, { id: 'invalid id' }, { id: 'a'.repeat(81) },
+    { videoId: FIRST_VIDEO }, { videoId: 'local-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' },
+    { createdAt: '' }, { updatedAt: 'invalid' }, { updatedAt: 0 },
+    { model: null }, { model: 'm'.repeat(101) },
+    { duration: 0.5 }, { duration: 86401 }, { duration: NaN }, { duration: Infinity }, { duration: '1800' },
+    { sampleCount: 0 }, { sampleCount: 121 }, { sampleCount: 1.5 },
+    { sampledCount: -1 }, { sampledCount: 121 }, { sampledCount: 1.5 },
+    { interval: 0 }, { interval: 86401 }, { interval: Infinity },
+    { detectedCount: -1 }, { detectedCount: 121 }, { detectedCount: 1.5 }, { detectedCount: 1 },
+    { selectedCount: -1 }, { selectedCount: 7 }, { selectedCount: 0.5 }, { selectedCount: 0 },
+    { completedCount: -1 }, { completedCount: 2 }, { completedCount: 0.5 },
+    { status: 'queued' }, { message: null }, { message: 'm'.repeat(1501) },
+    { detections: null }, { segments: null },
+  ];
+  for (const change of invalidChanges) {
+    const state = seedState();
+    state.videos.push(validFileVideo());
+    state.autoAnalyses.push(validAutoAnalysis(change));
+    assert.throws(() => validateState(state), /자동 분석 진행 기록/, JSON.stringify(change));
+  }
+});
+
+test('automatic detections and selected segments must be bounded and have usable explanations', () => {
+  const invalidChanges = [
+    ...[
+      { time: -1 }, { time: 1801 }, { time: Infinity }, { time: '60' },
+      { confidence: 'low' }, { reason: '' }, { reason: ' ' }, { reason: 'r'.repeat(501) },
+    ].map(change => ({ detectedCount: 1, detections: [{ ...validAutoAnalysis().detections[0], ...change }] })),
+    ...[
+      { start: -1, end: 10 }, { start: 0, end: 0.5 }, { start: 0, end: 12.01 },
+      { start: 1795, end: 1801 }, { start: NaN, end: 10 }, { start: 0, end: Infinity },
+      { start: '0', end: 10 }, { start: 10, end: 1 },
+    ].map(segment => ({ segments: [segment] })),
+    { detectedCount: 121, detections: Array(121).fill(validAutoAnalysis().detections[0]) },
+    { selectedCount: 7, segments: Array(7).fill({ start: 0, end: 12 }) },
+  ];
+  for (const change of invalidChanges) {
+    const state = seedState();
+    state.videos.push(validFileVideo());
+    state.autoAnalyses.push(validAutoAnalysis(change));
+    assert.throws(() => validateState(state), /자동 분석 진행 기록/);
+  }
+});
+
+test('only one latest automatic job per file is saved and transient images and access codes are stripped', () => {
+  const state = seedState();
+  state.videos.push(validFileVideo());
+  const job = validAutoAnalysis();
+  job.images = ['data:image/jpeg;base64,not-persisted'];
+  job.accessCode = 'not-persisted';
+  job.detections[0].image = 'not-persisted';
+  job.segments[0].frames = ['not-persisted'];
+  state.autoAnalyses.push(job);
+  const clean = validateState(state).autoAnalyses[0];
+  assert.equal(Object.hasOwn(clean, 'images'), false);
+  assert.equal(Object.hasOwn(clean, 'accessCode'), false);
+  assert.equal(Object.hasOwn(clean.detections[0], 'image'), false);
+  assert.equal(Object.hasOwn(clean.segments[0], 'frames'), false);
+  state.autoAnalyses.push(validAutoAnalysis({ id: 'auto-another' }));
+  assert.throws(() => validateState(state), /중복된 자동 분석 진행 기록/);
+  state.autoAnalyses = Array.from({ length: 101 }, (_, index) => validAutoAnalysis({ id: `auto-${index}` }));
+  assert.throws(() => validateState(state), /자동 분석 진행 기록/);
 });

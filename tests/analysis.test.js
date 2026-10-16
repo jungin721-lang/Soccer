@@ -146,3 +146,121 @@ test('OPENAI_API_KEY fallback and explicit model work without leaking secrets to
   assert.equal(JSON.parse(text).model, 'gpt-4.1');
   assert.equal(text.includes(configured.OPENAI_API_KEY), false);
 });
+
+const discoveryInput = () => ({ ...input(), mode: 'discover', start: 0, end: 3600, frames: [{ time: 30.25, image }, { time: 1800.5, image }, { time: 3599, image }] });
+const discoveryResult = () => ({ detections: [{ frameIndex: 1, confidence: 'high', reason: '같은 프레임에서 남색 상의와 등번호 11이 보입니다.' }], summary: '표본 프레임 한 장에서 남색 11번을 확인했습니다.', limitations: ['표본 프레임 사이에 등장한 장면은 놓칠 수 있습니다.'] });
+
+test('discovery sends indexed full-video samples with a distinct strict schema and conservative prompt', async () => {
+  let called = 0;
+  const response = await handleAnalysis(request(discoveryInput()), { env, fetchImpl: async (url, options) => {
+    called++;
+    assert.equal(url, 'https://api.openai.com/v1/responses');
+    const payload = JSON.parse(options.body);
+    assert.equal(payload.text.format.name, 'youth_soccer_player_discovery');
+    assert.equal(payload.text.format.strict, true);
+    assert.deepEqual(payload.text.format.schema.required, ['detections', 'summary', 'limitations']);
+    assert.equal(payload.store, false);
+    assert.match(payload.instructions, /같은 프레임 속 같은 선수/);
+    assert.match(payload.instructions, /얼굴이나 생체 특징으로 식별하지/);
+    assert.match(payload.instructions, /detections=\[\]/);
+    const text = payload.input[0].content.filter(c => c.type === 'input_text').map(c => c.text).join('\n');
+    assert.match(text, /frameIndex: 1, 영상 시각 1800.5초/);
+    return upstream(discoveryResult())();
+  } });
+  assert.equal(response.status, 200);
+  assert.equal(called, 1);
+  assert.deepEqual(await response.json(), { mode: 'discover', detections: [{ time: 1800.5, confidence: 'high', reason: discoveryResult().detections[0].reason }], summary: discoveryResult().summary, limitations: discoveryResult().limitations, model: 'gpt-4.1-mini' });
+});
+
+test('discovery accepts a single frame and up to twelve frames across at most 24 hours', async () => {
+  const cases = [
+    { ...discoveryInput(), end: 0.5, frames: [{ time: 0, image }] },
+    { ...discoveryInput(), end: 86400, frames: Array.from({ length: 12 }, (_, index) => ({ time: index * 7200, image })) },
+  ];
+  for (const value of cases) {
+    const response = await handleAnalysis(request(value), { env, fetchImpl: upstream({ ...discoveryResult(), detections: [] }) });
+    assert.equal(response.status, 200);
+    assert.deepEqual((await response.json()).detections, []);
+  }
+  // A long interval does not silently convert an ordinary clip request into discovery.
+  const { mode, ...legacy } = discoveryInput();
+  assert.equal((await handleAnalysis(request(legacy), { env, fetchImpl: neverFetch })).status, 400);
+});
+
+test('discovery rejects unknown mode, unsafe intervals, unordered frames and excess frame count before paid calls', async () => {
+  const cases = [
+    { mode: 'whole_game_rating' }, { start: -1 }, { end: 86400.01 }, { end: 0 }, { frames: [] },
+    { frames: Array.from({ length: 13 }, (_, index) => ({ time: index, image })) },
+    { frames: [{ time: 1, image }, { time: 1, image }] },
+    { frames: [{ time: 1, image }, { time: 0, image }] },
+    { frames: [{ time: 3601, image }] },
+    { frames: [{ time: 1, image: 'data:image/png;base64,AAAA' }] },
+    { frames: [{ time: 1, image: 'https://outside.example/image.jpg' }] },
+    { consent: false },
+  ];
+  for (const change of cases) {
+    const response = await handleAnalysis(request({ ...discoveryInput(), ...change }), { env, fetchImpl: neverFetch });
+    assert.equal(response.status, 400, JSON.stringify(change));
+  }
+});
+
+test('discovery uses the same credentials, access code, origin checks and request size limits', async () => {
+  assert.equal((await handleAnalysis(request(discoveryInput()), { env: {}, fetchImpl: neverFetch })).status, 503);
+  assert.equal((await handleAnalysis(request({ ...discoveryInput(), accessCode: 'wrong' }), { env, fetchImpl: neverFetch })).status, 401);
+  assert.equal((await handleAnalysis(request(discoveryInput(), { origin: 'https://other.example' }), { env, fetchImpl: neverFetch })).status, 403);
+  assert.equal((await handleAnalysis(request(discoveryInput(), { 'Content-Length': String(MAX_ANALYSIS_BYTES + 1) }), { env, fetchImpl: neverFetch })).status, 413);
+});
+
+test('discovery rejects invented, repeated or uncertain frame indices instead of guessing timestamps', async () => {
+  const cases = [
+    [{ frameIndex: -1, confidence: 'high', reason: '보임' }],
+    [{ frameIndex: 3, confidence: 'high', reason: '보임' }],
+    [{ frameIndex: 0.5, confidence: 'high', reason: '보임' }],
+    [{ frameIndex: '1', confidence: 'high', reason: '보임' }],
+    [{ frameIndex: 1, confidence: 'low', reason: '추측' }],
+    [{ frameIndex: 1, confidence: 'medium', reason: '' }],
+    [{ frameIndex: 1, confidence: 'high', reason: '가'.repeat(501) }],
+    [discoveryResult().detections[0], discoveryResult().detections[0]],
+  ];
+  for (const detections of cases) {
+    const response = await handleAnalysis(request(discoveryInput()), { env, fetchImpl: upstream({ ...discoveryResult(), detections }) });
+    assert.equal(response.status, 502);
+    assert.equal((await response.json()).code, 'analysis_invalid_result');
+  }
+});
+
+test('discovery validates summary and limitations and strips provider score or timestamp additions', async () => {
+  for (const change of [{ summary: '' }, { summary: '가'.repeat(1501) }, { limitations: ['가'.repeat(501)] }, { limitations: Array(9).fill('제한') }, { limitations: [null] }]) {
+    const response = await handleAnalysis(request(discoveryInput()), { env, fetchImpl: upstream({ ...discoveryResult(), ...change }) });
+    assert.equal(response.status, 502);
+  }
+  const provider = { ...discoveryResult(), overallScore: 99, detections: [{ ...discoveryResult().detections[0], time: 999999, rating: 5 }] };
+  const response = await handleAnalysis(request(discoveryInput()), { env, fetchImpl: upstream(provider) });
+  const value = await response.json();
+  assert.equal(value.detections[0].time, 1800.5);
+  assert.equal(Object.hasOwn(value, 'overallScore'), false);
+  assert.equal(Object.hasOwn(value.detections[0], 'rating'), false);
+});
+
+test('discovery returns detections in video order while preserving exact input timestamps', async () => {
+  const detections = [
+    { frameIndex: 2, confidence: 'high', reason: '11번 확인' },
+    { frameIndex: 0, confidence: 'medium', reason: '남색 11번 확인' },
+  ];
+  const response = await handleAnalysis(request(discoveryInput()), { env, fetchImpl: upstream({ ...discoveryResult(), detections }) });
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).detections.map(item => item.time), [30.25, 3599]);
+});
+
+test('discovery errors finish after one provider attempt, including timeouts and malformed output', async () => {
+  let calls = 0;
+  const response = await handleAnalysis(request(discoveryInput()), { env, timeoutMs: 5, fetchImpl: async (_url, options) => {
+    calls++;
+    return new Promise((_resolve, reject) => options.signal.addEventListener('abort', () => reject(Object.assign(new Error('timeout'), { name: 'AbortError' }))));
+  } });
+  assert.equal(response.status, 504);
+  assert.equal(calls, 1);
+  const malformed = await handleAnalysis(request(discoveryInput()), { env, fetchImpl: upstream(result()) });
+  assert.equal(malformed.status, 502);
+  assert.equal((await malformed.json()).code, 'analysis_invalid_result');
+});
