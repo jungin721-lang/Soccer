@@ -1,14 +1,14 @@
 {
   "NEXT-XI-mobile-site.zip": {
-    "bytes": 144813,
-    "sha256": "6f8c080e071c1ec4128c5b96d7a620e9be7d16d14c41b6e29bfac6717e51aa09"
+    "bytes": 169777,
+    "sha256": "86d4210a69315f3c509f0a3bc446675e469c6a03caccfde52d826150cd70aadc"
   },
   "NEXT-XI-original-video.zip": {
-    "bytes": 144813,
-    "sha256": "6f8c080e071c1ec4128c5b96d7a620e9be7d16d14c41b6e29bfac6717e51aa09"
+    "bytes": 169777,
+    "sha256": "86d4210a69315f3c509f0a3bc446675e469c6a03caccfde52d826150cd70aadc"
   },
   "NEXT-XI-analysis-server.zip": {
-    "bytes": 311582,
-    "sha256": "d732d2d696d445f673f5e2153ae91c1a80ee0737b39f8008ffd3caf1a34cd7bb"
+    "bytes": 351098,
+    "sha256": "ad57623120bb697701f6460e54f9a215a1161224d5d940ed1d4d4b87ce6962de"
   }
 }
