@@ -1,17 +1,22 @@
 {
   "name": "next-xi",
-  "version": "1.3.1",
+  "version": "2.0.0",
   "private": true,
   "description": "Evidence-first youth football development workspace",
   "type": "module",
   "engines": {
-    "node": ">=22"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "node --watch server.js",
     "start": "node server.js",
     "test": "node --test --test-isolation=none tests/*.test.js",
-    "check": "node --check server.js && node --check public/app.js && node --check public/domain.js && node --check public/plans.js && node --check public/media-store.js && node --check public/auto-analysis.js && node --check public/analysis-client.js && node --check lib/analysis.js && node --check netlify/functions/analysis.mjs && node --check scripts/export-standalone.js",
-    "export": "node scripts/export-standalone.js"
+    "check": "node scripts/check-syntax.js",
+    "export": "node scripts/export-standalone.js",
+    "test:browser": "python tests/growth-browser.py"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^11.1.4",
+    "ffmpeg-static": "^5.3.0"
   }
 }

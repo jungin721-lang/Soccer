@@ -19,11 +19,11 @@ def archive(name, base, files, prefix):
     manifest[name] = {'bytes': len(data), 'sha256': sha256(data).hexdigest()}
     print(name, manifest[name])
 
-site_files = [ROOT / '.artifacts/site/index.html', ROOT / '.artifacts/site/.nojekyll']
+site_files = [file for file in (ARTIFACTS / 'site').rglob('*') if file.is_file()]
 for name in ['NEXT-XI-mobile-site.zip', 'NEXT-XI-original-video.zip']:
     archive(name, ARTIFACTS / 'site', site_files, 'NEXT-XI-site')
 
-source_files = [ROOT / file for file in ['.gitignore', 'package.json', 'README.md', 'server.js', 'netlify.toml']]
+source_files = [ROOT / file for file in ['.gitignore', 'package.json', 'package-lock.json', 'README.md', 'server.js', 'netlify.toml']]
 for folder in ['public', 'lib', 'netlify', 'scripts', 'tests', 'docs']:
     source_files.extend(file for file in (ROOT / folder).rglob('*') if file.is_file() and '__pycache__' not in file.parts and file.suffix in ['.js', '.mjs', '.py', '.svg', '.css', '.html', '.md'])
 archive('NEXT-XI-analysis-server.zip', ROOT, source_files, 'NEXT-XI-source')
