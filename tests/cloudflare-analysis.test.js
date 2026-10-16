@@ -172,6 +172,7 @@ test('free-plan verification accepts official SinglePage responses and complete 
     { success: true, result: [] },
     { success: true, errors: [], result: [] },
     { success: true, errors: [], messages: [], result: [] },
+    { success: true, result: [], result_info: { page: 1, per_page: 20, count: 0, total_count: 0 } },
     { success: true, result: [], result_info: COMPLETE_EMPTY_PAGE },
     { success: true, result: [], result_info: { ...COMPLETE_EMPTY_PAGE, total_pages: 0 } },
   ]) {
@@ -202,6 +203,10 @@ test('nonempty, malformed, forbidden and incomplete subscription proofs block in
     { success: true, result: [], result_info: [] },
     { success: true, result: [], result_info: {} },
     { success: true, result: [], result_info: { page: 1, per_page: 50 } },
+    ...['page', 'per_page', 'count', 'total_count'].map(missing => {
+      const info = { ...COMPLETE_EMPTY_PAGE }; delete info[missing];
+      return { success: true, result: [], result_info: info };
+    }),
     { success: true, result: [], has_more: true },
     { success: true, result: [], cursor: 'next-page' },
     ...[
@@ -224,7 +229,7 @@ test('nonempty, malformed, forbidden and incomplete subscription proofs block in
       if (url === SUBSCRIPTIONS_URL) return Response.json({ success: true, result: [] }, { status });
       inferenceCalls++;
       return successful();
-    } }), 503, 'free_plan_unverified');
+    } }), 503, status === 401 ? 'analysis_credentials_rejected' : status === 403 ? 'analysis_permission_denied' : 'free_plan_unverified');
     assert.equal(inferenceCalls, 0);
   }
 });
@@ -238,6 +243,18 @@ test('network failure and malformed subscription JSON fail closed without exposi
       return successful();
     } }), 503, 'free_plan_unverified');
     assert.equal(inferenceCalls, 0);
+  }
+});
+
+test('subscription authentication and permission failures cancel private bodies before inference', async () => {
+  for (const [upstreamStatus, code] of [[401, 'analysis_credentials_rejected'], [403, 'analysis_permission_denied']]) {
+    let cancelled = false; let consumed = false; let inferenceCalls = 0;
+    const body = new ReadableStream({ pull() { consumed = true; }, cancel() { cancelled = true; } }, { highWaterMark: 0 });
+    await rejectsWith(callCloudflareTransport(payload(), { env: ENV, fetchImpl: async url => {
+      if (url === SUBSCRIPTIONS_URL) return new Response(body, { status: upstreamStatus, headers: { 'Content-Length': String(CLOUDFLARE_MAX_RESPONSE_BYTES + 1) } });
+      inferenceCalls++; return successful();
+    } }), 503, code);
+    assert.equal(cancelled, true); assert.equal(consumed, false); assert.equal(inferenceCalls, 0);
   }
 });
 

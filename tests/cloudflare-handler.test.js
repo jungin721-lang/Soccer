@@ -141,14 +141,14 @@ test('Cloudflare rejects poisoned observations and discovery results without fab
 test('an unverified or paid Cloudflare account never reaches inference or any existing paid fallback', async () => {
   for (const options of [
     { proof: { success: true, result: [{ id: 'paid-subscription' }] } },
-    { proof: { success: false, errors: [{ code: 10000, message: 'private-provider-token' }], result: [] }, proofStatus: 403 },
+    { proof: { success: false, errors: [{ code: 10000, message: 'private-provider-token' }], result: [] }, proofStatus: 403, expectedCode: 'analysis_permission_denied' },
     { proof: { success: true, result: [], result_info: { page: 1 } } },
     { proof: 'malformed subscription response' },
   ]) {
     const mock = upstream(observed(), options);
     const response = await handleAnalysis(req(), { env, fetchImpl: mock.fetchImpl });
     assert.equal(response.status, 503);
-    assert.equal((await response.json()).code, 'free_plan_unverified');
+    assert.equal((await response.json()).code, options.expectedCode || 'free_plan_unverified');
     assert.equal(mock.calls.length, 1);
     assert.equal(mock.calls[0].url.endsWith('/subscriptions'), true);
   }
