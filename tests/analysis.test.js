@@ -115,7 +115,7 @@ test('invalid, contradictory and out-of-bounds results never become observations
 });
 
 test('provider authentication, rate limits, malformed output and incomplete output are explained safely', async () => {
-  for (const [upstreamStatus, expectedStatus, code] of [[401, 503, 'analysis_credentials_rejected'], [403, 503, 'analysis_credentials_rejected'], [429, 429, 'analysis_rate_limited'], [500, 502, 'analysis_provider_failed']]) {
+  for (const [upstreamStatus, expectedStatus, code] of [[401, 503, 'analysis_credentials_rejected'], [403, 503, 'analysis_permission_denied'], [429, 429, 'analysis_rate_limited'], [500, 502, 'analysis_provider_failed']]) {
     const response = await handleAnalysis(request(), { env, fetchImpl: async () => new Response('secret upstream details', { status: upstreamStatus }) });
     assert.equal(response.status, expectedStatus);
     const text = await response.text(); assert.equal(JSON.parse(text).code, code); assert.equal(text.includes('secret upstream details'), false);
@@ -263,4 +263,110 @@ test('discovery errors finish after one provider attempt, including timeouts and
   const malformed = await handleAnalysis(request(discoveryInput()), { env, fetchImpl: upstream(result()) });
   assert.equal(malformed.status, 502);
   assert.equal((await malformed.json()).code, 'analysis_invalid_result');
+});
+
+test('obviously masked or malformed server keys are rejected before a paid call without exposing any key detail', async () => {
+  const keys = ['sk-...', 'sk-proj-…', 'first second', 'first\nsecond', 'first\tsecond', '"test-private-key"', "'test-private-key'", 'Bearer test-private-key', 'Bearer'];
+  for (const key of keys) {
+    const config = { ...env, SOCCER_AI_API_KEY: key };
+    const status = await handleAnalysis(new Request('https://next-xi.example/api/analysis'), { env: config, fetchImpl: neverFetch });
+    assert.deepEqual(await status.json(), { available: false, reason: 'invalid_key_format' });
+    for (const value of [input(), discoveryInput()]) {
+      const response = await handleAnalysis(request(value), { env: config, fetchImpl: neverFetch });
+      assert.equal(response.status, 503);
+      const payload = await response.json();
+      assert.equal(payload.code, 'analysis_key_format_invalid');
+      assert.deepEqual(Object.keys(payload).sort(), ['code', 'error']);
+      assert.equal(JSON.stringify(payload).includes(key), false);
+    }
+  }
+});
+
+test('server key guard permits outer whitespace and does not invent an arbitrary prefix or length requirement', async () => {
+  for (const key of ['  test-server-key  ', 'future-format-key', 'x']) {
+    const config = { ...env, SOCCER_AI_API_KEY: key };
+    const status = await handleAnalysis(new Request('https://next-xi.example/api/analysis'), { env: config, fetchImpl: neverFetch });
+    assert.deepEqual(await status.json(), { available: true, reason: 'ready' });
+    const response = await handleAnalysis(request(), { env: config, fetchImpl: async (_url, options) => {
+      assert.equal(options.headers.Authorization, `Bearer ${key.trim()}`);
+      return upstream(result())();
+    } });
+    assert.equal(response.status, 200);
+  }
+});
+
+test('primary SOCCER key takes precedence over fallback and an invalid primary is never silently replaced', async () => {
+  const configured = { ...env, OPENAI_API_KEY: 'fallback-server-key' };
+  const response = await handleAnalysis(request(), { env: configured, fetchImpl: async (_url, options) => {
+    assert.equal(options.headers.Authorization, `Bearer ${env.SOCCER_AI_API_KEY}`);
+    return upstream(result())();
+  } });
+  assert.equal(response.status, 200);
+  const invalidPrimary = await handleAnalysis(request(), { env: { ...configured, SOCCER_AI_API_KEY: 'sk-...' }, fetchImpl: neverFetch });
+  assert.equal((await invalidPrimary.json()).code, 'analysis_key_format_invalid');
+});
+
+test('provider quota and request-rate errors are distinct and never echo provider secrets', async () => {
+  const privateMessage = 'Incorrect API key provided: sk-private-echo-should-never-leak';
+  const cases = [
+    [{ code: 'insufficient_quota', type: 'insufficient_quota' }, 'analysis_quota_exceeded'],
+    [{ code: 'billing_hard_limit_reached' }, 'analysis_quota_exceeded'],
+    [{ type: 'insufficient_quota' }, 'analysis_quota_exceeded'],
+    [{ code: 'rate_limit_exceeded', type: 'rate_limit_error' }, 'analysis_rate_limited'],
+    [{ code: privateMessage, type: privateMessage }, 'analysis_rate_limited'],
+    [{}, 'analysis_rate_limited'],
+  ];
+  for (const [error, expected] of cases) {
+    const response = await handleAnalysis(request(), { env, fetchImpl: async () => new Response(JSON.stringify({ error: { ...error, message: privateMessage } }), { status: 429 }) });
+    assert.equal(response.status, 429);
+    const text = await response.text();
+    assert.equal(JSON.parse(text).code, expected);
+    assert.equal(text.includes(privateMessage), false);
+    assert.equal(text.includes('sk-private'), false);
+  }
+});
+
+test('provider authentication and permission errors remain distinct even when upstream bodies are HTML or contain key echoes', async () => {
+  for (const [status, expected] of [[401, 'analysis_credentials_rejected'], [403, 'analysis_permission_denied']]) {
+    for (const body of ['<html>private-proxy-auth-rejection</html>', JSON.stringify({ error: { code: 'invalid_api_key', message: 'secret-key-fragment-123' } })]) {
+      const response = await handleAnalysis(request(), { env, fetchImpl: async () => new Response(body, { status }) });
+      assert.equal(response.status, 503);
+      const text = await response.text();
+      assert.equal(JSON.parse(text).code, expected);
+      assert.equal(text.includes('private-proxy-auth'), false);
+      assert.equal(text.includes('secret-key-fragment'), false);
+    }
+  }
+  const ownCode = await handleAnalysis(request({ ...input(), accessCode: 'wrong-user-code' }), { env, fetchImpl: neverFetch });
+  assert.equal(ownCode.status, 401);
+  assert.equal((await ownCode.json()).code, 'invalid_access_code');
+});
+
+test('a model-unavailable error requires the exact allowlisted upstream code at HTTP404', async () => {
+  const missing = await handleAnalysis(request(), { env, fetchImpl: async () => new Response(JSON.stringify({ error: { code: 'model_not_found', message: 'secret-provider-context' } }), { status: 404 }) });
+  assert.equal(missing.status, 503);
+  const payload = await missing.json();
+  assert.equal(payload.code, 'analysis_model_unavailable');
+  assert.equal(JSON.stringify(payload).includes('secret-provider-context'), false);
+  for (const body of ['<html>not found</html>', JSON.stringify({ error: { code: 'unknown_model_error', message: 'model_not_found' } })]) {
+    const response = await handleAnalysis(request(), { env, fetchImpl: async () => new Response(body, { status: 404 }) });
+    assert.equal(response.status, 502);
+    assert.equal((await response.json()).code, 'analysis_provider_failed');
+  }
+});
+
+test('provider error parsing is bounded and handles oversized, malformed and non-JSON bodies safely', async () => {
+  const bodies = [
+    ' '.repeat(16_385) + JSON.stringify({ error: { code: 'insufficient_quota' } }),
+    JSON.stringify({ error: { code: 'insufficient_quota', message: 'private-key-echo'.repeat(1500) } }),
+    '{malformed-provider-json', '<html>upstream private details</html>',
+  ];
+  for (const body of bodies) {
+    const response = await handleAnalysis(request(), { env, fetchImpl: async () => new Response(body, { status: 429 }) });
+    assert.equal(response.status, 429);
+    const text = await response.text();
+    assert.equal(JSON.parse(text).code, 'analysis_rate_limited');
+    assert.equal(text.includes('private-key-echo'), false);
+    assert.equal(text.includes('private details'), false);
+  }
 });

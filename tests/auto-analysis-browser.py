@@ -58,6 +58,8 @@ with tempfile.TemporaryDirectory(prefix='next-xi-auto-analysis-test-') as tempor
                 if route.request.method == 'GET':
                     if run['kind'] == 'missing':
                         route.fulfill(status=404, content_type='text/html', body='Not found')
+                    elif run['kind'] == 'invalid_key':
+                        route.fulfill(json={'available': False, 'reason': 'invalid_key_format'})
                     else:
                         route.fulfill(json={'available': True, 'reason': 'ready'})
                     return
@@ -65,6 +67,15 @@ with tempfile.TemporaryDirectory(prefix='next-xi-auto-analysis-test-') as tempor
                 payload = route.request.post_data_json
                 all_posts.append(payload)
                 run['posts'].append(payload)
+                provider_errors = {
+                    'permission_denied': (503, 'analysis_permission_denied'),
+                    'quota_exceeded': (429, 'analysis_quota_exceeded'),
+                    'model_unavailable': (503, 'analysis_model_unavailable'),
+                }
+                if run['kind'] in provider_errors:
+                    status, code = provider_errors[run['kind']]
+                    route.fulfill(status=status, json={'code': code})
+                    return
                 if run['kind'] == 'credentials_rejected':
                     route.fulfill(status=503, json={'code': 'analysis_credentials_rejected'})
                     return
@@ -160,6 +171,13 @@ with tempfile.TemporaryDirectory(prefix='next-xi-auto-analysis-test-') as tempor
             expect(page.locator('#analysis-form')).to_be_hidden()
             assert all_posts == []
             page.screenshot(path='/tmp/next-xi-auto-analysis-unavailable.png', full_page=True)
+            page.get_by_role('button', name='확인했어요', exact=True).tap()
+
+            new_run('invalid_key')
+            page.locator('[data-action=analyze-video]').first.tap()
+            expect(page.locator('#analysis-setup.unavailable')).to_contain_text('API 키 형식')
+            expect(page.locator('#analysis-form')).to_be_hidden()
+            assert all_posts == []
             page.get_by_role('button', name='확인했어요', exact=True).tap()
 
             # Consent and the pilot access code are checked by app validation
@@ -263,6 +281,18 @@ with tempfile.TemporaryDirectory(prefix='next-xi-auto-analysis-test-') as tempor
             assert len(state()['analyses']) == 2
             close_if_open()
 
+            for kind, message in [
+                ('permission_denied', '접근 권한을 거부'),
+                ('quota_exceeded', '사용 잔액 또는 이용 한도'),
+                ('model_unavailable', '설정된 AI 모델'),
+            ]:
+                start_analysis(kind)
+                wait_job('failed')
+                expect(page.locator('#analysis-error')).to_contain_text(message)
+                assert len(run['posts']) == 1 and run['clip_count'] == 0
+                assert len(state()['analyses']) == 2
+                close_if_open()
+
             # A ready endpoint only confirms configuration exists. A provider
             # rejection must explain the actual key problem and stop the queue.
             start_analysis('credentials_rejected')
@@ -330,7 +360,7 @@ with tempfile.TemporaryDirectory(prefix='next-xi-auto-analysis-test-') as tempor
             expect(page.locator('.auto-analysis-status')).to_have_count(0)
             page.locator('.mobile-nav-item[data-page=dashboard]').tap()
             expect(page.locator('.auto-summary')).to_have_count(0)
-            assert len(all_posts) == 10
+            assert len(all_posts) == 13
             assert not errors, errors
             print('PASS: real 36s H.264 decoding and whole-span JPEG sampling; no manual time/seek; two automatically selected clips; sequential persistence; dashboard/report/reload; no fabricated ratings; no-target abstention; 401 stops queue; partial failure and cancellation retain completed work; 320/390px; deletion clears jobs/results; no JavaScript errors. AI responses were mocked; recognition accuracy and deployed credentials were not tested.')
             browser.close()

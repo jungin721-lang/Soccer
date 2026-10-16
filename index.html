@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="next-xi-version" content="1.3.0-auto-discovery">
+  <meta name="next-xi-version" content="1.3.1-auth-diagnostics">
   <meta name="theme-color" content="#15251f">
   <meta name="description" content="경기 속 작은 발견에서 시작하는 유소년 축구 성장 기록. NEXT XI에서 영상, 능력치, 훈련 계획을 연결하세요.">
   <title>NEXT XI — 내일의 선수를 만드는 오늘</title>
@@ -758,7 +758,11 @@ function analysisContentIsJSON(response) {
 }
 
 function analysisHTTPError(status, code) {
-  if (code === 'analysis_credentials_rejected') return new Error('OpenAI가 서버의 API 키 인증을 거절했습니다. 운영자가 Netlify에 등록한 전체 API 키와 호출 권한을 확인해야 합니다.');
+  if (code === 'analysis_key_format_invalid') return new Error('Netlify에 저장된 API 키의 형식이 올바르지 않습니다. SOCCER_AI_API_KEY의 Production 값에 발급 직후 복사한 전체 키를 저장하고 다시 배포해야 합니다.');
+  if (code === 'analysis_credentials_rejected') return new Error('OpenAI가 등록된 API 키 인증을 거절했습니다(401). Netlify의 SOCCER_AI_API_KEY → Production 값을 새로 발급한 전체 키로 교체하고 다시 배포해야 합니다.');
+  if (code === 'analysis_permission_denied') return new Error('OpenAI가 이 요청의 접근 권한을 거부했습니다(403). API 프로젝트와 키의 Responses 쓰기 권한, 모델 이용 권한 및 접근 제한을 확인해야 합니다.');
+  if (code === 'analysis_quota_exceeded') return new Error('OpenAI API의 사용 잔액 또는 이용 한도가 부족합니다. 해당 API 프로젝트의 결제·이용 한도를 확인해야 합니다. ChatGPT 구독과 API 이용은 별도입니다.');
+  if (code === 'analysis_model_unavailable') return new Error('설정된 AI 모델을 이 API 프로젝트에서 이용할 수 없습니다. 운영자가 SOCCER_AI_MODEL 설정과 해당 모델의 이용 권한을 확인해야 합니다.');
   if (code === 'analysis_timeout') return new Error('AI 응답 시간이 초과됐습니다. 완료된 결과는 보관되어 있으니 이어서 분석할 수 있습니다.');
   if (code === 'analysis_invalid_result') return new Error('장면 근거를 확인할 수 있는 AI 응답을 받지 못했습니다. 이번 구간의 관찰을 만들지 않았으며 완료된 결과는 보관됩니다.');
   if (status === 401 || status === 403) return new Error('분석 이용 코드가 올바르지 않습니다. 코드를 확인한 뒤 다시 시도해 주세요.');
@@ -1462,7 +1466,7 @@ async function openAnalysis(id, fresh = false) {
   const availability = await getAnalysisAvailability();
   if (!setup.isConnected) return;
   if (availability.available) { setup.hidden = true; form.hidden = false; return; }
-  const unavailableText = availability.reason === 'backend_missing' ? '이 주소에는 분석 서버가 배포되어 있지 않습니다.' : availability.reason === 'missing_credentials' ? '분석 서버에 AI 인증 정보 또는 이용 코드가 설정되지 않았습니다.' : '분석 서버의 연결 상태를 확인하지 못했습니다. 잠시 후 다시 열어 주세요.';
+  const unavailableText = availability.reason === 'invalid_key_format' ? 'Netlify에 등록된 API 키 형식이 올바르지 않습니다. 축약된 키 표시나 따옴표가 아닌, 발급 직후 복사한 전체 키를 SOCCER_AI_API_KEY의 Production 값으로 저장한 뒤 다시 배포해야 합니다.' : availability.reason === 'backend_missing' ? '이 주소에는 분석 서버가 배포되어 있지 않습니다.' : availability.reason === 'missing_credentials' ? '분석 서버에 AI 인증 정보 또는 이용 코드가 설정되지 않았습니다.' : '분석 서버의 연결 상태를 확인하지 못했습니다. 잠시 후 다시 열어 주세요.';
   setup.classList.add('unavailable');
   setup.innerHTML = `${icon('info')}<div><h3>원본은 저장됐지만, 분석 서버 연결을 확인해 주세요.</h3><p>${unavailableText}</p><p>원본 영상과 기존 기록은 이 기기에 보관되어 있습니다.</p><button class="button secondary" data-action="close-modal">확인했어요</button></div>`;
 }

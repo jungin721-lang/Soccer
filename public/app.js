@@ -291,7 +291,7 @@ async function openAnalysis(id, fresh = false) {
   const availability = await getAnalysisAvailability();
   if (!setup.isConnected) return;
   if (availability.available) { setup.hidden = true; form.hidden = false; return; }
-  const unavailableText = availability.reason === 'backend_missing' ? '이 주소에는 분석 서버가 배포되어 있지 않습니다.' : availability.reason === 'missing_credentials' ? '분석 서버에 AI 인증 정보 또는 이용 코드가 설정되지 않았습니다.' : '분석 서버의 연결 상태를 확인하지 못했습니다. 잠시 후 다시 열어 주세요.';
+  const unavailableText = availability.reason === 'invalid_key_format' ? 'Netlify에 등록된 API 키 형식이 올바르지 않습니다. 축약된 키 표시나 따옴표가 아닌, 발급 직후 복사한 전체 키를 SOCCER_AI_API_KEY의 Production 값으로 저장한 뒤 다시 배포해야 합니다.' : availability.reason === 'backend_missing' ? '이 주소에는 분석 서버가 배포되어 있지 않습니다.' : availability.reason === 'missing_credentials' ? '분석 서버에 AI 인증 정보 또는 이용 코드가 설정되지 않았습니다.' : '분석 서버의 연결 상태를 확인하지 못했습니다. 잠시 후 다시 열어 주세요.';
   setup.classList.add('unavailable');
   setup.innerHTML = `${icon('info')}<div><h3>원본은 저장됐지만, 분석 서버 연결을 확인해 주세요.</h3><p>${unavailableText}</p><p>원본 영상과 기존 기록은 이 기기에 보관되어 있습니다.</p><button class="button secondary" data-action="close-modal">확인했어요</button></div>`;
 }

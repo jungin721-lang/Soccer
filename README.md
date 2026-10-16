@@ -79,3 +79,8 @@ python3 tests/auto-analysis-browser.py
 - public/app.js, public/styles.css: 모바일 화면과 사용 흐름
 - server.js: 개발용 HTTP 서버와 JSON 저장 API
 - tests/: 단위·HTTP·실제 브라우저 검증
+
+
+## v1.3.1 인증 진단
+
+OpenAI401(인증),403(접근 권한),429(잔액 부족/요청 한도),404 model_not_found를 구분합니다. 생략된 키나 따옴표 등 명백한 복사 오류는 모델 호출 전에 차단합니다. 실제 키의 유효성을 ready 응답으로 보장하지 않습니다. 키·외부 오류 원문은 응답이나 로그에 포함하지 않습니다. Netlify 비밀값은 계정 소유자가 수정하며 이 개발 환경의 인증 정보로 대신 변경할 수 없습니다. 구체적인 조치는 배포 안내의 인증 오류 진단에 있습니다.

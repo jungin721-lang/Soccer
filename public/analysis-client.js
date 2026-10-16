@@ -30,7 +30,11 @@ function analysisContentIsJSON(response) {
 }
 
 function analysisHTTPError(status, code) {
-  if (code === 'analysis_credentials_rejected') return new Error('OpenAI가 서버의 API 키 인증을 거절했습니다. 운영자가 Netlify에 등록한 전체 API 키와 호출 권한을 확인해야 합니다.');
+  if (code === 'analysis_key_format_invalid') return new Error('Netlify에 저장된 API 키의 형식이 올바르지 않습니다. SOCCER_AI_API_KEY의 Production 값에 발급 직후 복사한 전체 키를 저장하고 다시 배포해야 합니다.');
+  if (code === 'analysis_credentials_rejected') return new Error('OpenAI가 등록된 API 키 인증을 거절했습니다(401). Netlify의 SOCCER_AI_API_KEY → Production 값을 새로 발급한 전체 키로 교체하고 다시 배포해야 합니다.');
+  if (code === 'analysis_permission_denied') return new Error('OpenAI가 이 요청의 접근 권한을 거부했습니다(403). API 프로젝트와 키의 Responses 쓰기 권한, 모델 이용 권한 및 접근 제한을 확인해야 합니다.');
+  if (code === 'analysis_quota_exceeded') return new Error('OpenAI API의 사용 잔액 또는 이용 한도가 부족합니다. 해당 API 프로젝트의 결제·이용 한도를 확인해야 합니다. ChatGPT 구독과 API 이용은 별도입니다.');
+  if (code === 'analysis_model_unavailable') return new Error('설정된 AI 모델을 이 API 프로젝트에서 이용할 수 없습니다. 운영자가 SOCCER_AI_MODEL 설정과 해당 모델의 이용 권한을 확인해야 합니다.');
   if (code === 'analysis_timeout') return new Error('AI 응답 시간이 초과됐습니다. 완료된 결과는 보관되어 있으니 이어서 분석할 수 있습니다.');
   if (code === 'analysis_invalid_result') return new Error('장면 근거를 확인할 수 있는 AI 응답을 받지 못했습니다. 이번 구간의 관찰을 만들지 않았으며 완료된 결과는 보관됩니다.');
   if (status === 401 || status === 403) return new Error('분석 이용 코드가 올바르지 않습니다. 코드를 확인한 뒤 다시 시도해 주세요.');
