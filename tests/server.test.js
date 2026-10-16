@@ -11,7 +11,7 @@ const repository = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PASSWORD = 'real-http-test-password-123';
 const CHUNK = 2 * 1024 ** 2;
 async function startServer(dataDir) {
-  const child = spawn(process.execPath, ['server.js'], { cwd: repository, env: { ...process.env, PORT: '0', NEXT_XI_DATA_DIR: dataDir, SOCCER_AI_API_KEY: '', OPENAI_API_KEY: '', SOCCER_ANALYSIS_ACCESS_CODE: '' }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(process.execPath, ['server.js'], { cwd: repository, env: { ...process.env, PORT: '0', NEXT_XI_DATA_DIR: dataDir, SOCCER_AI_API_KEY: '', OPENAI_API_KEY: '', SOCCER_ANALYSIS_ACCESS_CODE: '', CLOUDFLARE_ACCOUNT_ID: '', CLOUDFLARE_API_TOKEN: '' }, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = ''; let port;
   await new Promise((resolve, reject) => {
     const timer = setTimeout(() => { child.kill('SIGKILL'); reject(new Error(`HTTP test server startup failed: ${output}`)); }, 10_000);
