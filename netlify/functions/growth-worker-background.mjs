@@ -1,6 +1,6 @@
 import { createNetlifyStore } from '../../lib/growth/store.js';
 import { runGrowthJob } from '../../lib/growth/worker.js';
-import { netlifyOrigin, createBackgroundDispatch } from '../../lib/growth/runtime.js';
+import { netlifyOrigin, createBackgroundDispatch, growthAnalysisEnvironment } from '../../lib/growth/runtime.js';
 export default async request => {
   try {
     const raw = await request.text();
@@ -12,7 +12,7 @@ export default async request => {
     const job = await store.get(`jobs/${body.jobId}`);
     await runGrowthJob({ store, jobId: body.jobId, token: body.token,
       mediaURL: `${origin}/api/v2/media/${job?.videoId}?jobId=${body.jobId}`,
-      dispatchContinuation: createBackgroundDispatch(origin), budgetMs: 8 * 60_000,
+      dispatchContinuation: createBackgroundDispatch(origin), budgetMs: 8 * 60_000, env: growthAnalysisEnvironment(),
     });
   } catch (error) {
     console.error('Growth worker stopped', ['unauthorized_job','worker_configuration'].includes(error.code) ? error.code : 'worker_error');

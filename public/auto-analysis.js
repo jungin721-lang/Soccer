@@ -1,18 +1,30 @@
 // Planning uses only timestamps and detections. It never scores a player or
 // assumes that unsampled time has been observed.
-export function makeAutoScanPlan(duration) {
+export function makeAutoScanPlan(duration, options = {}) {
   if (!Number.isFinite(duration) || duration < 1 || duration > 86400) {
     throw new Error('자동 분석은 1초 이상, 24시간 이하의 원본 영상에서 이용할 수 있습니다.');
   }
   const lastTime = Math.max(0, duration - Math.min(0.1, duration / 10));
+  if (options?.provider === 'cloudflare') {
+    // This provider examines each source second. Keep the final partial second
+    // too, without representing the endpoint as another full-second interval.
+    const times = Array.from({ length: Math.floor(lastTime) + 1 }, (_, index) => index);
+    if (times.at(-1) !== lastTime) times.push(lastTime);
+    return { duration, sampleCount: times.length, interval: 1, times };
+  }
   const sampleCount = Math.min(120, Math.max(2, Math.ceil(lastTime / 5) + 1));
   const interval = lastTime / (sampleCount - 1);
   const times = Array.from({ length: sampleCount }, (_, index) => index === sampleCount - 1 ? lastTime : index * interval);
   return { duration, sampleCount, interval, times };
 }
 
-export function selectAutoSegments(detections, duration, maximum = 6) {
+export function selectAutoSegments(detections, duration, maximum = 6, options = {}) {
   makeAutoScanPlan(duration);
+  if (maximum && typeof maximum === 'object' && !Array.isArray(maximum)) {
+    options = maximum;
+    maximum = 6;
+  }
+  if (options?.provider === 'cloudflare') return selectCloudflareSegments(detections, duration);
   if (!Array.isArray(detections) || !Number.isInteger(maximum) || maximum < 1 || maximum > 6) return [];
   const length = Math.min(12, duration);
   const candidates = detections.filter(item => item && Number.isFinite(item.time) && item.time >= 0 && item.time <= duration && ['medium', 'high'].includes(item.confidence)).map(item => {
@@ -42,4 +54,45 @@ export function selectAutoSegments(detections, duration, maximum = 6) {
     selected.push(next);
   }
   return selected.sort((a, b) => a.start - b.start).map(({ start, end }) => ({ start, end }));
+}
+
+function selectCloudflareSegments(detections, duration) {
+  if (!Array.isArray(detections)) return [];
+  const length = Math.min(3, duration);
+  const qualifying = detections.filter(item => item && Number.isFinite(item.time) && item.time >= 0 && item.time <= duration && ['medium', 'high'].includes(item.confidence));
+  const ranges = qualifying.map(item => {
+    const start = Math.max(0, Math.min(duration - length, item.time - length / 2));
+    return { start, end: Math.min(duration, start + length) };
+  }).sort((a, b) => a.start - b.start || a.end - b.end);
+
+  // The full qualifying evidence determines the output. Merge its padded
+  // ranges first, so neighboring events are covered continuously.
+  const merged = [];
+  for (const range of ranges) {
+    const previous = merged.at(-1);
+    if (previous && range.start <= previous.end) previous.end = Math.max(previous.end, range.end);
+    else merged.push({ ...range });
+  }
+
+  const segments = [];
+  for (const range of merged) {
+    let start = range.start;
+    while (range.end - start > 3) {
+      let end = start + 3;
+      // Four JPEGs can review at most three source seconds at roughly 1 fps.
+      // Keep that strict bound despite floating-point addition; overlap by 1s.
+      if (end - start > 3) end -= Number.EPSILON * Math.max(1, Math.abs(end));
+      segments.push({ start, end });
+      start = end - 1;
+    }
+    segments.push({ start, end: range.end });
+  }
+  // A short context-only tail can follow the final anchor after splitting.
+  // Omit that context, while retaining every window with confirmed evidence.
+  const times = qualifying.map(item => item.time).sort((a, b) => a - b);
+  let evidenceIndex = 0;
+  return segments.filter(segment => {
+    while (evidenceIndex < times.length && times[evidenceIndex] < segment.start) evidenceIndex += 1;
+    return evidenceIndex < times.length && times[evidenceIndex] <= segment.end;
+  });
 }

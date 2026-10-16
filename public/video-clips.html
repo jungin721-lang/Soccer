@@ -31,6 +31,9 @@
 
     <p class="intro-note"><span aria-hidden="true">↗</span><span><strong>장면이나 시작 시간을 직접 고를 필요 없어요.</strong> 처음부터 끝까지 이어지는 구간을 만들어요. 선수 식별이나 플레이 분석은 실행하지 않습니다.</span></p>
 
+    <section id="target-report-banner" class="report-mode-note" aria-labelledby="target-report-title" hidden><p class="eyebrow">PREVIOUSLY OBSERVED MOMENTS</p><h2 id="target-report-title">확인된 피드백 장면만</h2><p id="target-report-summary"></p><p>이전에 확인한 근거 시각을 기준으로 앞 3초·뒤 5초를 붙여요. 새로운 선수 탐색이나 자동 식별은 실행하지 않습니다.</p><p class="help">피드백을 받은 동일한 원본을 선택해 주세요. 길이가 같아도 같은 경기인지 자동으로 확인할 수는 없어요.</p><label class="consent-row" for="target-source-confirm"><input id="target-source-confirm" type="checkbox" disabled><span>이 피드백에 사용한 동일한 원본 영상을 선택했습니다.</span></label><a class="back-link exit-link" href="/feedback.html">피드백으로 돌아가기</a></section>
+    <section id="target-report-error" class="error-card" role="alert" hidden><h2>근거 장면의 정보를 확인하지 못했어요</h2><p id="target-report-error-message"></p><p>이 링크에서는 전체 영상을 대신 만들지 않아요. 피드백에서 근거 장면 만들기를 다시 열어 주세요.</p><a class="button secondary" href="/feedback.html">피드백으로 돌아가기</a></section>
+
     <section id="unsupported-browser" class="error-card" role="alert" hidden><h2>이 브라우저에서는 영상을 만들 수 없어요</h2><p id="unsupported-reason"></p><p>최신 Safari 또는 Chrome에서 다시 열거나, 아래 이미지 자료 방식을 이용해 주세요.</p><a class="button secondary" href="/chat-pack.html">이미지 자료 만들기로 이동</a></section>
 
     <div class="workspace">
@@ -53,8 +56,7 @@
 
           <fieldset class="step">
             <legend><span class="step-number">03</span>영상 길이와 공유 확인</legend>
-            <label class="field" for="clip-length">한 영상의 길이<select id="clip-length" name="clipLength"><option value="60">약 1분 · 기본</option><option value="30">약 30초 · 느린 스마트폰 / 용량 초과 시</option></select></label>
-            <p class="help">두 번째 영상부터 앞 구간의 마지막 5초를 겹쳐요. 작은 영상도 하나씩 만들며, 보통 영상 길이만큼 시간이 걸립니다.</p>
+            <div id="clip-length-options"><label class="field" for="clip-length">한 영상의 길이<select id="clip-length" name="clipLength"><option value="60">약 1분 · 기본</option><option value="30">약 30초 · 느린 스마트폰 / 용량 초과 시</option></select></label><p class="help">두 번째 영상부터 앞 구간의 마지막 5초를 겹쳐요. 작은 영상도 하나씩 만들며, 보통 영상 길이만큼 시간이 걸립니다.</p></div>
             <label class="consent-row" for="clip-rights-consent"><input id="clip-rights-consent" name="rightsConsent" type="checkbox" required><span>필요한 촬영·보호자 동의를 확보한 영상이며, <strong>선수들의 얼굴이 포함될 수 있는 자료를 직접 공유</strong>하는 데 동의합니다.</span></label>
             <p class="help">만들기 버튼은 영상만 준비해요. 저장한 자료를 직접 첨부하거나 공유하기 전까지 외부로 보내지 않습니다.</p>
           </fieldset>

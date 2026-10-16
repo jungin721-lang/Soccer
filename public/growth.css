@@ -223,6 +223,17 @@ details p, details ul, details ol { margin-top: 12px; }
 .video-card { padding: 0; overflow: hidden; }
 .video-screen { position: relative; background: #15291e; }
 .video-screen video { border-radius: 19px 19px 0 0; }
+.clip-time-label { padding: 9px 16px 11px; color: #e2eddf; font-size: 14px; line-height: 1.7; }
+.video-source-removed { display: flex; min-height: 175px; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px; background: #edf3e7; text-align: center; }
+.video-source-removed > span { color: var(--muted); font-size: 14px; }
+.retention-note { display: flex; align-items: flex-start; gap: 8px; padding: 12px; margin-top: 14px; background: #f3f7ef; border-radius: 10px; color: #4e6645; font-size: 14px; line-height: 1.8; }
+.retention-note > svg { margin-top: 5px; }
+.analysis-service-card > h2 { margin-top: 14px; }
+.analysis-service-card > p { font-size: 16px; line-height: 1.85; }
+.analysis-service-card > details { margin-top: 18px; }
+.evidence-unavailable { display: block; }
+.load-more-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; }
+.load-more-row > .source-note { margin-top: 0; }
 .video-privacy { position: absolute; right: 12px; top: 12px; display: inline-flex; align-items: center; gap: 5px; color: #fff; font-size: 10px; background: #13271ecc; border: 1px solid #ffffff24; border-radius: 6px; padding: 4px 8px; pointer-events: none; }
 .video-content { padding: 23px 25px; }
 .video-content .card-head { margin-bottom: 14px; }
@@ -586,6 +597,13 @@ details p, details ul, details ol { margin-top: 12px; }
   .modal-header { padding-inline: 18px; }
   .auth-story > h1 { font-size: 29px; }
 }
+@media (max-width: 760px) {
+  .analysis-service-card > p, .analysis-service-card details p, .modal-body > p,
+  #upload-form .check-row, .modal-body > .check-row { font-size: 16px; line-height: 1.85; }
+  .retention-note, .clip-time-label { font-size: 14px; }
+  .analysis-service-card > .button { width: 100%; font-size: 16px; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }

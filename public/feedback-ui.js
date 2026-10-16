@@ -1,4 +1,4 @@
-import { KIT_LABELS, FEEDBACK_MAX_BYTES, FEEDBACK_MAX_REPORTS, parseFeedbackReport, parseFeedbackFragment, listFeedbackReports, saveFeedbackReport, removeFeedbackReport, formatEvidenceTime } from './feedback.js';
+import { KIT_LABELS, FEEDBACK_MAX_BYTES, FEEDBACK_MAX_REPORTS, FEEDBACK_LINK_MAX_BYTES, parseFeedbackReport, parseFeedbackFragment, listFeedbackReports, saveFeedbackReport, removeFeedbackReport, formatEvidenceTime } from './feedback.js';
 
 const $ = selector => document.querySelector(selector);
 let reports = [], selectedId = null, busy = true, pendingDeleteId = null;
@@ -126,6 +126,19 @@ function addLocalVideo(section, report, evidenceButtons) {
   });
   wrap.append(label, video, note, clear); section.append(wrap);
 }
+function addEvidenceClipsLink(heading, report) {
+  const action = element('div', 'local-video');
+  const bytes = new TextEncoder().encode(JSON.stringify(report));
+  if (bytes.byteLength <= FEEDBACK_LINK_MAX_BYTES) {
+    const encoded = btoa(Array.from(bytes, byte => String.fromCharCode(byte)).join('')).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
+    const link = element('a', 'button secondary file-label', '근거 장면만 영상으로 만들기');
+    link.id = 'create-evidence-clips'; link.href = `/video-clips.html#report=${encoded}`; link.referrerPolicy = 'no-referrer';
+    action.append(element('p', 'help', '이 피드백에서 확인한 시각을 사용합니다. 새 선수 탐색이 아닙니다.'), link);
+  } else {
+    action.append(element('p', 'help', '이 피드백은 링크로 전달하기에 커서 근거 장면 만들기를 열 수 없어요. 링크용 결과는 64KiB 이하까지 지원합니다.'));
+  }
+  heading.append(action);
+}
 function renderReport(report) {
   const root = $('#feedback-report'); root.replaceChildren();
   const heading = element('section', 'card report-card');
@@ -141,6 +154,7 @@ function renderReport(report) {
   const target = element('div', 'report-target');
   target.append(element('span', '', `${KIT_LABELS[report.target.kit]} 유니폼`), element('span', '', `${report.target.number}번`), element('span', '', `${report.target.age}세`));
   heading.append(target, element('p', 'report-date', reviewedDate(report)), element('p', 'summary-text', report.summary));
+  addEvidenceClipsLink(heading, report);
   root.append(heading);
 
   const scope = card('어디까지 살펴봤나요?', 'THE SCOPE OF THIS REVIEW');

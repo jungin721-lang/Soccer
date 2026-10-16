@@ -114,8 +114,26 @@ function cleanVideo(value) {
     || !text(value.title, 100, 1) || !text(value.fileName, 255, 1) || !integer(value.size, 1, 2 * 1024 ** 3)
     || !text(value.mime, 100) || !timestamp(value.addedAt)
     || !(value.duration === null || (finite(value.duration) && value.duration > 0 && value.duration <= 86400))) fail('원본 영상 정보를 확인해 주세요.');
+  const retention = {};
+  if (value.retentionPolicy !== undefined) {
+    if (value.retentionPolicy !== 'delete_after_analysis') fail('원본 보관 정책을 확인해 주세요.');
+    retention.retentionPolicy = value.retentionPolicy;
+  }
+  if (value.sourceStatus !== undefined) {
+    if (!['stored', 'deleting_after_analysis', 'deleted_after_analysis'].includes(value.sourceStatus)) fail('원본 보관 상태를 확인해 주세요.');
+    retention.sourceStatus = value.sourceStatus;
+  }
+  if (value.sourceDeletedAt !== undefined) {
+    if (value.sourceStatus !== 'deleted_after_analysis' || !isoTimestamp(value.sourceDeletedAt)) fail('원본 정리 날짜를 확인해 주세요.');
+    retention.sourceDeletedAt = value.sourceDeletedAt;
+  }
+  if (value.sourceStatus === 'deleted_after_analysis' && !retention.sourceDeletedAt) fail('원본 정리 날짜를 확인해 주세요.');
+  if (value.evidenceBytes !== undefined) {
+    if (!integer(value.evidenceBytes, 0, 6 * 1024 ** 3)) fail('근거 영상 크기를 확인해 주세요.');
+    retention.evidenceBytes = value.evidenceBytes;
+  }
   return {
-    id: value.id, title: value.title, fileName: value.fileName, size: value.size, mime: value.mime, kind: 'server',
+    ...retention, id: value.id, title: value.title, fileName: value.fileName, size: value.size, mime: value.mime, kind: 'server',
     addedAt: value.addedAt, duration: value.duration, target: validateTarget(value.target),
     context: validateMatchContext(value.context, { matchDate: kstToday(value.addedAt) }),
   };
@@ -137,7 +155,22 @@ function cleanAnalysis(value, videos) {
   if (!object(value) || !recordId(value.id) || !recordId(value.jobId) || !videos.some(video => video.id === value.videoId)
     || !timestamp(value.createdAt) || !finite(value.start) || value.start < 0 || !finite(value.end) || value.end <= value.start
     || value.end > 86400 || value.end > value.start + 12 || !text(value.model, 100, 1)) fail('AI 분석 기록을 확인해 주세요.');
-  return { id: value.id, jobId: value.jobId, videoId: value.videoId, createdAt: value.createdAt, start: value.start, end: value.end, model: value.model, result: cleanQualitativeResult(value.result, value.start, value.end) };
+  const trace = {};
+  if (value.sampledTimes !== undefined) {
+    if (!Array.isArray(value.sampledTimes) || value.sampledTimes.length < 1 || value.sampledTimes.length > 4 || value.sampledTimes.some((time, index, times) => !finite(time) || time < value.start || time > value.end || (index > 0 && time <= times[index - 1]))) fail('분석한 정지화면의 실제 시각을 확인해 주세요.');
+    trace.sampledTimes = [...value.sampledTimes];
+  }
+  if (value.referenceTime !== undefined) {
+    if (!finite(value.referenceTime) || value.referenceTime < value.start || value.referenceTime > value.end || !trace.sampledTimes?.some(time => Math.abs(time - value.referenceTime) <= 0.000001)) fail('선수 확인에 사용한 정지화면의 시각을 확인해 주세요.');
+    trace.referenceTime = value.referenceTime;
+  }
+  let evidence;
+  if (value.evidence !== undefined) {
+    const item = value.evidence;
+    if (!object(item) || !UUID.test(item.id || '') || item.start !== value.start || item.end !== value.end || item.mime !== 'video/mp4' || !integer(item.size, 16, 8 * 1024 ** 2)) fail('비공개 근거 영상 정보를 확인해 주세요.');
+    evidence = { id: item.id, start: item.start, end: item.end, mime: item.mime, size: item.size };
+  }
+  return { id: value.id, jobId: value.jobId, videoId: value.videoId, createdAt: value.createdAt, start: value.start, end: value.end, model: value.model, result: cleanQualitativeResult(value.result, value.start, value.end), ...trace, ...(evidence ? { evidence } : {}) };
 }
 function cleanObservation(value, videos) {
   if (!object(value) || !recordId(value.id) || !videos.some(video => video.id === value.videoId) || !SKILL_IDS.has(value.skill)
@@ -155,7 +188,7 @@ function cleanJob(value, videos) {
   if (value.progress !== undefined && !object(value.progress)) fail('분석 진행 정보를 확인해 주세요.');
   for (const key of ['sampleCount', 'sampledCount', 'detectedCount', 'selectedCount', 'completedCount']) {
     if (value.progress?.[key] !== undefined) {
-      if (!integer(value.progress[key], 0, 10000)) fail('분석 진행 정보를 확인해 주세요.');
+      if (!integer(value.progress[key], 0, 100000)) fail('분석 진행 정보를 확인해 주세요.');
       progress[key] = value.progress[key];
     }
   }
@@ -168,7 +201,29 @@ function cleanJob(value, videos) {
     if (!object(value.error) || !text(value.error.code, 80, 1) || !text(value.error.message, 1500)) fail('분석 작업 오류 정보를 확인해 주세요.');
     error = { code: value.error.code, message: value.error.message };
   }
-  return { id: value.id, videoId: value.videoId, status: value.status, stage: value.stage, createdAt: value.createdAt, updatedAt: value.updatedAt, progress, error, target: validateTarget(value.target), context: validateMatchContext(value.context), attempt: value.attempt ?? 0, ...(value.retryAt !== undefined ? { retryAt: value.retryAt } : {}) };
+  const extra = {};
+  if (value.provider !== undefined) {
+    if (!['openai', 'cloudflare'].includes(value.provider)) fail('분석 공급자를 확인해 주세요.');
+    extra.provider = value.provider;
+  }
+  if (value.retention !== undefined) {
+    const item = value.retention;
+    if (!object(item) || !['preparing', 'deleting', 'pending', 'completed'].includes(item.status)) fail('원본 정리 상태를 확인해 주세요.');
+    extra.retention = { status: item.status };
+    if (item.sourceDeletedAt !== undefined) {
+      if (!isoTimestamp(item.sourceDeletedAt)) fail('원본 정리 시각을 확인해 주세요.');
+      extra.retention.sourceDeletedAt = item.sourceDeletedAt;
+    }
+    for (const key of ['evidenceCount', 'totalBytes']) if (item[key] !== undefined) {
+      if (!integer(item[key], 0, key === 'evidenceCount' ? 50000 : 6 * 1024 ** 3)) fail('근거 영상 보관 정보를 확인해 주세요.');
+      extra.retention[key] = item[key];
+    }
+    if (item.errorCode != null) {
+      if (!text(item.errorCode, 100, 1)) fail('원본 정리 상태를 확인해 주세요.');
+      extra.retention.errorCode = item.errorCode;
+    }
+  }
+  return { ...extra, id: value.id, videoId: value.videoId, status: value.status, stage: value.stage, createdAt: value.createdAt, updatedAt: value.updatedAt, progress, error, target: validateTarget(value.target), context: validateMatchContext(value.context), attempt: value.attempt ?? 0, ...(value.retryAt !== undefined ? { retryAt: value.retryAt } : {}) };
 }
 function collection(value, field, max, clean) {
   const list = value[field] === undefined ? [] : value[field];
@@ -185,7 +240,7 @@ export function validateGrowthWorkspace(value) {
   const profile = cleanProfile(value.profile === undefined ? {} : value.profile, defaults.profile);
   const videos = collection(value, 'videos', 100, cleanVideo);
   unique(videos, video => video.id, '영상');
-  const analyses = collection(value, 'analyses', 600, item => cleanAnalysis(item, videos));
+  const analyses = collection(value, 'analyses', 50000, item => cleanAnalysis(item, videos));
   const jobs = collection(value, 'jobs', 100, item => cleanJob(item, videos));
   const observations = collection(value, 'observations', 10000, item => cleanObservation(item, videos));
   const practices = collection(value, 'practices', 3650, item => {

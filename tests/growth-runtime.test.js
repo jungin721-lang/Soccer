@@ -13,9 +13,11 @@ import { runGrowthJob } from '../lib/growth/worker.js';
 import { handleAnalysis } from '../lib/analysis.js';
 import { analysisAvailability, netlifyOrigin, createBackgroundDispatch } from '../lib/growth/runtime.js';
 
-test('runtime readiness requires only the server AI key and deployment origin stays pinned to Netlify', async () => {
-  assert.deepEqual(await analysisAvailability({}), { available: false, reason: 'missing_credentials' });
-  assert.deepEqual(await analysisAvailability({ SOCCER_AI_API_KEY: 'test-key-never-sent-live' }), { available: true, reason: 'ready' });
+test('runtime requires free-provider credentials and never falls back to an existing paid key', async () => {
+  const unavailable = { available: false, reason: 'missing_credentials', provider: 'cloudflare', freeOnly: true };
+  assert.deepEqual(await analysisAvailability({}), unavailable);
+  assert.deepEqual(await analysisAvailability({ SOCCER_AI_API_KEY: 'test-key-never-sent-live' }), unavailable);
+  assert.deepEqual(await analysisAvailability({ CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32), CLOUDFLARE_API_TOKEN: 'synthetic-test-token' }), { available: true, reason: 'ready', provider: 'cloudflare', freeOnly: true });
   assert.equal(netlifyOrigin({ DEPLOY_PRIME_URL: 'https://branch--next-xi.netlify.app/path', URL: 'https://custom.example' }), 'https://branch--next-xi.netlify.app');
   assert.equal(netlifyOrigin({ DEPLOY_URL: 'https://deployment-id--next-xi.netlify.app' }), 'https://deployment-id--next-xi.netlify.app');
   for (const env of [{}, { URL: 'https://external.example' }, { URL: 'http://next-xi.netlify.app' }, { URL: 'https://netlify.app.external.example' }]) assert.throws(() => netlifyOrigin(env));
@@ -69,7 +71,7 @@ test('a queued upload is analyzed over protected HTTP ranges after its browser s
   const bytes = await readFile(movie);
   const dispatches = [], mediaRequests = [], upstreamCalls = [];
   const env = { SOCCER_AI_API_KEY: 'test-key-never-sent-live' };
-  const api = createGrowthAPI({ store, availability: () => analysisAvailability(env), dispatchJob: async (id, token) => { dispatches.push({ id, token }); } });
+  const api = createGrowthAPI({ store, availability: async () => (await handleAnalysis(new Request('https://next-xi.internal/api/analysis'), { env: { ...env, SOCCER_ANALYSIS_ACCESS_CODE: 'test-server-internal-code' } })).json(), dispatchJob: async (id, token) => { dispatches.push({ id, token }); } });
   let origin;
   const server = http.createServer(async (req, res) => {
     try {

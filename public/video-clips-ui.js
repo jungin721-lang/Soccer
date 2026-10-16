@@ -1,5 +1,26 @@
 import { CLIP_LIMITS, planVideoClips, formatClipTime, videoClipSupport, inspectClipSource, createVideoClip } from './video-clips.js';
 import { createVideoClipBundle } from './video-clips-bundle.js';
+import { KIT_LABELS, parseFeedbackFragment } from './feedback.js';
+import { planTargetClips } from './target-clips.js';
+
+let targetReport = null;
+let targetReportError = null;
+let evidenceClips = [];
+if (location.hash.startsWith('#report')) {
+  const privateFragment = location.hash;
+  const priorState = history.state && typeof history.state === 'object' && !Array.isArray(history.state) ? history.state : {};
+  history.replaceState({ ...priorState, videoClipMode: 'evidence' }, '', `${location.pathname}${location.search}`);
+  try {
+    targetReport = parseFeedbackFragment(privateFragment);
+    evidenceClips = planTargetClips(targetReport);
+    if (!evidenceClips.length) throw new Error('확인된 대상 선수의 근거 시각이 없어요.');
+  } catch (error) {
+    targetReport = null;
+    targetReportError = error?.message || '피드백의 근거 시각을 읽지 못했어요.';
+  }
+} else if (history.state?.videoClipMode === 'evidence') {
+  targetReportError = '주소에서 지운 비공개 피드백 정보는 새로고침 후 남아 있지 않아요. 피드백에서 근거 장면 만들기를 다시 열어 주세요.';
+}
 
 const $ = selector => document.querySelector(selector);
 const form = $('#video-clips-form');
@@ -75,13 +96,15 @@ function clearOutput() {
 
 function updateControls() {
   const locked = busy || Boolean(result);
-  for (const field of form.querySelectorAll('input, select, button')) field.disabled = locked || !support.supported;
-  const valid = Boolean(source && metadata && clips.length && $('#clip-rights-consent').checked && form.checkValidity());
+  for (const field of form.querySelectorAll('input, select, button')) field.disabled = locked || !support.supported || Boolean(targetReportError);
+  if (targetReport) for (const field of [$('#clip-target-kit'), $('#clip-target-number'), $('#clip-target-age'), $('#clip-length')]) field.disabled = true;
+  $('#target-source-confirm').disabled = locked || !metadata || !targetReport || !support.supported;
+  const valid = Boolean(source && metadata && clips.length && $('#clip-rights-consent').checked && (!targetReport || $('#target-source-confirm').checked) && !targetReportError && form.checkValidity());
   const create = $('#create-first-clip');
   create.disabled = busy || !support.supported || !valid;
   create.hidden = Boolean(result || pausedJob || hasError);
-  create.querySelector('span').textContent = currentIndex === 0 ? '첫 번째 영상 만들기' : `${currentIndex + 1}번째 영상 만들기`;
-  $('#clip-form-note').textContent = !support.supported ? '영상 생성 기능을 지원하는 브라우저가 필요해요.' : result ? '선수 정보와 원본을 바꾸려면 아래의 ‘원본·선수 정보 바꾸기’를 눌러 주세요.' : busy ? '현재 작업이 끝나면 설정을 바꿀 수 있어요.' : pausedJob ? '부분 생성 파일은 보관하지 않아요. 아래에서 현재 구간을 처음부터 다시 시작해 주세요.' : '원본과 선수 정보를 확인하고 공유 동의에 체크해 주세요.';
+  create.querySelector('span').textContent = targetReport ? currentIndex === 0 ? '첫 근거 영상 만들기' : `${currentIndex + 1}번째 근거 영상 만들기` : currentIndex === 0 ? '첫 번째 영상 만들기' : `${currentIndex + 1}번째 영상 만들기`;
+  $('#clip-form-note').textContent = targetReportError ? '피드백에서 근거 장면 만들기를 다시 열어 주세요.' : !support.supported ? '영상 생성 기능을 지원하는 브라우저가 필요해요.' : result ? targetReport ? '원본을 바꾸려면 아래의 ‘원본 영상 다시 선택’을 눌러 주세요.' : '선수 정보와 원본을 바꾸려면 아래의 ‘원본·선수 정보 바꾸기’를 눌러 주세요.' : busy ? '현재 작업이 끝나면 설정을 바꿀 수 있어요.' : pausedJob ? '부분 생성 파일은 보관하지 않아요. 아래에서 현재 구간을 처음부터 다시 시작해 주세요.' : targetReport ? '원본 길이를 확인한 뒤 위의 동일 원본 확인과 공유 동의에 체크해 주세요.' : '원본과 선수 정보를 확인하고 공유 동의에 체크해 주세요.';
   form.setAttribute('aria-busy', String(busy));
   $('#cancel-clip').disabled = !busy || Boolean(controller?.signal.aborted);
   $('#resume-clip').hidden = !pausedJob || busy || !support.supported;
@@ -100,7 +123,7 @@ function renderPlan() {
   if (!metadata || !clips.length) return;
   const completed = currentIndex + (result ? 1 : 0);
   $('#clip-plan-count').textContent = `총 ${clips.length}개`;
-  $('#clip-plan-summary').textContent = `${absoluteTime(metadata.duration)} 원본 · 앞 ${CLIP_LIMITS.overlapSeconds}초 겹침 · 현재 ${completed} / ${clips.length}개 생성`;
+  $('#clip-plan-summary').textContent = targetReport ? `${absoluteTime(metadata.duration)} 원본 · 확인된 근거 앞 3초·뒤 5초 · 현재 ${completed} / ${clips.length}개 생성` : `${absoluteTime(metadata.duration)} 원본 · 앞 ${CLIP_LIMITS.overlapSeconds}초 겹침 · 현재 ${completed} / ${clips.length}개 생성`;
   const list = $('#clip-plan-list');
   list.replaceChildren();
   const first = currentIndex > 3 ? currentIndex - 2 : 0;
@@ -126,12 +149,13 @@ function renderPlan() {
 function rebuildPlan() {
   currentIndex = 0;
   pausedJob = null;
-  clips = metadata ? planVideoClips(metadata.duration, { chunkSeconds: Number($('#clip-length').value), overlapSeconds: CLIP_LIMITS.overlapSeconds }) : [];
+  clips = !metadata || targetReportError ? [] : targetReport ? evidenceClips.map(clip => ({ ...clip, end: Math.min(clip.end, metadata.duration), duration: Math.min(clip.end, metadata.duration) - clip.start })) : planVideoClips(metadata.duration, { chunkSeconds: Number($('#clip-length').value), overlapSeconds: CLIP_LIMITS.overlapSeconds });
   renderPlan();
   updateControls();
 }
 
 function readTarget() {
+  if (targetReport) return { ...targetReport.target };
   return { kit: $('#clip-target-kit').value, number: Number($('#clip-target-number').value), age: Number($('#clip-target-age').value) };
 }
 
@@ -203,7 +227,7 @@ function handleInterruption(task) {
 }
 
 async function inspectSource() {
-  if (!source || busy || !support.supported) return;
+  if (!source || busy || !support.supported || targetReportError) return;
   clearError();
   notice('');
   pausedJob = null;
@@ -217,6 +241,7 @@ async function inspectSource() {
     const inspected = await inspectClipSource(source, { signal: taskController.signal });
     if (taskController.signal.aborted) { handleInterruption('inspect'); return; }
     if (!Number.isFinite(inspected.duration) || inspected.duration <= 0 || !inspected.width || !inspected.height) throw new Error('원본의 길이나 해상도를 읽을 수 없어요. 이 브라우저에서 재생할 수 있는 영상을 선택해 주세요.');
+    if (targetReport && Math.abs(inspected.duration - targetReport.source.durationSeconds) > 0.2) throw new Error(`피드백의 원본 길이(${absoluteTime(targetReport.source.durationSeconds)})와 선택한 영상(${absoluteTime(inspected.duration)})이 달라요. 이 피드백을 받은 동일한 원본 영상을 선택해 주세요. 다른 영상에서는 근거 구간을 만들 수 없습니다.`);
     metadata = inspected;
     $('#clip-source-duration').textContent = absoluteTime(metadata.duration);
     $('#clip-source-dimensions').textContent = `${metadata.width} × ${metadata.height}`;
@@ -234,7 +259,7 @@ async function inspectSource() {
 }
 
 function chooseSource(file) {
-  if (!file || busy || result) return;
+  if (!file || busy || result || targetReportError) return;
   clearError();
   notice('');
   clearOutput();
@@ -243,6 +268,7 @@ function chooseSource(file) {
   clips = [];
   currentIndex = 0;
   pausedJob = null;
+  $('#target-source-confirm').checked = false;
   $('#clip-selected-file').hidden = true;
   $('#clip-metadata').hidden = true;
   $('#clip-plan').hidden = true;
@@ -264,7 +290,7 @@ function createPrompt(clip, actual, target, kitLabel) {
     `이 영상의 실제 범위는 원본의 절대시각 ${sourceRange(actual)}입니다. 계획한 범위는 ${sourceRange(clip)}이며, 전체 ${clips.length}개 중 ${currentIndex + 1}번째 영상입니다. 원본 전체를 분석한 결과는 아닙니다.`,
     '영상 안 재생시간과 원본 시각의 대응은 함께 첨부한 JSON 기록의 source.timeMap을 참고해 주세요.',
     `대상은 ${kitLabel} 유니폼, 등번호 ${target.number}번, ${target.age}세 선수입니다. 이 정보는 사용자가 입력한 설명이며 자동 식별 결과가 아닙니다.`,
-    currentIndex > 0 ? `앞 구간과 처음 ${Math.min(CLIP_LIMITS.overlapSeconds, clip.duration)}초가 겹칩니다. 겹친 장면을 중복으로 세지 말아 주세요.` : '이 영상은 원본의 첫 구간입니다.',
+    targetReport ? '이 구간은 이전 피드백에 기록된 근거 시각의 앞 3초·뒤 5초를 포함해 준비했습니다. 겹치는 근거 구간은 합쳤습니다. 이 페이지에서 새로운 선수 탐색이나 자동 식별을 실행한 것은 아닙니다.' : currentIndex > 0 ? `앞 구간과 처음 ${Math.min(CLIP_LIMITS.overlapSeconds, clip.duration)}초가 겹칩니다. 겹친 장면을 중복으로 세지 말아 주세요.` : '이 영상은 원본의 첫 구간입니다.',
     '등번호로 대상이 확인될 때만 관찰을 연결해 주세요. 번호가 읽히지 않으면 ‘식별 불가’, 화면 밖 행동은 ‘확인 불가’로 표시해 주세요. 원본 절대시각과 함께 실제로 보이는 행동, 잘한 점, 다음 연습을 알려 주세요. 모든 플레이를 확인했다고 단정하지 말아 주세요.'
   ].join('\n\n');
 }
@@ -292,7 +318,7 @@ function showResult(output, clip, target, kitLabel) {
   $('#download-clip').textContent = `${extension.toUpperCase()} 영상 다운로드`;
   $('#download-manifest').href = outputURL(manifestFile);
   $('#download-manifest').download = manifestFile.name;
-  $('#clip-result-title').textContent = `${currentIndex + 1}번째 영상이 준비됐어요`;
+  $('#clip-result-title').textContent = `${currentIndex + 1}번째 ${targetReport ? '근거 ' : ''}영상이 준비됐어요`;
   $('#clip-result-summary').textContent = `전체 ${clips.length}개 중 ${currentIndex + 1}개 생성 · 실제 원본 ${sourceRange(actual)} · ${formatBytes(videoFile.size)}`;
   $('#clip-result-format').textContent = `${extension.toUpperCase()} · ${videoFile.type}`;
   $('#clip-prompt').value = createPrompt(clip, actual, target, kitLabel);
@@ -302,7 +328,7 @@ function showResult(output, clip, target, kitLabel) {
   $('#clip-bundle-status').textContent = '영상 첨부가 안 되면 채팅용 ZIP을 만드세요. 영상과 JSON 기록만 묶으며, ZIP도 채팅에서 허용해야 첨부할 수 있어요.';
   const hasNext = currentIndex < clips.length - 1;
   $('#next-clip').hidden = !hasNext;
-  $('#clip-next-title').textContent = hasNext ? '저장을 확인하고 다음 구간으로' : '계획한 모든 구간을 만들었어요';
+  $('#clip-next-title').textContent = hasNext ? '저장을 확인하고 다음 구간으로' : targetReport ? '기록된 근거 구간을 모두 만들었어요' : '계획한 모든 구간을 만들었어요';
   $('#clip-next-help').textContent = hasNext ? `다음은 ${currentIndex + 2}번째 영상 · 원본 ${sourceRange(clips[currentIndex + 1])}입니다. 진행하면 지금 영상의 미리보기와 임시 파일이 해제돼요.` : '이전 구간의 저장 여부는 확인할 수 없어요. 마지막 영상과 기록도 직접 저장해 주세요. 분석이나 외부 전송은 실행되지 않았습니다.';
   $('#clip-result').hidden = false;
   renderPlan();
@@ -311,13 +337,14 @@ function showResult(output, clip, target, kitLabel) {
 }
 
 async function makeCurrentClip() {
-  if (busy || result || !support.supported || !source) return;
+  if (busy || result || !support.supported || !source || targetReportError) return;
   if (!metadata) { await inspectSource(); return; }
   if (!form.reportValidity() || !$('#clip-rights-consent').checked) return;
+  if (targetReport && !$('#target-source-confirm').checked) { notice('위에서 피드백을 받은 동일한 원본인지 확인해 주세요.'); $('#target-source-confirm').focus(); return; }
   const clip = clips[currentIndex];
   if (!clip) return;
   const target = readTarget();
-  const kitLabel = $('#clip-target-kit').selectedOptions[0].textContent;
+  const kitLabel = targetReport ? KIT_LABELS[target.kit] : $('#clip-target-kit').selectedOptions[0].textContent;
   clearError();
   notice('');
   pausedJob = null;
@@ -385,7 +412,7 @@ function requestRelease(action) {
   $('#clip-save-confirm').checked = false;
   $('#confirm-next').disabled = true;
   $('#discard-confirm-message').textContent = result.requestedSave || result.shared ? '저장 요청이나 공유 창 완료만으로 기기 저장을 보장할 수 없어요. 파일 앱이나 받은 채팅을 확인해 주세요. 진행하면 현재 영상과 기록의 임시 파일을 해제합니다.' : '현재 영상의 저장·공유를 아직 요청하지 않았어요. 진행하면 지금 영상과 기록의 임시 파일이 해제되어 이 페이지에서 다시 저장할 수 없습니다. 먼저 다운로드하거나, 해제에 동의해 주세요.';
-  $('#confirm-next').textContent = action === 'next' ? '확인하고 다음 영상 만들기' : '확인하고 새로 준비하기';
+  $('#confirm-next').textContent = action === 'next' ? targetReport ? '확인하고 다음 근거 영상 만들기' : '확인하고 다음 영상 만들기' : '확인하고 새로 준비하기';
   $('#discard-confirm').hidden = false;
   $('#discard-confirm').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   $('#clip-save-confirm').focus({ preventScroll: true });
@@ -400,6 +427,7 @@ $('#replace-clip-file').addEventListener('click', () => { if (!busy && !result) 
 $('#choose-another-clip').addEventListener('click', () => { if (!busy && !result) picker.click(); });
 form.addEventListener('submit', event => { event.preventDefault(); void makeCurrentClip(); });
 $('#clip-rights-consent').addEventListener('change', updateControls);
+$('#target-source-confirm').addEventListener('change', updateControls);
 $('#clip-length').addEventListener('change', () => {
   if (busy || result) return;
   clearError();
@@ -495,7 +523,7 @@ $('#confirm-next').addEventListener('click', () => {
     void makeCurrentClip();
   } else {
     rebuildPlan();
-    notice('현재 영상과 기록의 임시 파일을 해제했어요. 원본·선수 정보·영상 길이를 바꿀 수 있습니다. 계획은 첫 번째 영상부터 다시 시작해요.');
+    notice(targetReport ? '현재 영상과 기록의 임시 파일을 해제했어요. 피드백을 받은 원본을 다시 선택할 수 있습니다. 대상 선수와 근거 시각은 그대로이며, 첫 번째 근거 영상부터 다시 시작해요.' : '현재 영상과 기록의 임시 파일을 해제했어요. 원본·선수 정보·영상 길이를 바꿀 수 있습니다. 계획은 첫 번째 영상부터 다시 시작해요.');
     $('#setup-title').scrollIntoView({ block: 'start', behavior: 'smooth' });
   }
 });
@@ -531,6 +559,44 @@ window.addEventListener('pageshow', event => {
   updateControls();
   if (source && !busy) notice('이 페이지를 떠날 때 임시 파일을 해제했어요. 원본을 다시 선택할 필요 없이 현재 구간을 다시 만들 수 있습니다.');
 });
+
+if (targetReport) {
+  document.body.classList.add('target-report-mode');
+  document.title = '확인된 피드백 장면만 만들기 · NEXT XI';
+  $('#page-title').textContent = '확인된 장면만,\n작은 영상으로.';
+  $('.hero-copy > p:not(.eyebrow)').textContent = '이전에 확인한 근거 시각 주변만 준비해요.\n피드백을 받은 원본을 한 번 선택해 주세요.';
+  $('.art-note').textContent = '근거 앞 3초 · 뒤 5초';
+  $('.shirt').textContent = targetReport.target.number;
+  const intro = $('.intro-note > span:last-child');
+  const title = document.createElement('strong');
+  title.textContent = '확인된 피드백 장면만 준비해요.';
+  intro.replaceChildren(title, document.createTextNode('이전에 확인한 근거 시각을 사용합니다. 새로운 선수 탐색이나 자동 식별은 실행하지 않아요.'));
+  $('#target-report-banner').hidden = false;
+  $('#target-report-summary').textContent = `${targetReport.title} · ${KIT_LABELS[targetReport.target.kit]} ${targetReport.target.number}번 · ${targetReport.target.age}세 · 근거 영상 ${evidenceClips.length}개`;
+  $('#clip-target-kit').value = targetReport.target.kit;
+  $('#clip-target-number').value = targetReport.target.number;
+  $('#clip-target-age').value = targetReport.target.age;
+  $('#clip-target-kit').closest('fieldset').querySelector('.help').textContent = '이전 피드백에 기록된 대상 선수 정보예요. 이 모드에서는 바꿀 수 없으며, 선수를 새로 식별하지 않습니다.';
+  $('#clip-file-help').textContent = '이 피드백을 받은 동일한 원본을 선택해 주세요. 원본을 서버나 AI 서비스로 보내지 않으며, 유료 API를 사용하지 않습니다.';
+  $('#clip-length-options').hidden = true;
+  $('#clip-length').closest('fieldset').querySelector('legend').lastChild.textContent = '원본과 공유 확인';
+  $('#clip-plan-title').textContent = '확인된 근거 시각의 영상 계획';
+  $('.plan-card > p:last-child').textContent = '원본 절대시각을 표시해요. 근거 앞뒤를 포함하고 겹치는 구간은 합쳤습니다. 여기에 없는 선수 장면은 새로 찾지 않아요.';
+  $('.scope-card > h2').textContent = '근거가 있는 장면의\n앞뒤 움직임을 이어서.';
+  $('.scope-card > p:not(.eyebrow)').textContent = '피드백에 기록된 근거 시각 앞뒤만 영상으로 만들어요. 하나를 저장한 다음, 다음 근거 영상을 만드세요.';
+  $('.scope-footnote').textContent = '이전에 확인한 장면의 맥락을 다시 볼 수 있어요. 새로 선수를 찾거나, 대상의 모든 플레이를 골라내는 기능은 아닙니다.';
+  $('.result-description').textContent = '이전 피드백의 근거 시각 주변을 담은 연속 영상입니다. 새로운 선수 식별이나 자동 분석은 실행하지 않았어요. 원치 않는 노출을 확인해 주세요. 원본의 소리는 포함하지 않습니다.';
+  $('#clip-error > .help').textContent = '피드백을 받은 동일한 원본인지 확인해 주세요. 원본이 재생되지 않으면 호환되는 MP4로 변환해야 하며, 확장자만 바꿔도 해결되지 않습니다.';
+  $('#next-clip').firstChild.textContent = '다음 근거 영상 만들기 ';
+  $('#reset-clips').textContent = '원본 영상 다시 선택';
+} else if (targetReportError) {
+  $('#target-report-error').hidden = false;
+  $('#target-report-error-message').textContent = targetReportError;
+  $('.workspace').hidden = true;
+  $('#page-title').textContent = '근거 장면의 정보를\n확인해 주세요.';
+  $('.hero-copy > p:not(.eyebrow)').textContent = '피드백의 근거 시각을 읽지 못했어요.\n피드백에서 이 화면을 다시 열어 주세요.';
+  $('.intro-note').hidden = true;
+}
 
 if (!support.supported) {
   $('#unsupported-browser').hidden = false;

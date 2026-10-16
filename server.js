@@ -6,7 +6,7 @@ import path from 'node:path';
 import { createLocalStore } from './lib/growth/store.js';
 import { createGrowthAPI } from './lib/growth/api.js';
 import { runGrowthJob, recoverGrowthJobs } from './lib/growth/worker.js';
-import { analysisAvailability } from './lib/growth/runtime.js';
+import { analysisAvailability, growthAnalysisEnvironment } from './lib/growth/runtime.js';
 const root = path.dirname(fileURLToPath(import.meta.url));
 const dataDir = process.env.NEXT_XI_DATA_DIR || path.join(root, '.data');
 await mkdir(dataDir, { recursive: true });
@@ -21,7 +21,7 @@ async function drain() {
   active.add(job.jobId);
   try {
     const record = await store.get(`jobs/${job.jobId}`);
-    if (record) await runGrowthJob({ store, ...job, mediaURL: `${origin}/api/v2/media/${record.videoId}?jobId=${job.jobId}`, dispatchContinuation: dispatchJob });
+    if (record) await runGrowthJob({ store, ...job, mediaURL: `${origin}/api/v2/media/${record.videoId}?jobId=${job.jobId}`, dispatchContinuation: dispatchJob, env: growthAnalysisEnvironment() });
   } catch { console.error('Growth worker stopped: execution_error'); }
   finally { active.delete(job.jobId); setImmediate(drain); }
 }
@@ -49,6 +49,6 @@ const server = http.createServer(async(req,res)=>{
   } catch {if(!res.headersSent)json(res,500,{error:'서버에 연결하지 못했습니다. 다시 시도해 주세요.'});else res.destroy();}
 });
 const port=Number(process.env.PORT||3000);
-server.listen(port,'0.0.0.0',()=>{origin=`http://127.0.0.1:${server.address().port}`;console.log(`NEXT XI is running on port ${server.address().port}`);recoverGrowthJobs({store,dispatchJob}).catch(()=>{});});
-const recovery=setInterval(()=>recoverGrowthJobs({store,dispatchJob}).catch(()=>{}),60_000);recovery.unref();
+server.listen(port,'0.0.0.0',()=>{origin=`http://127.0.0.1:${server.address().port}`;console.log(`NEXT XI is running on port ${server.address().port}`);recoverGrowthJobs({store,dispatchJob,env:growthAnalysisEnvironment()}).catch(()=>{});});
+const recovery=setInterval(()=>recoverGrowthJobs({store,dispatchJob,env:growthAnalysisEnvironment()}).catch(()=>{}),60_000);recovery.unref();
 for(const signal of ['SIGTERM','SIGINT'])process.on(signal,()=>{clearInterval(recovery);server.close(()=>{store.close();process.exit(0);});setTimeout(()=>process.exit(0),3000).unref();});

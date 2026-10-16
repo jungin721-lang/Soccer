@@ -109,8 +109,8 @@ def blocked_quota_ui(page, base):
     page.goto(base + '/#videos')
     page.reload(wait_until='networkidle')
     card = page.locator('.video-card').filter(has_text=video['title'])
-    expect(card).to_contain_text('서비스 복구 대기')
-    expect(card).to_contain_text('서비스가 복구되면 자동으로')
+    expect(card).to_contain_text('무료 한도 갱신 대기')
+    expect(card).to_contain_text('저장된 지점부터')
     expect(card.locator('[data-action=job-status]')).to_be_enabled()
     expect(card.locator('[data-action=analyze]')).to_have_count(0)
     card.locator('[data-action=job-status]').click()
@@ -380,7 +380,7 @@ with TemporaryDirectory(prefix='next-xi-growth-browser-') as temporary:
         listener.bind(('127.0.0.1', 0))
         port = listener.getsockname()[1]
     env = dict(os.environ)
-    for key in ['SOCCER_AI_API_KEY', 'OPENAI_API_KEY', 'SOCCER_ANALYSIS_ACCESS_CODE']:
+    for key in ['SOCCER_AI_API_KEY', 'OPENAI_API_KEY', 'SOCCER_ANALYSIS_ACCESS_CODE', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID']:
         env.pop(key, None)
     env.update(PORT=str(port), NEXT_XI_DATA_DIR=str(temporary / 'data'))
     base = f'http://127.0.0.1:{port}'
@@ -486,8 +486,8 @@ with TemporaryDirectory(prefix='next-xi-growth-browser-') as temporary:
                 page.route('**/api/v2/uploads/*', interrupt_first_chunk)
                 form.locator('button[type=submit]').click()
                 # Missing credentials must leave the saved original usable, with honest analysis status.
-                expect(page.locator('#modal-title')).to_have_text('원본은 안전하게 저장했어요', timeout=20000)
-                expect(page.get_by_role('dialog')).to_contain_text('업로드는 완료')
+                expect(page.locator('#modal-title')).to_have_text('원본 저장 완료 · 무료 분석 연결 대기', timeout=20000)
+                expect(page.get_by_role('dialog')).to_contain_text('아직 분석은 시작하지 않았습니다')
                 page.get_by_role('button', name='닫기', exact=True).click()
                 expect(page.locator('.video-card')).to_have_count(1)
                 assert len(chunk_attempts) >= 2, 'upload did not retry the interrupted chunk'
@@ -499,6 +499,7 @@ with TemporaryDirectory(prefix='next-xi-growth-browser-') as temporary:
                 media = page.request.get('/api/v2/media/' + video['id'])
                 assert media.status == 200 and media.body() == movie.read_bytes(), 'server must retain original bytes'
                 native = page.locator('.video-card video')
+                native.evaluate('(v) => v.play()')
                 wait_video(native, '(v) => v.readyState >= 2')
                 assert native.evaluate('(v) => v.videoWidth') == 320
                 native.evaluate('(v) => {v.currentTime=2; return v.play()}')

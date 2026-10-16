@@ -73,8 +73,8 @@ test('native HTTP v2 isolates authenticated growth workspaces, persists private 
   });
 
   await t.test('missing API credentials stop enqueue with a clear error and create no invented result', async () => {
-    const status = await call('/status', { session: null }); assert.equal(status.status, 200); assert.deepEqual(await status.json(), { available: false, reason: 'missing_credentials' });
-    const response = await call('/jobs', { method: 'POST', body: { videoId: video.id, analysisConsent: true } }); assert.equal(response.status, 503); assert.equal((await response.json()).code, 'analysis_unavailable');
+    const status = await call('/status', { session: null }); assert.equal(status.status, 200); assert.deepEqual(await status.json(), { available: false, reason: 'missing_credentials', provider: 'cloudflare', freeOnly: true });
+    const response = await call('/jobs', { method: 'POST', body: { videoId: video.id, analysisConsent: true, provider: 'cloudflare' } }); assert.equal(response.status, 503); assert.equal((await response.json()).code, 'analysis_unavailable');
     assert.deepEqual((await (await call('/jobs')).json()).jobs, []); assert.deepEqual((await state(cookie)).analyses, []);
   });
 
