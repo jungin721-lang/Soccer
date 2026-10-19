@@ -174,6 +174,8 @@ test('free-plan verification accepts empty official SinglePage responses with op
     { success: true, errors: [], messages: [], result: [] },
     { success: true, errors: [], messages: [], result: [], result_info: { page: 1, per_page: 25 } },
     { success: true, result: [], result_info: { page: 1, per_page: 25, total: 0 } },
+    ...[false, 0, null, ''].map(value => ({ success: true, result: [], result_info: { page: 1, per_page: 25, has_more: value } })),
+    ...[null, {}, { before: '', after: '' }, { before: null, after: null }].map(cursors => ({ success: true, result: [], result_info: { page: 1, per_page: 25, cursors } })),
     { success: true, result: [], result_info: {} },
     { success: true, result: [], result_info: { page: 0, per_page: 0, count: 0, total_count: 0, total_pages: 0 } },
     { success: true, result: [], result_info: { page: 1, per_page: 20, count: 0, total_count: 0 } },
@@ -213,7 +215,8 @@ test('nonempty, malformed, forbidden and contradictory subscription proofs block
     { success: true, result: [], cursor: 'next-page' },
     ...[
       { page: -1 }, { page: 2 }, { page: '1' }, { count: 1 }, { total_count: 1 },
-      { count: '0' }, { total_count: -1 }, { total: 1 }, { total: '0' }, { total: null }, { total_pages: 2 }, { per_page: -1 }, { per_page: 1.5 }, { cursor: 'next-page' },
+      { count: '0' }, { total_count: -1 }, { total: 1 }, { total: '0' }, { total: null }, { total_pages: 2 }, { per_page: -1 }, { per_page: 1.5 }, { cursor: 'next-page' }, { has_more: true }, { total_entries: 1 }, { extra: {} }, { extra: [] },
+      { cursors: { before: '', after: 'next-page' } }, { cursors: { before: 'previous-page', after: '' } }, { cursors: { unknown: '' } }, { cursors: [] }, { cursors: true },
     ].map(overrides => ({ success: true, result: [], result_info: { ...COMPLETE_EMPTY_PAGE, ...overrides } })),
   ];
   for (const proof of proofs) {
