@@ -68,6 +68,7 @@ test('contradictory metadata remains blocked while safe numeric pagination ident
   assert.deepEqual(error.diagnostics, {
     stage: 'subscription_lookup', reason: 'response_unverified', httpStatus: 200,
     errorCodes: [], emptyResult: true, pagination,
+    shape: { success: true, errorsValid: true, envelopeUnknownFields: 0, paginationType: 'object', paginationFieldTypes: { page: 'number', per_page: 'number', total_count: 'number' }, paginationUnknownFields: 0 },
   });
 });
 
@@ -89,6 +90,7 @@ test('subscription diagnostics reveal only fixed categories and bounded numeric 
     stage: 'subscription_lookup', reason: 'lookup_rejected', httpStatus: 400,
     errorCodes: [7003, 10000, 8000, 8001, 8002, 8003, 8004, 8005],
     emptyResult: false, pagination: { page: 0, per_page: 0 },
+    shape: { success: false, errorsValid: false, envelopeUnknownFields: 3, paginationType: 'object', paginationFieldTypes: { page: 'number', per_page: 'number', count: 'string', total_count: 'number', total_pages: 'number' }, paginationUnknownFields: 1 },
   });
 });
 
@@ -102,6 +104,7 @@ test('nonempty subscriptions including a zero-priced plan never pass the free-on
     assert.deepEqual(error.diagnostics, {
       stage: 'subscription_lookup', reason: 'subscriptions_present', httpStatus: 200,
       errorCodes: [], emptyResult: false, pagination: {},
+      shape: { success: true, errorsValid: true, envelopeUnknownFields: 0, paginationType: 'undefined', paginationFieldTypes: {}, paginationUnknownFields: 0 },
     });
   }
 });
