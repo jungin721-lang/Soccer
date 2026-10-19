@@ -166,9 +166,13 @@ test('video deletion removes owned chunks and jobs while another user remains is
 
 test('password-confirmed account deletion erases user-owned originals, sessions and workspace without affecting others', async t => {
   const { api, store } = await fixture(t); const first = await register(api); const second = await register(api, 'keep@example.com'); await upload(api, first.cookie); await upload(api, second.cookie);
+  await store.set(`plan-checks/cloudflare/${first.user.id}/2026-10-19`, { count: 1 });
+  await store.set(`plan-checks/cloudflare/${second.user.id}/2026-10-19`, { count: 2 });
   assert.equal((await api(req('/auth/account', { method: 'DELETE', cookie: first.cookie, body: { password: 'wrong' } }))).status, 401);
   assert.equal((await api(req('/auth/account', { method: 'DELETE', cookie: first.cookie, body: { password: PASSWORD } }))).status, 200);
   assert.equal(await store.get(`users/${first.user.id}`), null); assert.equal(await store.get(`workspaces/${first.user.id}`), null); assert.deepEqual(await store.list(`media/${first.user.id}/`), []);
+  assert.deepEqual(await store.list(`plan-checks/cloudflare/${first.user.id}/`), []);
+  assert.equal((await store.get(`plan-checks/cloudflare/${second.user.id}/2026-10-19`)).count, 2);
   assert.equal((await (await api(req('/auth/me', { cookie: first.cookie }))).json()).user, null); assert.equal((await (await api(req('/auth/me', { cookie: second.cookie }))).json()).user.id, second.user.id);
 });
 

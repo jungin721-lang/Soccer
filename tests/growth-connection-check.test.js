@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { createLocalStore } from '../lib/growth/store.js';
 import { createGrowthAPI } from '../lib/growth/api.js';
-import { checkFreeAnalysisConnection } from '../lib/growth/connection-check.js';
+import { checkFreeAnalysisConnection, checkFreePlanOnly } from '../lib/growth/connection-check.js';
 import { readProviderStatus } from '../lib/growth/provider.js';
 
 const env = { CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32), CLOUDFLARE_API_TOKEN: 'synthetic-token-not-live', SOCCER_AI_API_KEY: 'must-never-be-used' };
@@ -86,4 +86,41 @@ test('the synthetic check route requires a signed-in same-origin request', async
   assert.equal((await api(request({ Origin: 'https://next-xi.example' }))).status, 401);
   assert.equal((await api(request({ Origin: 'https://attacker.example' }))).status, 403);
   assert.deepEqual(await store.list('connection-checks/'), []);
+});
+
+test('plan-only diagnostics never invoke AI, consume an inference check or mark the provider verified', async t => {
+  const store = await fixture(t); const calls = [];
+  const result = await checkFreePlanOnly({ store, userId: 'test-owner', env, fetchImpl: upstream(calls), now });
+  assert.equal(result.status, 200); assert.equal(result.body.inferenceCalled, false);
+  assert.equal(result.body.freePlanVerified, true); assert.equal(calls.length, 1);
+  assert.equal(calls[0].options.method, 'GET'); assert.equal(calls[0].options.body, undefined);
+  assert.deepEqual(await store.list('connection-checks/'), []);
+  assert.equal((await readProviderStatus(store, { provider: 'cloudflare' })).status, 'unknown');
+});
+
+test('plan diagnostics preserve safe root causes without forwarding private provider details', async t => {
+  const store = await fixture(t);
+  const result = await checkFreePlanOnly({ store, userId: 'test-owner', env, now, fetchImpl: async () => Response.json({ success: false, errors: [{ code: 10000, message: `private ${env.CLOUDFLARE_API_TOKEN}` }] }, { status: 400 }) });
+  assert.equal(result.status, 503); assert.equal(result.body.code, 'free_plan_unverified');
+  assert.equal(result.body.diagnostics.reason, 'lookup_rejected');
+  assert.equal(result.body.diagnostics.httpStatus, 400); assert.deepEqual(result.body.diagnostics.errorCodes, [10000]);
+  assert.equal(result.body.inferenceCalled, false); assert.equal(JSON.stringify(result).includes(env.CLOUDFLARE_API_TOKEN), false);
+});
+
+test('plan diagnostics enforce per-user minute and daily limits without blocking another owner', async t => {
+  const store = await fixture(t); const calls = [];
+  const simultaneous = await Promise.all(Array.from({ length: 4 }, () => checkFreePlanOnly({ store, userId: 'first', env, fetchImpl: upstream(calls), now })));
+  assert.equal(simultaneous.filter(result => result.status === 200).length, 1);
+  for (let minute = 1; minute < 10; minute++) assert.equal((await checkFreePlanOnly({ store, userId: 'first', env, fetchImpl: upstream(calls), now: now + minute * 60_000 })).status, 200);
+  assert.equal((await checkFreePlanOnly({ store, userId: 'first', env, fetchImpl: upstream(calls), now: now + 10 * 60_000 })).body.code, 'plan_check_limited');
+  assert.equal((await checkFreePlanOnly({ store, userId: 'second', env, fetchImpl: upstream(calls), now })).status, 200);
+  assert.equal(calls.length, 11); assert.deepEqual(await store.list('connection-checks/'), []);
+});
+
+test('plan diagnostics require a signed-in same-origin request', async t => {
+  const store = await fixture(t); const api = createGrowthAPI({ store, env });
+  const request = origin => new Request('https://next-xi.example/api/v2/analysis/plan-check', { method: 'POST', headers: { Origin: origin } });
+  assert.equal((await api(request('https://next-xi.example'))).status, 401);
+  assert.equal((await api(request('https://attacker.example'))).status, 403);
+  assert.deepEqual(await store.list('plan-checks/'), []);
 });
