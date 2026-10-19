@@ -142,7 +142,7 @@ test('an unverified or paid Cloudflare account never reaches inference or any ex
   for (const options of [
     { proof: { success: true, result: [{ id: 'paid-subscription' }] } },
     { proof: { success: false, errors: [{ code: 10000, message: 'private-provider-token' }], result: [] }, proofStatus: 403, expectedCode: 'analysis_permission_denied' },
-    { proof: { success: true, result: [], result_info: { page: 1 } } },
+    { proof: { success: true, result: [], result_info: { page: 2 } } },
     { proof: 'malformed subscription response' },
   ]) {
     const mock = upstream(observed(), options);

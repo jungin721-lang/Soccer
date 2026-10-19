@@ -167,14 +167,21 @@ test('each inference batch first verifies empty subscriptions using a server-onl
   assert.notEqual(signals[0], signals[1]);
 });
 
-test('free-plan verification accepts official SinglePage responses and complete empty pagination only', async () => {
+test('free-plan verification accepts empty official SinglePage responses with optional metadata', async () => {
   for (const proof of [
     { success: true, result: [] },
     { success: true, errors: [], result: [] },
     { success: true, errors: [], messages: [], result: [] },
+    { success: true, errors: [], messages: [], result: [], result_info: { page: 1, per_page: 25 } },
+    { success: true, result: [], result_info: {} },
+    { success: true, result: [], result_info: { page: 0, per_page: 0, count: 0, total_count: 0, total_pages: 0 } },
     { success: true, result: [], result_info: { page: 1, per_page: 20, count: 0, total_count: 0 } },
     { success: true, result: [], result_info: COMPLETE_EMPTY_PAGE },
     { success: true, result: [], result_info: { ...COMPLETE_EMPTY_PAGE, total_pages: 0 } },
+    ...['page', 'per_page', 'count', 'total_count'].map(missing => {
+      const info = { ...COMPLETE_EMPTY_PAGE }; delete info[missing];
+      return { success: true, result: [], result_info: info };
+    }),
   ]) {
     let inferenceCalls = 0;
     const result = await callCloudflareTransport(payload(), { env: ENV, fetchImpl: async url => {
@@ -187,7 +194,7 @@ test('free-plan verification accepts official SinglePage responses and complete 
   }
 });
 
-test('nonempty, malformed, forbidden and incomplete subscription proofs block inference', async () => {
+test('nonempty, malformed, forbidden and contradictory subscription proofs block inference', async () => {
   const proofs = [
     null,
     {},
@@ -201,17 +208,11 @@ test('nonempty, malformed, forbidden and incomplete subscription proofs block in
     { success: true, result: [], errors: [{ code: 3036, message: PRIVATE_MESSAGE }] },
     { success: true, result: [], result_info: null },
     { success: true, result: [], result_info: [] },
-    { success: true, result: [], result_info: {} },
-    { success: true, result: [], result_info: { page: 1, per_page: 50 } },
-    ...['page', 'per_page', 'count', 'total_count'].map(missing => {
-      const info = { ...COMPLETE_EMPTY_PAGE }; delete info[missing];
-      return { success: true, result: [], result_info: info };
-    }),
     { success: true, result: [], has_more: true },
     { success: true, result: [], cursor: 'next-page' },
     ...[
-      { page: 0 }, { page: 2 }, { page: '1' }, { count: 1 }, { total_count: 1 },
-      { total_pages: 2 }, { per_page: 0 }, { per_page: 1.5 }, { cursor: 'next-page' },
+      { page: -1 }, { page: 2 }, { page: '1' }, { count: 1 }, { total_count: 1 },
+      { count: '0' }, { total_count: -1 }, { total_pages: 2 }, { per_page: -1 }, { per_page: 1.5 }, { cursor: 'next-page' },
     ].map(overrides => ({ success: true, result: [], result_info: { ...COMPLETE_EMPTY_PAGE, ...overrides } })),
   ];
   for (const proof of proofs) {

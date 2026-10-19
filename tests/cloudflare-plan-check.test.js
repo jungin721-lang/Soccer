@@ -34,6 +34,7 @@ async function inspectFailure(response) {
 test('read-only free-plan inspection performs one authenticated subscription GET and never invokes inference', async () => {
   for (const proof of [
     { success: true, result: [] },
+    { success: true, errors: [], messages: [], result: [], result_info: { page: 1, per_page: 25 } },
     { success: true, errors: [], messages: [], result: [], result_info: { page: 1, per_page: 20, count: 0, total_count: 0 } },
   ]) {
     let calls = 0;
@@ -57,8 +58,8 @@ test('read-only free-plan inspection performs one authenticated subscription GET
   }
 });
 
-test('unverified zero-page metadata remains blocked while safe numeric pagination identifies the compatibility issue', async () => {
-  const pagination = { page: 0, per_page: 0, count: 0, total_count: 0, total_pages: 0 };
+test('contradictory metadata remains blocked while safe numeric pagination identifies the issue', async () => {
+  const pagination = { page: 1, per_page: 25, total_count: 1 };
   const error = await inspectFailure(Response.json({
     success: true, errors: [], messages: [PRIVATE_MESSAGE], result: [], result_info: pagination,
   }));
