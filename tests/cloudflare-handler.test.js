@@ -106,6 +106,31 @@ test('Cloudflare discovery maps validated frame indexes to exact source times an
   assert.deepEqual(await abstained.json(), { mode: 'discover', ...empty, model: CLOUDFLARE_VISION_MODEL });
 });
 
+test('native JSON fences are accepted as a whole document and still require valid evidence', async () => {
+  for (const fence of ['json', 'JSON', '']) {
+    const response = await handleAnalysis(req(), { env, fetchImpl: upstream('```' + fence + '\n' + JSON.stringify(observed()) + '\n```').fetchImpl });
+    assert.equal(response.status, 200); assert.deepEqual((await response.json()).result, observed());
+  }
+  const empty = { detections: [], summary: '검은 합성 이미지에는 사람이 없습니다.', limitations: ['실제 경기 분석이 아닙니다.'] };
+  const result = await handleAnalysis(req({ ...input(), mode: 'discover' }), { env, fetchImpl: upstream('```json\n' + JSON.stringify(empty) + '\n```').fetchImpl });
+  assert.equal(result.status, 200); assert.deepEqual((await result.json()).detections, []);
+  for (const text of ['prose\n```json\n' + JSON.stringify(observed()) + '\n```', '```json\n' + JSON.stringify(observed()) + '\n```\nextra', '```json\n' + JSON.stringify({ ...observed(), identified: false }) + '\n```']) {
+    const response = await handleAnalysis(req(), { env, fetchImpl: upstream(text).fetchImpl });
+    assert.equal(response.status, 502); assert.equal((await response.json()).code, 'analysis_invalid_result');
+  }
+});
+
+test('invalid model output reports only fixed format and field types without leaking generated contents', async () => {
+  const secret = 'private_generated_diagnostic_never_return';
+  for (const value of [secret, { detections: secret, summary: secret, limitations: secret, [secret]: secret }]) {
+    const response = await handleAnalysis(req({ ...input(), mode: 'discover' }), { env, fetchImpl: upstream(value).fetchImpl });
+    const result = await response.json();
+    assert.equal(response.status, 502); assert.equal(result.diagnostics.stage, 'result_validation');
+    assert.equal(JSON.stringify(result).includes(secret), false);
+    assert.deepEqual(Object.keys(result.diagnostics.fieldTypes), ['detections', 'summary', 'limitations']);
+  }
+});
+
 test('Cloudflare rejects poisoned observations and discovery results without fabricating player evidence', async () => {
   for (const value of [
     { ...observed(), identified: false },

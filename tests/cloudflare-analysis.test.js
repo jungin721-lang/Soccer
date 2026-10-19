@@ -103,7 +103,9 @@ test('Cloudflare inference uses its fixed official model endpoint and documented
     assert.equal(body.stream, false);
     assert.equal(body.max_tokens, 2500);
     assert.deepEqual(body.guided_json, SCHEMA);
-    assert.deepEqual(body.messages[0], { role: 'system', content: payload().instructions });
+    assert.equal(body.messages[0].role, 'system');
+    assert.ok(body.messages[0].content.startsWith(payload().instructions));
+    assert.ok(body.messages[0].content.endsWith(JSON.stringify(SCHEMA)));
     assert.equal(body.messages[1].role, 'user');
     assert.deepEqual(body.messages[1].content, [
       { type: 'text', text: '원본 절대 시각 범위: 120~126초. 아래 프레임의 번호와 원본 시각을 그대로 사용하세요.' },
