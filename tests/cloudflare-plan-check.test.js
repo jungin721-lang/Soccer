@@ -35,6 +35,7 @@ test('read-only free-plan inspection performs one authenticated subscription GET
   for (const proof of [
     { success: true, result: [] },
     { success: true, errors: [], messages: [], result: [], result_info: { page: 1, per_page: 25 } },
+    { success: true, errors: [], result: [], result_info: { page: 1, per_page: 25, total: 0 } },
     { success: true, errors: [], messages: [], result: [], result_info: { page: 1, per_page: 20, count: 0, total_count: 0 } },
   ]) {
     let calls = 0;
