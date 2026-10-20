@@ -131,11 +131,11 @@ def open_page(browser, origin, width, fragment=''):
         reason = None
         if request.method not in ('GET', 'HEAD'):
             reason = 'write request'
-        elif parsed.path.startswith('/api/'):
+        elif parsed.path.startswith('/api/') and parsed.path != '/api/v2/feedback':
             reason = 'API request'
         elif parsed.scheme in ('http', 'https') and (parsed.scheme, parsed.netloc) != (allowed.scheme, allowed.netloc):
             reason = 'third-party request'
-        elif parsed.scheme in ('http', 'https') and (parsed.path not in static_paths or parsed.query or parsed.fragment):
+        elif parsed.scheme in ('http', 'https') and (parsed.path not in static_paths and parsed.path != '/api/v2/feedback' or parsed.query or parsed.fragment):
             reason = 'non-static request'
         sensitive = [CANARY, VIDEO_NAME, 'report=']
         transmitted = request.url + (request.post_data or '') + json.dumps(request.headers)
@@ -144,6 +144,8 @@ def open_page(browser, origin, width, fragment=''):
         if reason:
             violations.append(reason)
             route.abort('blockedbyclient')
+        elif parsed.path == '/api/v2/feedback':
+            route.fulfill(status=401, content_type='application/json', body=json.dumps({'error': '홈에서 로그인해 주세요.'}))
         else:
             route.continue_()
 
@@ -360,7 +362,7 @@ def main():
             server.shutdown(); server.server_close(); thread.join(timeout=5)
     print(f'PASS: 5 synthetic browser scenarios; {invalid_count} malformed/schema/training/fragment rejections; '
           f'HTML prose stays text, real local H.264 evidence seek/disconnect without video persistence or buffering; '
-          f'{requests} allowed static GET requests, zero API/write/third-party/private-content requests or page errors; '
+          f'{requests} allowed static/account-status GET requests, zero write/third-party/private-content requests or page errors; '
           f'320/390px overflow and 44px touch checks. {time.monotonic() - started:.1f}s. '
           f'Synthetic screenshots only; physical phones remain unverified.')
 

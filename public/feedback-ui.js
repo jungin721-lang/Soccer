@@ -2,7 +2,7 @@ import { KIT_LABELS, FEEDBACK_MAX_BYTES, FEEDBACK_MAX_REPORTS, FEEDBACK_LINK_MAX
 
 const $ = selector => document.querySelector(selector);
 let reports = [], selectedId = null, busy = true, pendingDeleteId = null;
-let previewReport = null, showingPreview = false, fragmentError = null;
+let previewReport = null, showingPreview = false, fragmentError = null, cloudPreview = false;
 // Consume links both on first load and when another report opens in this tab.
 // Remove private contents from the address before displaying or saving them.
 function consumeReportLink() {
@@ -11,7 +11,7 @@ function consumeReportLink() {
   fragmentError = null;
   try {
     history.replaceState(null, '', location.pathname + location.search);
-    previewReport = parseFeedbackFragment(fragment); showingPreview = true;
+    previewReport = parseFeedbackFragment(fragment); showingPreview = true; cloudPreview = false;
   } catch (failure) {
     previewReport = null; showingPreview = false;
     fragmentError = failure.message || '피드백 링크를 열지 못했어요. JSON 파일로 가져와 주세요.';
@@ -54,14 +54,14 @@ function renderLibrary() {
   $('#library-empty').hidden = reports.length > 0;
   if (previewReport) {
     const preview = element('button'); preview.type = 'button'; preview.disabled = busy; preview.setAttribute('aria-current', String(showingPreview));
-    preview.append(element('strong', '', previewReport.title), element('span', '', '링크로 받은 미저장 피드백'));
-    preview.addEventListener('click', () => { if (busy) return; showingPreview = true; status('아직 저장하지 않은 링크의 피드백이에요.'); error(''); render(); });
+    preview.append(element('strong', '', previewReport.title), element('span', '', cloudPreview ? '계정에 보관한 피드백' : '링크로 받은 미저장 피드백'));
+    preview.addEventListener('click', () => { if (busy) return; showingPreview = true; status(cloudPreview ? '계정에 보관한 피드백이에요.' : '아직 저장하지 않은 링크의 피드백이에요.'); error(''); render(); });
     list.append(preview);
   }
   for (const report of reports) {
     const button = element('button'); button.type = 'button'; button.setAttribute('aria-current', String(!showingPreview && report.id === selectedId)); button.disabled = busy;
     button.append(element('strong', '', report.title), element('span', '', targetText(report)));
-    button.addEventListener('click', () => { if (busy) return; selectedId = report.id; showingPreview = false; status(''); error(''); render(); });
+    button.addEventListener('click', () => { if (busy) return; selectedId = report.id; showingPreview = false; cloudPreview = false; status(''); error(''); render(); });
     list.append(button);
   }
 }
@@ -145,7 +145,7 @@ function renderReport(report) {
   const badges = element('div', 'report-badges'); badges.append(element('span', 'report-badge', '채팅 검토 결과'), element('span', 'report-badge muted-badge', '자동 분석 결과 아님'), element('span', 'report-badge muted-badge', '전문가 검토 미확인'));
   if (showingPreview) {
     const preview = element('div', 'shared-preview');
-    preview.append(element('strong', '', '링크로 받은 피드백 · 아직 저장하지 않았어요'), element('p', '', '가져온 내용과 선수 정보를 확인해 주세요. 이 앱은 작성자나 검토 내용의 정확성을 인증하지 않습니다.'));
+    preview.append(element('strong', '', cloudPreview ? '계정에 비공개 보관한 피드백' : '링크로 받은 피드백 · 아직 저장하지 않았어요'), element('p', '', '가져온 내용과 선수 정보를 확인해 주세요. 이 앱은 작성자나 검토 내용의 정확성을 인증하지 않습니다.'));
     const save = element('button', 'button secondary', '이 기기에 저장'); save.type = 'button'; save.disabled = busy;
     save.addEventListener('click', () => importReport(JSON.stringify(report)));
     preview.append(save); heading.append(preview);
@@ -208,7 +208,7 @@ async function importReport(input) {
   setBusy(true);
   try {
     report = await saveFeedbackReport(report);
-    reports = [report, ...reports.filter(item => item.id !== report.id)]; selectedId = report.id; previewReport = null; showingPreview = false;
+    reports = [report, ...reports.filter(item => item.id !== report.id)]; selectedId = report.id; previewReport = null; showingPreview = false; cloudPreview = false;
     $('#feedback-text').value = ''; $('.paste-details').open = false;
     render(); status('피드백을 이 브라우저에 저장했어요. 새로고침해도 다시 볼 수 있어요.');
   } catch (failure) { error(failure.message); }
@@ -266,3 +266,62 @@ async function start() {
   }
 }
 start();
+
+// Account storage is explicit; the existing browser library is never uploaded automatically.
+let accountReports = [], accountOwner = null, accountLoading = false;
+async function accountAPI(path = '', options = {}) {
+  const response = await fetch('/api/v2/feedback' + path, { credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(15000), ...options, headers: { 'Content-Type': 'application/json' } });
+  const value = await response.json();
+  if (!response.ok) {
+    if (response.status === 401) clearAccountPreview();
+    throw new Error(value.error || '계정 피드백에 연결하지 못했어요.');
+  }
+  return value;
+}
+function clearAccountPreview() {
+  accountReports = []; accountOwner = null;
+  $('#account-feedback-list').replaceChildren();
+  if (cloudPreview) { previewReport = null; showingPreview = false; cloudPreview = false; render(); }
+}
+function accountLibrary() {
+  const list = $('#account-feedback-list'); list.replaceChildren();
+  for (const report of accountReports) {
+    const row = element('div', 'button-row');
+    const open = element('button', 'button secondary', report.title); open.type = 'button';
+    open.addEventListener('click', () => { previewReport = report; showingPreview = true; cloudPreview = true; render(); status('계정에 보관한 채팅 피드백입니다. 자동 분석 결과와는 구분해요.'); });
+    const remove = element('button', 'button secondary', '계정에서 삭제'); remove.type = 'button';
+    remove.addEventListener('click', async () => {
+      if (!confirm('계정의 이 피드백을 모든 기기에서 삭제할까요? 이 브라우저에 따로 저장한 사본은 유지됩니다.')) return;
+      remove.disabled = true;
+      try { await accountAPI('/' + encodeURIComponent(report.id), { method: 'DELETE' }); if (cloudPreview && previewReport?.id === report.id) { previewReport = null; showingPreview = false; cloudPreview = false; render(); } await refreshAccount(); }
+      catch (failure) { $('#account-feedback-status').textContent = failure.message; }
+      finally { remove.disabled = false; }
+    });
+    row.append(open, remove); list.append(row);
+  }
+}
+async function refreshAccount() {
+  if (accountLoading) return;
+  accountLoading = true;
+  try {
+    const result = await accountAPI();
+    if (accountOwner && accountOwner !== result.userId) clearAccountPreview();
+    accountOwner = result.userId; accountReports = result.reports;
+    if (cloudPreview && !accountReports.some(row => row.id === previewReport?.id)) { previewReport = null; showingPreview = false; cloudPreview = false; render(); }
+    accountLibrary(); $('#account-feedback-status').textContent = `계정에 ${accountReports.length}개 보관 중 · 자동 동기화`;
+  } catch (failure) { $('#account-feedback-status').textContent = failure.message || '연결을 확인하고 다시 시도해 주세요.'; }
+  finally { accountLoading = false; }
+}
+$('#save-account-feedback').addEventListener('click', async event => {
+  const report = showingPreview ? previewReport : reports.find(row => row.id === selectedId);
+  if (!report) { $('#account-feedback-status').textContent = '먼저 저장할 피드백을 열어 주세요.'; return; }
+  event.target.disabled = true;
+  try { await accountAPI('', { method: 'POST', body: JSON.stringify(report) }); await refreshAccount(); $('#account-feedback-status').textContent = '계정에 비공개 저장했어요. 같은 계정의 다른 기기에서 열 수 있어요.'; }
+  catch (failure) { $('#account-feedback-status').textContent = failure.message || '저장하지 못했어요. 연결을 확인하고 다시 시도해 주세요.'; }
+  finally { event.target.disabled = false; }
+});
+$('#refresh-account-feedback').addEventListener('click', refreshAccount);
+setInterval(() => { if (!document.hidden) refreshAccount(); }, 5000);
+window.addEventListener('focus', refreshAccount);
+window.addEventListener('online', refreshAccount);
+refreshAccount();
