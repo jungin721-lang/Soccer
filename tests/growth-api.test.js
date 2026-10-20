@@ -501,3 +501,55 @@ test('account cleanup uses owner-prefixed import safety indexes without reading 
   const watched = createGrowthAPI({ store: { ...store, async get(key) { assert.notEqual(key, `imports/${otherId}`, 'deleting one account must not read another archive body'); return store.get(key); } } });
   const deletion = await watched(req('/auth/account', { method: 'DELETE', cookie: first.cookie, body: { password: PASSWORD } })); assert.equal(deletion.status, 200); assert.equal(await store.get(`imports/${id}`), null); assert.ok(await store.get(`imports/${otherId}`)); assert.deepEqual(await store.list(`import-owners/${first.user.id}/`), []);
 });
+
+function feedbackFixture() {
+  return {
+    schema: 'next-xi-feedback/v1', id: 'synthetic-review', title: '테스트용 피드백', target: { kit: 'turquoise', number: 1, age: 10 }, reviewedAt: null,
+    source: { kind: 'still_frames', durationSeconds: 300, reviewedFrames: 6, confirmedTargetFrames: 2, continuous: false, description: '검증용 합성 자료 설명' },
+    summary: '합성 검토 요약',
+    observations: [{ id: 'scene-one', time: 10.25, endTime: 11, fact: '관찰 사실', interpretation: '가능한 해석', uncertainty: '확인하지 못한 점' }],
+    unobserved: ['화면 밖 움직임'],
+    training: [{ id: 'practice-one', title: '합성 연습', reason: '연습 제안의 범위', goal: '확인 가능한 작은 목표', minutes: 5, frequency: '주 1회', equipment: ['공'], steps: [{ label: '첫 단계', minutes: 2, instructions: ['합성 안내 하나'] }, { label: '두 번째 단계', minutes: 3, instructions: ['합성 안내 둘'] }], success: '확인 가능한 성공 기준' }],
+    limitations: ['일부 자료의 관찰이며 능력치를 평가하지 않음'], provenance: { kind: 'chat_review', professionalReview: false },
+  };
+}
+test('account feedback is private, immutable, idempotent and removed on account deletion', async t => {
+  const {api,store} = await fixture(t);
+  const owner=await register(api,'feedback-owner@example.test');
+  const other=await register(api,'feedback-other@example.test');
+  const report=feedbackFixture();
+  assert.equal((await api(req('/feedback'))).status,401);
+  assert.equal((await api(req('/feedback',{method:'POST',cookie:owner.cookie,body:report,headers:{Origin:'https://other.example'}}))).status,403);
+  for(let attempt=0;attempt<2;attempt++) assert.equal((await api(req('/feedback',{method:'POST',cookie:owner.cookie,body:report}))).status,200);
+  assert.equal((await (await api(req('/feedback',{cookie:owner.cookie}))).json()).reports.length,1);
+  assert.deepEqual((await (await api(req('/feedback',{cookie:other.cookie}))).json()).reports,[]);
+  assert.equal((await api(req('/feedback',{method:'POST',cookie:owner.cookie,body:{...report,summary:'different'}}))).status,409);
+  assert.equal((await api(req('/feedback',{method:'POST',cookie:owner.cookie,body:{...report,unknown:true}}))).status,400);
+  await api(req('/feedback/'+report.id,{method:'DELETE',cookie:other.cookie}));
+  assert.equal((await (await api(req('/feedback',{cookie:owner.cookie}))).json()).reports.length,1);
+  await api(req('/feedback/'+report.id,{method:'DELETE',cookie:owner.cookie}));
+  assert.deepEqual((await (await api(req('/feedback',{cookie:owner.cookie}))).json()).reports,[]);
+  await api(req('/feedback',{method:'POST',cookie:owner.cookie,body:report}));
+  assert.equal((await api(req('/auth/account',{method:'DELETE',cookie:owner.cookie,body:{password:PASSWORD}}))).status,200);
+  assert.deepEqual(await store.get(`feedback/${owner.user.id}`),{deleting:true,reports:[]});
+  assert.equal((await api(req('/feedback',{cookie:owner.cookie}))).status,401);
+});
+
+test('training API isolates owners, validates revisions and excludes running timers; account deletion erases content', async t => {
+  const {api,store}=await fixture(t);
+  const owner=await register(api,'training-owner@example.test'),other=await register(api,'training-other@example.test');
+  assert.equal((await api(req('/training'))).status,401);
+  let remote=await (await api(req('/training',{cookie:owner.cookie}))).json();
+  assert.equal(remote.revision,0);assert.equal(remote.data.profile.nickname,'희찬');assert.equal(remote.userId,owner.user.id);
+  const body={revision:0,data:remote.data};body.data.profile.nickname='개인 훈련';
+  assert.equal((await api(req('/training',{method:'PUT',cookie:owner.cookie,body,headers:{Origin:'https://attacker.example'}}))).status,403);
+  assert.equal((await api(req('/training',{method:'PUT',cookie:owner.cookie,body}))).status,200);
+  assert.equal((await api(req('/training',{method:'PUT',cookie:owner.cookie,body}))).status,409);
+  const foreign=await (await api(req('/training?userId='+owner.user.id,{cookie:other.cookie}))).json();
+  assert.equal(foreign.data.profile.nickname,'희찬');assert.equal(foreign.userId,other.user.id);
+  assert.equal((await api(req('/training',{method:'PUT',cookie:owner.cookie,body:{revision:1,data:{...body.data,draft:{secret:true}}}}))).status,400);
+  assert.equal((await api(req('/training',{method:'PUT',cookie:owner.cookie,body:{revision:1,data:{version:999}}}))).status,400);
+  await api(req('/auth/account',{method:'DELETE',cookie:owner.cookie,body:{password:PASSWORD}}));
+  assert.deepEqual(await store.get(`training/${owner.user.id}`),{deleting:true,revision:0,data:null});
+  assert.equal((await api(req('/training',{cookie:owner.cookie}))).status,401);
+});
