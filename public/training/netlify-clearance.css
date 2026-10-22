@@ -1,0 +1,40 @@
+/* Reserve space only when Netlify actually mounts its public badge iframe.
+   Keep the badge visible and interactive; do not change the provider iframe. */
+:root { --netlify-badge-space: 0px; }
+:root:has(iframe#nl-badge-frame) {
+  --netlify-badge-space: calc(112px + env(safe-area-inset-bottom, 0px));
+  scroll-padding-bottom: calc(var(--netlify-badge-space) + 24px);
+}
+body:has(iframe#nl-badge-frame) {
+  padding-bottom: var(--netlify-badge-space);
+}
+body:has(iframe#nl-badge-frame) .bottom-nav {
+  bottom: var(--netlify-badge-space);
+}
+body:has(iframe#nl-badge-frame) .toast {
+  bottom: calc(var(--netlify-badge-space) + 26px);
+}
+body:has(iframe#nl-badge-frame) #notice {
+  bottom: calc(var(--netlify-badge-space) + 18px);
+}
+body:has(iframe#nl-badge-frame) .modal-overlay {
+  bottom: var(--netlify-badge-space);
+}
+body:has(iframe#nl-badge-frame) dialog {
+  inset-block-end: var(--netlify-badge-space);
+  max-height: min(90vh, calc(100dvh - var(--netlify-badge-space) - 32px));
+}
+@media (max-width: 1024px) {
+  :root:has(iframe#nl-badge-frame) {
+    scroll-padding-bottom: calc(var(--netlify-badge-space) + var(--nav-height, 0px) + 24px);
+  }
+  body:has(iframe#nl-badge-frame):not(.modal-open) .toast {
+    bottom: calc(var(--netlify-badge-space) + var(--nav-height, 0px) + env(safe-area-inset-bottom, 0px) + 14px);
+  }
+}
+@media print {
+  :root:has(iframe#nl-badge-frame) { --netlify-badge-space: 0px; }
+}
+body:has(iframe#nl-badge-frame) .modal {
+  max-height: calc(100dvh - var(--netlify-badge-space) - 32px);
+}
