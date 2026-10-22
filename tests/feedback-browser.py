@@ -121,7 +121,7 @@ def open_page(browser, origin, width, fragment=''):
     context.add_init_script(AUDIT)
     violations, errors, request_count = [], [], [0]
     allowed = urlsplit(origin)
-    static_paths = {'/feedback.html', '/feedback.css', '/chat-pack.css', '/feedback-ui.js', '/feedback.js',
+    static_paths = {'/training/netlify-clearance.css', '/feedback.html', '/feedback.css', '/chat-pack.css', '/feedback-ui.js', '/feedback.js',
                     '/growth-domain.js', '/domain.js', '/assets/favicon.svg'}
 
     def protect(route):
