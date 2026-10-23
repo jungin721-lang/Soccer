@@ -63,6 +63,7 @@ function evidenceFor(observation) {
   return exact || candidates.find(a=>a.evidence && time>=a.evidence.start && time<=a.evidence.end) || null;
 }
 function retentionNote(video) {
+  if(video?.retentionPolicy==='report_only')return video.sourceStatus==='deleted_after_analysis'?'서버 원본·근거 영상을 모두 삭제했어요. 결과·훈련·원본 시각만 남습니다.':video.sourceStatus==='deleting_after_analysis'?'결과 저장을 확인한 뒤 서버 원본·근거 영상을 삭제 중입니다.':'새 분석 노트 정책: 분석 완료 후 서버의 원본·근거 영상을 모두 삭제하고 텍스트 결과만 남깁니다. 실패·대기·취소 때에는 재시도 또는 직접 삭제할 수 있어요.';
   if(video?.sourceStatus==='deleted_after_analysis')return '큰 원본은 자동 삭제했어요. 분석 결과와 비공개 근거 영상은 남아 있어요.';
   if(video?.sourceStatus==='deleting_after_analysis')return '결과와 근거 영상을 보관했어요. 큰 원본을 안전하게 정리하고 있어요.';
   return video?.retentionPolicy==='delete_after_analysis'?'분석 결과와 근거 영상 저장을 확인한 뒤 큰 원본을 자동 삭제해요. 대기·실패·선수 확인 보류 중에는 원본을 남겨요.':'원본은 비공개 보관 중이에요. 새 무료 분석이 완료되면 보관한 근거 영상을 남기고 원본을 정리해요.';
