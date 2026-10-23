@@ -321,3 +321,26 @@ test('Cloudflare daily quota holds the source and completed result while isolati
   assert.deepEqual(await readProviderStatus(setup.store, { provider: 'cloudflare' }), cloudflare);
   assert.deepEqual(await readProviderStatus(setup.store, { provider: 'openai' }), openaiBefore);
 });
+
+test('new report-only worker removes real MP4 after verified synthetic feedback without storing evidence videos',async t=>{
+ const setup=await fixture(t);const calls=[];
+ await setup.store.update(`videos/${setup.videoId}`,v=>({...v,retentionPolicy:'report_only'}));
+ await setup.store.update(`workspaces/${setup.userId}`,w=>({...w,videos:w.videos.map(v=>({...v,retentionPolicy:'report_only'}))}));
+ await setup.store.update(`jobs/${setup.jobId}`,j=>({...j,retentionPolicy:'report_only'}));
+ const result=await runGrowthJob({store:setup.store,jobId:setup.jobId,token,localMediaInput:setup.file,env,analysisHandler:mockAnalysis(calls)});
+ assert.equal(result.status,'completed');assert.equal(result.retention.status,'completed');assert.equal(result.result.identified,true);
+ assert.equal(await setup.store.getBinary(setup.sourceKey),null);assert.deepEqual(await setup.store.list(`evidence-media/${setup.userId}/`),[]);
+ assert.ok((await setup.store.get(`workspaces/${setup.userId}`)).analyses.length>0);
+ const count=calls.length;await runGrowthJob({store:setup.store,jobId:setup.jobId,token,localMediaInput:setup.file,env,analysisHandler:mockAnalysis(calls)});assert.equal(calls.length,count);
+});
+test('report-only not-found cleanup resumes after interruption without repeating mock AI discovery',async t=>{
+ const setup=await fixture(t,1);const calls=[];
+ await setup.store.update(`videos/${setup.videoId}`,v=>({...v,retentionPolicy:'report_only'}));
+ await setup.store.update(`workspaces/${setup.userId}`,w=>({...w,videos:w.videos.map(v=>({...v,retentionPolicy:'report_only'}))}));
+ await setup.store.update(`jobs/${setup.jobId}`,j=>({...j,retentionPolicy:'report_only'}));
+ const remove=setup.store.delete.bind(setup.store);let interrupted=false;
+ setup.store.delete=async key=>{if(!interrupted&&key===setup.sourceKey){interrupted=true;throw new Error('synthetic interruption');}return remove(key);};
+ const run=()=>runGrowthJob({store:setup.store,jobId:setup.jobId,token,localMediaInput:setup.file,env,analysisHandler:mockAnalysis(calls,{discoveryDetections:[]})});
+ const first=await run();assert.equal(first.status,'completed');assert.equal(first.result.identified,false);assert.equal(first.retention.status,'pending');assert.ok(await setup.store.getBinary(setup.sourceKey));
+ const count=calls.length,second=await run();assert.equal(second.retention.status,'completed');assert.equal(second.result.identified,false);assert.equal(await setup.store.getBinary(setup.sourceKey),null);assert.equal(calls.length,count);
+});

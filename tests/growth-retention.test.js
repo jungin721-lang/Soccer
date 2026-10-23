@@ -379,3 +379,40 @@ test('fresh free consent replaces blocked legacy work without discarding its sav
   assert.equal(preserved.status, 'cancelled'); assert.equal(preserved.cancelRequested, true); assert.notEqual(preserved.tokenHash, old.tokenHash);
   assert.deepEqual(preserved.clips, old.clips); assert.deepEqual(preserved.result, old.result);
 });
+
+async function reportOnly(setup) {
+  await setup.store.update(`videos/${setup.videoId}`,video=>({...video,retentionPolicy:'report_only'}));
+  await setup.store.update(`workspaces/${setup.userId}`,w=>({...w,videos:w.videos.map(v=>v.id===setup.videoId?{...v,retentionPolicy:'report_only'}:v)}));
+  setup.job=await setup.store.update(`jobs/${setup.jobId}`,j=>({...j,retentionPolicy:'report_only'}));
+}
+test('report-only deletion keeps verified text but removes originals and any evidence without encoding',async t=>{
+ const setup=await fixture(t,1);await reportOnly(setup);const {store,userId,videoId,clips}=setup;
+ const evidenceKey=`evidence-media/${userId}/${videoId}/${clips[0].id}`;
+ await store.putBinary(evidenceKey,Buffer.from('synthetic-private-evidence'));
+ await store.set(`evidence/${clips[0].id}`,{id:clips[0].id,userId,videoId,key:evidenceKey});
+ await store.set(`evidence-owners/${userId}/${videoId}/${clips[0].id}`,{id:clips[0].id});
+ const neighbor=`media/${setup.otherUserId}/${videoId}/unrelated`;await store.putBinary(neighbor,Buffer.from('other owner'));
+ const result=await finalize(setup,()=>assert.fail('Report-only policy must not generate or store video clips'));
+ assert.equal(result.retention.status,'completed');assert.equal(result.retention.totalBytes,0);
+ assert.equal((await store.get(`videos/${videoId}`)).sourceStatus,'deleted_after_analysis');
+ for(const prefix of [`media/${userId}/${videoId}/`,`evidence-media/${userId}/${videoId}/`,`evidence-owners/${userId}/${videoId}/`])assert.deepEqual(await store.list(prefix),[]);
+ assert.equal(await store.get(`evidence/${clips[0].id}`),null);assert.ok(await store.getBinary(neighbor));
+ const w=await store.get(`workspaces/${userId}`);assert.deepEqual(w.analyses[0].result,clips[0].result);assert.equal(w.analyses[0].evidence,undefined);
+ assert.equal((await store.get(`quotas/storage/${userId}`)).entries[0].size,0);
+ assert.equal((await setup.api(request(`/media/${videoId}`,{cookie:setup.cookie}))).status,404);
+ await finalize(setup,()=>assert.fail('Completed deletion must be idempotent'));
+});
+test('report-only deletion resumes after a failed removal and never releases storage early',async t=>{
+ const setup=await fixture(t,1);await reportOnly(setup);const remove=setup.store.delete.bind(setup.store);let failed=false;
+ setup.store.delete=async key=>{if(!failed&&key.startsWith(`media/${setup.userId}/`)){failed=true;throw new Error('synthetic interruption');}return remove(key);};
+ await assert.rejects(()=>finalize(setup));assert.equal((await setup.store.get(`jobs/${setup.jobId}`)).retention.status,'pending');
+ assert.equal((await setup.store.get(`quotas/storage/${setup.userId}`)).entries[0].size,setup.original.length);
+ await finalize(setup);assert.equal((await setup.store.get(`videos/${setup.videoId}`)).evidenceBytes,0);
+});
+test('report-only deletion refuses missing text and unsuccessful jobs, but cleans completed not-found results',async t=>{
+ const a=await fixture(t,1);await reportOnly(a);
+ await a.store.update(`workspaces/${a.userId}`,w=>({...w,analyses:[]}));await assert.rejects(()=>finalize(a));assert.ok((await a.store.list(`media/${a.userId}/`)).length);
+ const b=await fixture(t,1);await reportOnly(b);await b.store.update(`jobs/${b.jobId}`,j=>({...j,status:'failed'}));await finalize(b);assert.ok((await b.store.list(`media/${b.userId}/`)).length);
+ const c=await fixture(t,1);await reportOnly(c);c.job=await c.store.update(`jobs/${c.jobId}`,j=>({...j,clips:[],stage:'not_found',progress:{...j.progress,status:'not_found',selectedCount:0,completedCount:0},result:{identified:false,summary:'synthetic not found'}}));
+ await c.store.update(`workspaces/${c.userId}`,w=>({...w,analyses:[]}));const done=await finalize(c);assert.equal(done.result.identified,false);assert.equal(done.retention.status,'completed');assert.deepEqual(await c.store.list(`media/${c.userId}/`),[]);
+});
