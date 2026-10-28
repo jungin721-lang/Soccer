@@ -27,3 +27,11 @@
     X-Frame-Options = "DENY"
     Cache-Control = "public, max-age=0, must-revalidate"
     Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'"
+
+# Serve the current public training app at the existing root URL. The NEXT XI
+# entry remains available at /index.html and its API/functions remain intact.
+[[redirects]]
+  from = "/"
+  to = "/heechans/index.html"
+  status = 200
+  force = true
