@@ -20,6 +20,15 @@ export class TrainingCloud {
  verify(remote){if(!this.user||remote.userId!==this.user.id)throw Object.assign(new Error('로그인 계정이 변경됐어요. 다시 로그인해 주세요.'),{status:401});}
  async authenticate(body,register=false){const result=await this.api('/auth/'+(register?'register':'login'),{method:'POST',body:JSON.stringify(body)});this.user=result.user;this.available=true;return this.connect();}
  async localDraft(draft){const cache=defaults();cache.draft=draft;const result=await save(cache,this.draftRevision,'account:'+this.user.id);this.draftRevision=result.revision;}
+ async sessionLock(action,draft){
+  const epoch=this.epoch;
+  const result=await this.api('/training/session-lock',{method:'POST',body:JSON.stringify({action,id:draft.id,date:draft.date,slot:draft.slot})});
+  if(epoch!==this.epoch)throw new Error('계정 연결이 변경됐어요. 다시 로그인해 주세요.');
+  this.verify(result);return result;
+ }
+ async claimSession(draft){return this.sessionLock('claim',draft);}
+ async releaseSession(draft){return this.sessionLock('release',draft);}
+ async sessionLocks(){const epoch=this.epoch;const result=await this.api('/training/session-lock');if(epoch!==this.epoch)throw new Error('계정 연결이 변경됐어요.');this.verify(result);return result.locks;}
  async commit(base,desired){
   const epoch=this.epoch;let remote={revision:base.revision,data:validateState(base.data),userId:this.user.id};
   const before=validateState(base.data),after=validateState(desired);
@@ -29,7 +38,7 @@ export class TrainingCloud {
     // A completed timer has a stable UUID. A lost success response must not
     // create a duplicate or replace the already accepted elapsed time.
     const intent=structuredClone(after),completedId=base.data.draft?.id;
-    if(completedId&&!desired.draft){const accepted=remote.data.sessions.find(s=>s.id===completedId);if(accepted)intent.sessions=intent.sessions.map(s=>s.id===completedId?accepted:s);}
+    if(completedId&&(!desired.draft||desired.draft.ending)){const accepted=remote.data.sessions.find(s=>s.id===completedId);if(accepted)intent.sessions=intent.sessions.map(s=>s.id===completedId?accepted:s);}
     const merged=mergeTraining(before,intent,remote.data);
     try{remote=await this.api('/training',{method:'PUT',body:JSON.stringify({revision:remote.revision,data:merged})});this.verify(remote);break;}
     catch(error){if(error.code!=='revision_conflict'||attempt===2)throw error;}
@@ -37,7 +46,7 @@ export class TrainingCloud {
   }
   if(epoch!==this.epoch)throw new Error('계정 연결이 변경됐어요.');
   // Completed records are already durable on the server even if this device is full.
-  let warning=null;try{await this.localDraft(desired.draft);}catch{warning='서버 기록은 저장했지만 이 기기의 타이머 저장에 실패했어요. 새로고침 전 진행 상태를 확인해 주세요.';}
+  let warning=null;try{await this.localDraft(desired.draft);}catch(error){if(JSON.stringify(before)===JSON.stringify(after))throw error;warning='서버 기록은 저장했지만 이 기기의 타이머 저장에 실패했어요. 새로고침 전 진행 상태를 확인해 주세요.';}
   if(epoch!==this.epoch)throw new Error('계정 연결이 변경돼 화면 갱신을 중단했어요.');
   return {...remote,data:{...validateState(remote.data),draft:desired.draft},warning};
  }

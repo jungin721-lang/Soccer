@@ -51,6 +51,41 @@ test('local SQLite persists JSON/binaries across restart and concurrent updates 
   assert.deepEqual(await store.list('binary/'), ['binary/example']); await store.delete('counter'); assert.equal(await store.get('counter'), null); store.close();
 });
 
+test('training session reservations isolate accounts and atomically prevent competing completions', async t => {
+  const { api } = await fixture(t);
+  const owner = await register(api, 'session-owner@example.test');
+  const other = await register(api, 'session-other@example.test');
+  const first = { id: randomUUID(), date: '2026-10-28', slot: 'am' };
+  const second = { ...first, id: randomUUID() };
+  const lock = (who, action, session) => api(req('/training/session-lock', { method: 'POST', cookie: who.cookie, body: { action, ...session } }));
+  const contenders = await Promise.all([lock(owner, 'claim', first), lock(owner, 'claim', second)]);
+  assert.deepEqual(contenders.map(r => r.status).sort(), [200, 409]);
+  const winner = contenders[0].status === 200 ? first : second;
+  const loser = winner === first ? second : first;
+  assert.equal((await lock(owner, 'claim', winner)).status, 200);
+  assert.equal((await lock(other, 'claim', loser)).status, 200);
+  const remote = await (await api(req('/training', { cookie: owner.cookie }))).json();
+  const session = item => ({ ...item, mode: 30, seconds: 755, status: 'stopped', checks: [] });
+  const save = data => api(req('/training', { method: 'PUT', cookie: owner.cookie, body: { revision: remote.revision, data } }));
+  const competing = structuredClone(remote.data); competing.sessions.push(session(loser));
+  assert.equal((await save(competing)).status, 409);
+  const valid = structuredClone(remote.data); valid.sessions.push(session(winner));
+  assert.equal((await save(valid)).status, 200);
+  assert.equal((await lock(owner, 'release', winner)).status, 200);
+  assert.equal((await lock(owner, 'release', winner)).status, 200);
+  assert.equal((await lock(owner, 'claim', winner)).status, 409);
+  assert.equal((await lock(owner, 'claim', loser)).status, 200);
+  const latest = await (await api(req('/training', { cookie: owner.cookie }))).json();
+  assert.equal(latest.data.sessions.length, 1);
+  const locks = await (await api(req('/training/session-lock', { cookie: owner.cookie }))).json();
+  assert.deepEqual(locks.locks, [loser]);
+  assert.equal((await lock(owner, 'release', loser)).status, 200);
+  // A lost device cannot submit a previously unsaved session after recovery.
+  const delayed = structuredClone(latest.data); delayed.sessions.push(session(loser));
+  const late = await api(req('/training', { method: 'PUT', cookie: owner.cookie, body: { revision: latest.revision, data: delayed } }));
+  assert.equal(late.status, 409); assert.equal((await late.json()).code, 'session_finished');
+});
+
 test('Netlify adapter uses strong reads and official conditional writes, retries CAS and paginates keys', async () => {
   const records = new Map(); let version = 0; let conflicts = 0;
   const sdk = {

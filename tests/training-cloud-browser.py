@@ -75,7 +75,7 @@ with TemporaryDirectory(prefix='training-sync-') as temporary:
     expect(d.locator('#notice')).to_contain_text('설정을 계정에 저장')
     submit(mf);expect(m.locator('#notice')).to_contain_text('설정을 계정에 저장')
     state=remote(mobile)['data'];assert state['profile']['mode']==20 and state['profile']['nickname']=='서로 다른 항목 병합'
-    # Both devices run their own timer; completed records converge without replacing lists.
+    # Both devices prepare a draft; separately completed records converge without replacing lists.
     for page in [d,m]:
      nav(page,'오늘 연습');page.locator('[data-slot=pm]').click();page.locator('[data-action=begin]').click();expect(page.locator('#active-title')).to_have_count(1)
     assert remote(desktop)['data']['draft'] is None
@@ -111,9 +111,32 @@ with TemporaryDirectory(prefix='training-sync-') as temporary:
     nav(d,'설정·백업');d.locator('[data-action=cloud-logout]').click();expect(d.locator('#storage-badge')).to_have_text('◈ 기기 내 저장')
     expect(profile(d).locator('[name=nickname]')).to_have_value('보존할 기기 원본')
     nav(d,'나의 기록');expect(d.locator('#main')).to_contain_text('1번의 연습·휴식 선택')
+    # A separate owner and second independent device cannot start the same slot
+    # together. Explicit guardian recovery retires the abandoned draft, so its
+    # later completion cannot overwrite the new device's record.
+    nav(o,'설정·백업');form=profile(o);form.locator('[name=guardian]').check();submit(form);expect(o.locator('#notice')).to_contain_text('설정을 계정에 저장')
+    second_other=browser.new_context(base_url=base,viewport={'width':390,'height':900},timezone_id='Asia/Seoul')
+    o2=second_other.new_page();o2.on('pageerror',lambda error:errors.append(str(error)))
+    o2.clock.install(time=datetime(2026,10,21,0,0,tzinfo=timezone.utc));o2.goto(base+'/training/index.html',wait_until='networkidle');auth(o2,'training-other@example.test')
+    for page in [o,o2]:
+     nav(page,'오늘 연습');page.locator('[data-action=begin]').click();expect(page.locator('#active-title')).to_have_count(1)
+    o.locator('[data-action=toggle-timer]').click();expect(o.locator('[data-action=toggle-timer]')).to_have_text('일시정지')
+    o2.locator('[data-action=toggle-timer]').click();expect(o2.locator('#notice')).to_contain_text('다른 기기에서 진행 중')
+    expect(o2.locator('[data-action=toggle-timer]')).to_have_text('훈련 시작')
+    nav(o2,'설정·백업');o2.locator('#lock-details summary').click();o2.locator('[data-action=list-locks]').click()
+    expect(o2.locator('[data-action=release-lock]')).to_have_count(1)
+    o2.once('dialog',lambda dialog:dialog.accept());o2.locator('[data-action=release-lock]').click();expect(o2.locator('#notice')).to_contain_text('서버 예약을 해제')
+    nav(o2,'오늘 연습');o2.locator('[data-action=toggle-timer]').click();expect(o2.locator('[data-action=toggle-timer]')).to_have_text('일시정지')
+    o.locator('[data-action=stop-session]').click();expect(o.locator('#notice')).to_contain_text('오래된 기록')
+    assert len(remote(other)['data']['sessions'])==0
+    o2.locator('[data-action=stop-session]').click();expect(o2.locator('#active-title')).to_have_count(0)
+    assert len(remote(other)['data']['sessions'])==1
+    o.locator('[data-action=stop-session]').click();expect(o.locator('#notice')).to_contain_text('오래된 기록')
+    assert len(remote(other)['data']['sessions'])==1
+    second_other.close()
     for page in pages:
      size=page.evaluate('({w:innerWidth,s:document.documentElement.scrollWidth})');assert size['s']<=size['w'],size
     assert not errors,errors
     browser.close()
-    print('PASS: independent PC/mobile/other-owner sessions; UI signup/login, no implicit upload, explicit migration preserving originals, automatic settings/history sync, same-field conflict preservation, disjoint field/session merge, per-device timers, offline/lost-response retry without duplicates, expiry/re-login/reload, owner isolation and local logout recovery. Local SQLite API only; production deployment unverified.')
+    print('PASS: independent PC/mobile/other-owner sessions; UI signup/login, explicit migration, automatic sync, conflicts, concurrent session rejection and guardian recovery rejecting stale writes, offline/lost-response retry, expiry/re-login, owner isolation. Local SQLite API only; production deployment unverified.')
   finally:server.terminate();server.wait(timeout=10)

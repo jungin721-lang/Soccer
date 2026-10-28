@@ -8,8 +8,8 @@
 <link rel="stylesheet" href="./style.css"><script type="module" src="./app.js"></script>
   <link rel="stylesheet" href="./netlify-clearance.css">
 </head>
-<body><a class="skip" href="#main">본문으로 건너뛰기</a><header class="header"><a class="brand" href="#today"><span class="mark">↗</span><span>NEXT STEP<small>희찬의 다음 한 걸음</small></span></a><span id="storage-badge" class="local-badge">◈ 기기 내 저장</span></header>
+<body><a class="skip" href="#main">본문으로 건너뛰기</a><header class="header"><a class="brand" href="#today"><span class="mark">↗</span><span>NEXT STEP<small>희찬의 다음 한 걸음</small></span></a><button data-action="exit-app" class="exit-button">나가기</button><span id="storage-badge" class="local-badge">◈ 기기 내 저장</span></header>
 <nav class="nav" aria-label="주 메뉴"><a href="#today">오늘 연습</a><a href="#guide">동작 배우기</a><a href="#history">나의 기록</a><a href="#settings">설정·백업</a></nav>
 <p id="sync-summary" class="sync-summary" role="status" aria-live="polite">기기 내 저장 · 자동 동기화 꺼짐</p><main id="main" tabindex="-1"><p>연습 노트를 열고 있어요…</p></main><footer>남과 비교하지 않고, 나의 다음 한 걸음.<br><small>일반 운동 안내 초안 · 개인 진료·전문 코치 평가 아님 · v1.0</small></footer>
-<p id="notice" role="status" aria-live="polite"></p><dialog id="exercise-dialog" aria-labelledby="exercise-title"><button id="close-exercise" class="close" aria-label="운동 안내 닫기">×</button><div id="exercise-content"></div></dialog>
+<p id="notice" role="status" aria-live="polite"></p><dialog id="exit-dialog" aria-labelledby="exit-title"><h2 id="exit-title">종료하시겠습니까?</h2><p>진행 중인 훈련이 있으면 실제 시간을 저장해요.</p><div class="row"><button data-action="confirm-exit" class="primary">나가기</button><button data-action="cancel-exit">취소</button></div><p id="exit-error" role="alert"></p></dialog><dialog id="exercise-dialog" aria-labelledby="exercise-title"><button id="close-exercise" class="close" aria-label="운동 안내 닫기">×</button><div id="exercise-content"></div></dialog>
 </body></html>
