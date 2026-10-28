@@ -48,5 +48,28 @@ try:
    page.get_by_role('button',name='운동 안내 닫기').click()
    sizes=page.evaluate('({w:innerWidth,s:document.documentElement.scrollWidth})');assert sizes['s']<=sizes['w'],sizes
    context.close();print(f'PASS {width}x{height}: content, mobile navigation, toasts and dialogs clear visible/clickable badge; original spacing returns when badge is absent.')
+  # Exercise the real training UI after rotating to a short landscape viewport
+  # and increasing inherited text size. The iframe fixture is never hidden.
+  for width,height in [(640,320),(844,390)]:
+   context=browser.new_context(viewport={'width':width,'height':height})
+   page=context.new_page();page.goto(base+'/training/index.html#guide',wait_until='networkidle')
+   page.evaluate('''() => {
+    document.documentElement.style.setProperty('font-size','24px','important');
+    const f=document.createElement('iframe');f.id='nl-badge-frame';f.title='Powered by Netlify';
+    f.style.cssText='position:fixed;right:0;bottom:0;width:216px;height:92px;border:0;z-index:2147483645';
+    document.body.append(f);
+   }''')
+   badge=page.locator('#nl-badge-frame').bounding_box()
+   button=page.locator('[data-action=detail]').last;button.scroll_into_view_if_needed()
+   box=button.bounding_box();assert box['y']+box['height']<=badge['y'],(width,box,badge)
+   button.click();dialog=page.locator('#exercise-dialog').bounding_box()
+   assert dialog['y']+dialog['height']<=badge['y'],(width,dialog,badge)
+   page.get_by_role('button',name='운동 안내 닫기').click()
+   page.get_by_role('button',name='나가기',exact=True).first.click()
+   exit_dialog=page.locator('#exit-dialog');expect(exit_dialog).to_be_visible()
+   box=exit_dialog.bounding_box();assert box['y']+box['height']<=badge['y'],(width,box,badge)
+   exit_dialog.get_by_role('button',name='취소').click()
+   sizes=page.evaluate('({w:innerWidth,s:document.documentElement.scrollWidth})');assert sizes['s']<=sizes['w'],sizes
+   context.close();print(f'PASS {width}x{height}: landscape and larger text keep the last exercise control and dialog above the badge.')
   browser.close()
 finally:server.shutdown();server.server_close()
