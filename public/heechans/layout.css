@@ -1,0 +1,23 @@
+/* Keep the provider badge visible and give the app controls their own space. */
+[hidden] { display: none !important; }
+:focus-visible { outline: 3px solid #195c3d; outline-offset: 3px; }
+body:has(iframe#nl-badge-frame) .overlay { bottom: var(--netlify-badge-space); }
+body:has(iframe#nl-badge-frame) .modal {
+  max-height: calc(100dvh - var(--netlify-badge-space) - 32px);
+  overflow-y: auto;
+}
+dialog { border: 0; border-radius: 20px; padding: 24px; max-width: min(90vw, 420px); color: var(--ink); box-shadow: 0 25px 80px #0004; }
+dialog::backdrop { background: #10251bd9; }
+#exitError { color: #a12b25; }
+#sessionMode, #recoverySeconds { min-height: 44px; border: 1px solid var(--line); border-radius: 10px; padding: 8px; max-width: 100%; }
+#goalNotice, #recoveryControls { margin-top: 12px; }
+#goalNotice button, #recoveryControls button { white-space: normal; }
+@media (max-width: 600px) {
+  .top-actions { flex-wrap: wrap; justify-content: flex-end; }
+  body:has(iframe#nl-badge-frame) .overlay { align-items: flex-end; }
+  body:has(iframe#nl-badge-frame) .modal { max-height: calc(100dvh - var(--netlify-badge-space)); }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  body:has(iframe#nl-badge-frame) .overlay { align-items: flex-start; }
+  body:has(iframe#nl-badge-frame) .modal { max-height: calc(100dvh - var(--netlify-badge-space) - 16px); }
+}
