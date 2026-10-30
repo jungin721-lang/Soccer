@@ -116,7 +116,7 @@ function cleanVideo(value) {
     || !(value.duration === null || (finite(value.duration) && value.duration > 0 && value.duration <= 86400))) fail('원본 영상 정보를 확인해 주세요.');
   const retention = {};
   if (value.retentionPolicy !== undefined) {
-    if (value.retentionPolicy !== 'delete_after_analysis') fail('원본 보관 정책을 확인해 주세요.');
+    if (!['delete_after_analysis','report_only'].includes(value.retentionPolicy)) fail('원본 보관 정책을 확인해 주세요.');
     retention.retentionPolicy = value.retentionPolicy;
   }
   if (value.sourceStatus !== undefined) {

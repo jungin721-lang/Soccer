@@ -588,3 +588,15 @@ test('training API isolates owners, validates revisions and excludes running tim
   assert.deepEqual(await store.get(`training/${owner.user.id}`),{deleting:true,revision:0,data:null});
   assert.equal((await api(req('/training',{cookie:owner.cookie}))).status,401);
 });
+
+test('new review upload persists explicit report-only consent, caps files and refuses paid analysis',async t=>{
+ const {api,store}=await fixture(t);const {cookie}=await register(api,'report-policy@example.test');
+ const body={rightsConsent:true,deleteVideosAfterAnalysis:true,fileName:'synthetic.mp4',title:'new review',size:32,mime:'video/mp4',target:{kit:'teal',number:17,age:11},context:{}};
+ assert.equal((await api(req('/uploads',{method:'POST',cookie,body:{...body,size:100*1024**2+1}}))).status,400);
+ assert.equal((await api(req('/uploads',{method:'POST',cookie,body:{...body,fileName:'synthetic.mov'}}))).status,400);
+ const started=await api(req('/uploads',{method:'POST',cookie,body}));assert.equal(started.status,201);const upload=(await started.json()).upload;
+ assert.equal((await store.get(`uploads/${upload.id}`)).retentionPolicy,'report_only');
+ assert.equal((await api(req('/uploads/'+upload.id,{method:'PUT',cookie,body:Buffer.alloc(32),headers:{'Upload-Offset':'0'}}))).status,200);
+ const done=await api(req('/uploads/'+upload.id+'/complete',{method:'POST',cookie}));assert.equal(done.status,200);const video=(await done.json()).workspace.videos[0];assert.equal(video.retentionPolicy,'report_only');
+ const queue=await api(req('/jobs',{method:'POST',cookie,body:{videoId:video.id,analysisConsent:true}}));assert.equal(queue.status,503);assert.equal((await queue.json()).code,'free_provider_required');
+});
